@@ -1,0 +1,17 @@
+{
+  "name": "ccosming-skills",
+  "version": "1.0.0",
+  "description": "A curated marketplace of Claude Code plugins for monorepo management, project scaffolding, and code conventions",
+  "owner": {
+    "name": "ccosming",
+    "url": "https://github.com/ccosming"
+  },
+  "repository": "https://github.com/ccosming/skills",
+  "license": "MIT",
+  "plugins": [
+    {
+      "name": "monorepo",
+      "source": "./plugins/monorepo"
+    }
+  ]
+}

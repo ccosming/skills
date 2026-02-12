@@ -1,0 +1,22 @@
+{
+  "name": "monorepo",
+  "version": "0.0.2",
+  "description": "Multilanguage monorepo management with Moonrepo v2 + Prototools",
+  "author": {
+    "name": "Carlos Cosming",
+    "email": "dev@ccosming.com"
+  },
+  "repository": "https://github.com/ccosming/skills",
+  "license": "MIT",
+  "keywords": [
+    "monorepo",
+    "moonrepo",
+    "prototools",
+    "workspace",
+    "devtools",
+    "python",
+    "typescript"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/"
+}

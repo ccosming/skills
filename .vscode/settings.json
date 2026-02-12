@@ -1,0 +1,8 @@
+{
+  "markdownlint.config": {
+    "fenced-code-language": false,
+    "line-length": false,
+    "table-column-style": false,
+    "no-trailing-punctuation": false
+  }
+}
