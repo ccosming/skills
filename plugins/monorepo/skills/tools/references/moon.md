@@ -92,6 +92,53 @@ tasks:
       - '@group(sources)'
 ```
 
+## VS Code Configuration
+
+### .vscode/settings.json
+
+Create or merge with existing settings:
+
+```json
+{
+  "yaml.schemas": {
+    "https://moonrepo.dev/schemas/v2/project.json": "moon.yml",
+    "https://moonrepo.dev/schemas/v2/tasks.json": [".moon/tasks.yml", ".moon/tasks/**/*.yml"],
+    "https://moonrepo.dev/schemas/v2/toolchains.json": ".moon/toolchains.yml",
+    "https://moonrepo.dev/schemas/v2/workspace.json": ".moon/workspace.yml",
+    "https://moonrepo.dev/schemas/v2/template.json": "templates/**/template.yml"
+  }
+}
+```
+
+This enables YAML schema validation and autocomplete for all Moon configuration files.
+
+### .vscode/extensions.json
+
+Create or merge with existing recommendations:
+
+```json
+{
+  "recommendations": [
+    "redhat.vscode-yaml",
+    "moonrepo.moon-console"
+  ]
+}
+```
+
+## Claude Code Permissions
+
+After installing Moon, update `.claude/settings.local.json` to add permissions:
+
+**Read the existing file first**, then merge this permission into the `"allow"` array:
+
+```json
+"Bash(moon *)"
+```
+
+This covers all Moon commands (run, check, query, init, sync, etc.).
+
+**Important:** Don't replace the entire permissions array - only add this entry if it's not already present.
+
 ## Commands
 
 ```bash

@@ -19,4 +19,4 @@ Create a minimal, language-agnostic monorepo with Moon and Proto.
 4. Init git if needed: `git init`
 5. Read `references/structure.md` → create all listed files
 6. Install Moon: `Skill: monorepo:tools moon`
-7. Done: `Monorepo created! Next: /monorepo:tools node pnpm`
+7. Done: `🎉 Monorepo created successfully!`

@@ -42,6 +42,13 @@
       "method": "pnpm",
       "requires": ["node", "pnpm"],
       "reference": "prettier.md"
+    },
+    "eslint": {
+      "description": "Linter for JavaScript and TypeScript",
+      "version": "latest",
+      "method": "pnpm",
+      "requires": ["node", "pnpm"],
+      "reference": "eslint.md"
     }
   },
   "methods": {

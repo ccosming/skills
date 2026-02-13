@@ -2,7 +2,7 @@
 name: tools
 description: "Manage dev tools in a Moon + Proto monorepo. Install, verify, or configure tools."
 argument-hint: "<tool> [--check]"
-allowed-tools: Read, Glob, Bash(proto *), Bash(pnpm *), Bash(uv *), Bash(curl *)
+allowed-tools: Read, Glob, Write, Edit, Update, Bash(proto *), Bash(pnpm *), Bash(uv *), Bash(curl *)
 ---
 
 # Monorepo Tools

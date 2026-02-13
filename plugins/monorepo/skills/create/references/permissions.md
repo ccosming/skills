@@ -21,13 +21,7 @@ Claude Code settings for the monorepo plugin.
     "allow": [
       "Skill(monorepo:*)",
       "Bash(proto *)",
-      "Bash(moon *)",
-      "Bash(pnpm *)",
-      "Bash(node *)",
-      "Bash(npx *)",
-      "Bash(git *)",
-      "Bash(python *)",
-      "Bash(uv *)"
+      "Bash(git *)"
     ]
   }
 }

@@ -1,7 +1,24 @@
 {
-  "permissions": {
-    "allow": [
-      "Skill(create-tool)"
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE_PATH=$(echo \"$ARGUMENTS\" | grep -o '\"file_path\":\"[^\"]*\"' | cut -d'\"' -f4); if [[ \"$FILE_PATH\" == *.md ]]; then npx prettier --write \"$FILE_PATH\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE_PATH=$(echo \"$ARGUMENTS\" | grep -o '\"file_path\":\"[^\"]*\"' | cut -d'\"' -f4); if [[ \"$FILE_PATH\" == *.md ]]; then npx prettier --write \"$FILE_PATH\"; fi"
+          }
+        ]
+      }
     ]
   }
 }

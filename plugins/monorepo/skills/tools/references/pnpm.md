@@ -37,3 +37,17 @@ javascript:
 pnpm:
   version: '<from versions.json>'
 ```
+
+## Claude Code Permissions
+
+After installing pnpm, update `.claude/settings.local.json` to add permissions:
+
+**Read the existing file first**, then merge this permission into the `"allow"` array:
+
+```json
+"Bash(pnpm *)"
+```
+
+This covers all pnpm commands including `pnpm dlx` (equivalent to `npx`).
+
+**Important:** Don't replace the entire permissions array - only add this entry if it's not already present.

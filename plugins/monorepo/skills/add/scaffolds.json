@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "scaffolds": {
+    "nextjs": {
+      "description": "Next.js 16 app with React 19, Tailwind 4, App Router",
+      "directory": "apps",
+      "reference": "nextjs.md",
+      "requires": {
+        "tools": ["node", "pnpm", "prettier", "eslint"],
+        "monorepo": true,
+        "structure": [".moon/", "package.json", "pnpm-workspace.yaml"]
+      },
+      "provides": {
+        "type": "app",
+        "framework": "nextjs",
+        "version": "16",
+        "features": ["react19", "tailwind4", "app-router", "typescript"]
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "updated": "2026-02-12"
+  }
+}

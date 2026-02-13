@@ -32,6 +32,7 @@ telemetry: false
 ## File: `.prototools`
 
 ```toml
+
 [settings]
 auto-install = true
 auto-clean = true
@@ -46,7 +47,7 @@ Thumbs.db
 
 # IDE
 .idea/
-.vscode/
+.vscode/*.code-workspace
 *.swp
 
 # Environment
@@ -71,9 +72,6 @@ Thumbs.db
 
 ```json
 {
-  "recommendations": [
-    "redhat.vscode-yaml",
-    "moonrepo.moon-console"
-  ]
+  "recommendations": []
 }
 ```
