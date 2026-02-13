@@ -1,6 +1,6 @@
 {
   "name": "monorepo",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Multilanguage monorepo management with Moonrepo v2 + Prototools",
   "author": {
     "name": "Carlos Cosming",
@@ -16,7 +16,5 @@
     "devtools",
     "python",
     "typescript"
-  ],
-  "skills": "./skills/",
-  "commands": "./commands/"
+  ]
 }

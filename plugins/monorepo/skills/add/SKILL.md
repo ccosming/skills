@@ -2,7 +2,7 @@
 name: add
 description: Add apps, packages, or modules to the monorepo
 argument-hint: "<type> <name>"
-allowed-tools: Bash(pnpm *), Read, Write, Edit, Glob, Grep, Skill
+allowed-tools: Bash(pnpm *), Bash(test *), Bash(rm *), Bash(rm -rf *), Read, Write, Edit, Glob, Grep, Skill
 ---
 
 # Add to Monorepo
@@ -28,9 +28,11 @@ Create production-ready apps/packages with minimal boilerplate, pre-configured w
 ### When invoked with a type and name:
 
 1. Read `scaffolds.json` to check if type is supported and get dependencies
-2. If not supported → respond: `Type "{type}" is not supported. Available: nextjs`
-3. Validate all required tools are installed (check `requires.tools` in scaffolds.json)
-4. If monorepo required, verify `.moon/` and `package.json` exist
+2. If not supported → respond: `Type "{type}" is not supported. Available types: {list keys from scaffolds.json}`
+3. For each tool in `requires.tools`, ensure it's installed: `Skill: monorepo:tools <tool>`
+   - The tools skill will check internally and only install if missing
+   - Dependencies are resolved and installed automatically (e.g., node requires proto)
+4. If monorepo required, verify all paths in `requires.structure` exist using `test -e <path>`
 5. Read `references/<type>.md` for detailed configuration
 6. Execute the creation command with all necessary flags (non-interactive)
 7. Apply post-creation customizations defined in the reference file

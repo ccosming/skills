@@ -6,7 +6,39 @@ Build system and task runner for monorepos.
 
 Configure Moon workspace for project discovery, task inheritance, and CI optimization.
 
-## Files to Create
+## Verification
+
+Check if Moon is properly installed and configured:
+
+```bash
+# 1. Check .prototools exists and has moon pinned
+test -f .prototools && grep -q 'moon' .prototools || exit 1
+
+# 2. Check moon is accessible via proto
+proto status -c local 2>&1 | grep -q 'moon' || exit 1
+
+# 3. Check moon binary works
+moon --version >/dev/null 2>&1 || exit 1
+
+# 4. Check .moon/workspace.yml exists
+test -f .moon/workspace.yml || exit 1
+```
+
+All checks must pass for Moon to be considered installed.
+
+## Installation
+
+Install Moon via proto:
+
+```bash
+proto pin moon 2.0.0-rc.2 --resolve && proto use
+```
+
+## Configuration
+
+Apply these configurations after installation:
+
+### Files to Create
 
 ### .moon/workspace.yml
 
@@ -44,7 +76,7 @@ pnpm:
   version: '<from versions.json>'
 ```
 
-## Project Configuration
+### Project Configuration
 
 Each project needs a `moon.yml`:
 
@@ -67,7 +99,7 @@ tasks:
       - 'dist'
 ```
 
-## Inherited Tasks
+### Inherited Tasks
 
 Create `.moon/tasks/all.yml` for tasks shared by all projects:
 
@@ -92,9 +124,9 @@ tasks:
       - '@group(sources)'
 ```
 
-## VS Code Configuration
+### VS Code
 
-### .vscode/settings.json
+#### .vscode/settings.json
 
 Create or merge with existing settings:
 
@@ -125,7 +157,7 @@ Create or merge with existing recommendations:
 }
 ```
 
-## Claude Code Permissions
+### Claude Code Permissions
 
 After installing Moon, update `.claude/settings.local.json` to add permissions:
 

@@ -6,9 +6,38 @@ Linter for JavaScript and TypeScript with support for React 19.
 
 Configure ESLint v10+ with flat config format (`eslint.config.ts`) for TypeScript and React projects, with opinionated rules for consistent code quality.
 
-## Post-Install
+## Verification
 
-After eslint is installed, add the required plugins and parsers:
+Check if eslint is properly installed and configured:
+
+```bash
+# 1. Check package.json exists and has eslint in dependencies
+test -f package.json && grep -q '"eslint"' package.json || exit 1
+
+# 2. Check eslint is installed in node_modules
+pnpm list eslint --depth=0 >/dev/null 2>&1 || exit 1
+
+# 3. Check eslint config exists (any of these)
+test -f eslint.config.ts || test -f eslint.config.mjs || test -f eslint.config.js || test -f .eslintrc.json || test -f .eslintrc.js || exit 1
+```
+
+All checks must pass for eslint to be considered installed.
+
+## Installation
+
+Install eslint as a workspace dev dependency:
+
+```bash
+pnpm add -D -w eslint@latest
+```
+
+## Configuration
+
+Apply these configurations after installation:
+
+### Post-Install
+
+Add the required plugins and parsers:
 
 ### For TypeScript Projects
 
@@ -28,9 +57,9 @@ pnpm add -D -w \
   eslint-plugin-jsx-a11y
 ```
 
-## Files to Create
+### Files to Create
 
-### eslint.config.ts (TypeScript Vanilla)
+#### eslint.config.ts (TypeScript Vanilla)
 
 For non-React TypeScript projects:
 
@@ -205,7 +234,7 @@ export default tseslint.config(
 );
 ```
 
-## Moon Tasks
+### Moon Tasks
 
 Add to `.moon/tasks/all.yml`:
 
@@ -224,7 +253,7 @@ tasks:
       cache: false
 ```
 
-## VS Code
+### VS Code
 
 Add to `.vscode/extensions.json`:
 
@@ -249,7 +278,7 @@ Add to `.vscode/settings.json`:
 }
 ```
 
-## Claude Code Hooks
+### Claude Code Hooks
 
 Optional hooks for `.claude/settings.json`:
 

@@ -15,11 +15,13 @@ Claude Code settings for the monorepo plugin.
     }
   },
   "enabledPlugins": {
-    "monorepo@skills": true
+    "monorepo@ccosming-skills": true
   },
   "permissions": {
     "allow": [
-      "Skill(monorepo:*)",
+      "Skill(monorepo:add)",
+      "Skill(monorepo:create)",
+      "Skill(monorepo:tools)",
       "Bash(proto *)",
       "Bash(git *)"
     ]

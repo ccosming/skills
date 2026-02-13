@@ -8,18 +8,8 @@
       "requires": {
         "tools": ["node", "pnpm", "prettier", "eslint"],
         "monorepo": true,
-        "structure": [".moon/", "package.json", "pnpm-workspace.yaml"]
-      },
-      "provides": {
-        "type": "app",
-        "framework": "nextjs",
-        "version": "16",
-        "features": ["react19", "tailwind4", "app-router", "typescript"]
+        "structure": [".moon/", "package.json"]
       }
     }
-  },
-  "metadata": {
-    "version": "1.0.0",
-    "updated": "2026-02-12"
   }
 }

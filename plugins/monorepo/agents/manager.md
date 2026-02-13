@@ -48,36 +48,67 @@ This tells you:
 - What tools are installed?
 - Is the structure valid?
 
-### 3. Plan the Steps
+### 3. Plan the Steps (Deterministic)
 
-Based on the checker report and the user request, determine the sequence of skills to execute.
+Based on the checker report and the user request, create a **deterministic plan** with clear phases.
 
-**Example for "create a monorepo with a nextjs app":**
+**Example for "add nextjs app blog":**
 
-1. Check if monorepo exists (from checker)
-2. If not, run `monorepo:create`
-3. Read `plugins/monorepo/skills/add/references/nextjs.md` to see dependencies
-4. Install required tools: node, pnpm, prettier, eslint (in order)
-5. Run `monorepo:add nextjs <name>`
-6. Run checker again to verify
+**Read requirements:**
+1. Read `plugins/monorepo/skills/add/scaffolds.json`
+2. Find scaffold type (e.g., "nextjs")
+3. Extract `requires.tools` → ["node", "pnpm", "prettier", "eslint"]
+4. Extract `requires.structure` → [".moon/", "package.json"]
 
-### 4. Resolve Dependencies
+**Create phased plan:**
 
-Before running any skill, ensure its dependencies are satisfied:
+**Phase 1: Infrastructure Base**
+- Verify `.moon/` exists (prerequisite from monorepo:create)
+- Install `node` → Skill(monorepo:tools node)
+- Install `pnpm` → Skill(monorepo:tools pnpm)
+  - NOTE: pnpm creates `package.json`, `pnpm-workspace.yaml`, `.npmrc`
 
-**For `/monorepo:add nextjs app-name`:**
+**Phase 2: Validate Structure Created**
+- Verify `package.json` exists (created by pnpm in Phase 1)
+- Verify `pnpm-workspace.yaml` exists
 
-1. Read `plugins/monorepo/skills/add/references/nextjs.md`
-2. Find the "Dependencies" section
-3. For each required tool, check if installed (from checker output)
-4. If missing, run `Skill(skill: "monorepo:tools", args: "<tool>")`
-5. Respect installation order: node → pnpm → prettier → eslint
+**Phase 3: Development Tools**
+- Install `prettier` → Skill(monorepo:tools prettier)
+  - Requires: node, pnpm, package.json
+- Install `eslint` → Skill(monorepo:tools eslint)
+  - Requires: node, pnpm, package.json
 
-**Dependency resolution is recursive:**
+**Phase 4: Create Application**
+- Run `Skill(monorepo:add nextjs blog)`
+- Verify with checker
 
-- If installing `eslint`, it requires `node` and `pnpm`
-- Check `plugins/monorepo/skills/tools/versions.json` for each tool's `requires` field
-- Install dependencies first
+### 4. Execution Rules
+
+**IMPORTANT: Tools may create structure files**
+
+Some tools create files that other tools need:
+- `pnpm` creates: `package.json`, `pnpm-workspace.yaml`, `.npmrc`
+- `prettier` creates: `prettier.config.mjs`, `.prettierignore`
+- `eslint` creates: `eslint.config.ts`
+
+**Correct order:**
+```
+1. Install tools that create structure (node, pnpm)
+2. Verify structure exists (package.json)
+3. Install tools that need structure (prettier, eslint)
+4. Create application
+```
+
+**Incorrect order:**
+```
+❌ Verify package.json (doesn't exist yet!)
+❌ Install pnpm (creates package.json)
+```
+
+**Dependency resolution:**
+- Read `versions.json` for each tool's `requires` field
+- Install dependencies first (recursive)
+- The `monorepo:tools` skill handles this automatically
 
 ### 5. Execute Skills in Order
 

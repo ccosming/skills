@@ -2,21 +2,6 @@
 
 Next.js 16 application with React 19, Tailwind CSS 4, and App Router.
 
-## Dependencies
-
-**Required tools (must be installed first):**
-
-- `node` - Node.js runtime
-- `pnpm` - Package manager
-- `prettier` - Code formatter
-- `eslint` - Linter for TypeScript/React
-
-**Monorepo prerequisites:**
-
-- Monorepo must exist (run `/monorepo:create` first if needed)
-- `.moon/` directory should be present (Moon build system)
-- Root `package.json` with workspaces configured
-
 ## Configuration
 
 **Target directory**: `apps/<name>`
@@ -25,11 +10,11 @@ Next.js 16 application with React 19, Tailwind CSS 4, and App Router.
 
 ```bash
 pnpm create next-app@latest apps/<name> \
+  --yes \
   --ts \
   --tailwind \
   --app \
   --src-dir \
-  --use-pnpm \
   --eslint \
   --import-alias "@/*" \
   --no-git
@@ -37,20 +22,32 @@ pnpm create next-app@latest apps/<name> \
 
 **Flags explained**:
 
+- `--yes`: Skip all prompts (use defaults)
 - `--ts`: TypeScript (default, explicit for clarity)
 - `--tailwind`: Tailwind CSS 4 support
 - `--app`: App Router (not Pages Router)
 - `--src-dir`: All code in `src/` directory
-- `--use-pnpm`: Use pnpm as package manager
 - `--eslint`: ESLint configuration
 - `--import-alias "@/*"`: Standard alias for imports
 - `--no-git`: Don't initialize git (monorepo already has it)
+- Note: NO `--use-pnpm` flag (monorepo root manages pnpm)
 
 ## Post-Creation Cleanup
 
 After running `create-next-app`, apply these customizations:
 
-### 1. Clean public directory
+### 1. Remove pnpm files (monorepo manages these)
+
+Remove pnpm files that Next.js creates locally:
+
+```bash
+rm -f apps/<name>/pnpm-lock.yaml
+rm -f apps/<name>/pnpm-workspace.yaml
+```
+
+The monorepo root manages these files, not individual apps.
+
+### 2. Clean public directory
 
 Remove all files in `apps/<name>/public/` except:
 
@@ -160,7 +157,7 @@ language: typescript
 tasks:
   dev:
     command: pnpm dev
-    local: true
+    preset: server
   build:
     command: pnpm build
     inputs:
@@ -174,30 +171,12 @@ tasks:
     command: pnpm tsc --noEmit
 ```
 
-## Verification
+## Final Message
 
-After creation, verify:
-
-1. `cd apps/<name> && pnpm dev` starts the dev server
-2. Navigate to `http://localhost:3000` shows "Hello World" centered
-3. No console errors or warnings
-4. Tailwind classes are working (text is bold and large)
-
-## Next Steps
-
-Suggest to the user:
+After successful creation:
 
 ```
-Next.js app created at apps/<name>
+🎉 Next.js app created at apps/<name>!
 
-To start developing:
-  cd apps/<name>
-  pnpm dev
-
-The app runs on http://localhost:3000
-
-Next steps:
-  - Add more pages in src/app/
-  - Configure environment variables in .env.local
-  - Customize Tailwind in tailwind.config.ts
+Start developing: cd apps/<name> && pnpm dev
 ```
