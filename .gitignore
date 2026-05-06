@@ -1,0 +1,11 @@
+# OS files
+.DS_Store
+
+# Bun / Node
+node_modules/
+*.log
+coverage/
+.tmp/
+
+# Claude Code local settings
+.claude/settings.local.json

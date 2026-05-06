@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "ccosming-plugins",
+  "description": "Personal Claude Code plugins by ccosming.",
+  "owner": {
+    "name": "ccosming",
+    "email": "dev@ccosming.com"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "code",
+      "source": "./code",
+      "category": "workflow",
+      "tags": [
+        "coding",
+        "automation"
+      ]
+    }
+  ]
+}
