@@ -1,1 +1,8 @@
-# Lefthook config — hooks se agregan a medida que se necesiten.
+# Pre-commit: rebuild plugin executables when their source changes,
+# then auto-stage the rebuilt binaries so the commit always carries a
+# bundle that matches the source.
+pre-commit:
+  jobs:
+    - name: build
+      glob: "src/**/*.ts"
+      run: bun run build && git add plugins/*/bin

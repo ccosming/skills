@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Config",
+  "description": "Project-level configuration for the code plugin.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interaction_language", "artifact_language"],
+  "properties": {
+    "interaction_language": {
+      "type": "string",
+      "enum": ["en", "es"],
+      "description": "Language used by the plugin when interacting with the user during skills."
+    },
+    "artifact_language": {
+      "type": "string",
+      "enum": ["en", "es"],
+      "description": "Language used to write artifact contents (config.yaml, spec.yaml, epic files, etc.)."
+    }
+  }
+}
