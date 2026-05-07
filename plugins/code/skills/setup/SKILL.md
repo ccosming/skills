@@ -3,13 +3,13 @@ name: setup
 description: Initialize the code plugin for the current project. Reads positional arguments or asks for the interaction and artifact languages, then writes .project/config.yaml. No-op if the project is already configured.
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Bash AskUserQuestion Read
+allowed-tools: AskUserQuestion Read Task
 argument-hint: "[interaction:en|es] [artifact:en|es]"
 ---
 
 # Initialize the code plugin in the current project
 
-Initializes the `code` plugin for the current project by writing `.project/config.yaml`. The plugin owns `.project/`; never write or edit files there directly — always go through the artifact-writer CLI.
+Initializes the `code` plugin for the current project by creating `.project/config.yaml`. The plugin owns `.project/`; never write or edit files there directly — always delegate to the `artifact-keeper` subagent, which is the only component that talks to the artifact-writer CLI.
 
 ## Arguments
 
@@ -31,9 +31,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/shared/interaction.md` and apply its rules (tone, fo
 
 ### Step 1: Detect existing configuration
 
-Check whether `.project/config.yaml` already exists in the current working directory.
-
-If it exists, stop immediately and tell the user (in their interaction language) something like: "El proyecto ya está configurado." / "This project is already configured." Do not ask any questions and do not invoke the artifact-writer.
+Check whether `.project/config.yaml` already exists in the current working directory. If it exists, stop immediately and tell the user (in their interaction language) something like: "El proyecto ya está configurado." / "This project is already configured." Do not ask any questions and do not invoke the subagent. Reconfiguring config is intentionally out of scope here — the user can edit `.project/config.yaml` by hand if they need to.
 
 ### Step 2: Resolve language selections
 
@@ -54,15 +52,13 @@ Map each answer to its ISO code: `es` or `en`. If the user picks "Other" with a 
 
 ### Step 3: Write the artifact
 
-Invoke the artifact-writer:
+Invoke the `artifact-keeper` subagent with the prompt below (replace `<i>` and `<a>` with the resolved codes; keep the single quotes around the JSON):
 
-```bash
-bun "${CLAUDE_PLUGIN_ROOT}/bin/artifact-writer.js" write config --payload '{"interaction_language":"<i>","artifact_language":"<a>"}'
+```
+write config --payload '{"interaction_language":"<i>","artifact_language":"<a>"}'
 ```
 
-Replace `<i>` and `<a>` with the codes selected. Use single quotes around the JSON. The CLI validates the payload against `plugins/code/schemas/config.schema.json` and writes `.project/config.yaml`.
-
-If the CLI exits non-zero, surface its stderr verbatim to the user and stop.
+If the subagent reply starts with `ERROR`, surface its `message:` line verbatim to the user and stop.
 
 ### Step 4: Confirm and propose next step
 
@@ -73,7 +69,8 @@ On success, tell the user:
 
 ## Rules
 
-- Never write to `.project/` directly. Always use the artifact-writer CLI.
+- Never write to `.project/` directly. Always go through the `artifact-keeper` subagent.
+- Never invoke `bin/artifact-writer.js` from this skill. The subagent is the only caller.
 - Never ask for fields beyond `interaction_language` and `artifact_language`.
 - Never proceed if either value (from arguments or answers) is outside `en` / `es`.
 - If only one positional argument is provided, do not silently fall back to questions — stop and ask the user to either pass both arguments or pass none.

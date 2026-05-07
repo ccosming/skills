@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { JsonPointerError, resolvePointer } from '../src/lib/json-pointer.ts';
 import {
   ARTIFACTS,
   isArtifactName,
@@ -350,6 +351,236 @@ describe('artifact-writer CLI', () => {
     const r = runCli(['write', 'unknown', '--payload', '{}'], tmp);
     expect(r.status).toBe(1);
     expect(r.stderr).toContain('Unknown artifact');
+  });
+
+  it('exits with code 1 for unknown verb', () => {
+    const r = runCli(['delete', 'config', '--payload', '{}'], tmp);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('Usage:');
+  });
+
+  it('update exits with code 5 when target does not exist', () => {
+    const r = runCli(
+      ['update', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    expect(r.status).toBe(5);
+    expect(r.stderr).toContain('not_configured');
+  });
+
+  it('update overwrites an existing target', () => {
+    const created = runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    expect(created.status).toBe(0);
+    const updated = runCli(
+      ['update', 'config', '--payload', '{"interaction_language":"en","artifact_language":"es"}'],
+      tmp,
+    );
+    expect(updated.status).toBe(0);
+    expect(updated.stdout).toContain('updated:');
+    const content = readFileSync(join(tmp, '.project/config.yaml'), 'utf-8');
+    expect(content).toContain('interaction_language: "en"');
+    expect(content).toContain('artifact_language: "es"');
+  });
+
+  it('update validates the payload before writing', () => {
+    const created = runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    expect(created.status).toBe(0);
+    const r = runCli(
+      ['update', 'config', '--payload', '{"interaction_language":"fr","artifact_language":"en"}'],
+      tmp,
+    );
+    expect(r.status).toBe(7);
+    expect(r.stderr).toContain('validation_failed');
+    const content = readFileSync(join(tmp, '.project/config.yaml'), 'utf-8');
+    expect(content).toContain('interaction_language: "es"');
+  });
+
+  it('read full artifact emits validated JSON', () => {
+    const created = runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    expect(created.status).toBe(0);
+    const r = runCli(['read', 'config'], tmp);
+    expect(r.status).toBe(0);
+    const data = JSON.parse(r.stdout) as {
+      interaction_language: string;
+      artifact_language: string;
+    };
+    expect(data.interaction_language).toBe('es');
+    expect(data.artifact_language).toBe('en');
+  });
+
+  it('read with --path returns just the slice', () => {
+    const created = runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    expect(created.status).toBe(0);
+    const r = runCli(['read', 'config', '--path', '/interaction_language'], tmp);
+    expect(r.status).toBe(0);
+    expect(JSON.parse(r.stdout)).toBe('es');
+  });
+
+  it('read exits with code 5 when target is missing', () => {
+    const r = runCli(['read', 'config'], tmp);
+    expect(r.status).toBe(5);
+    expect(r.stderr).toContain('not_configured');
+  });
+
+  it('read exits with code 6 when --path does not resolve', () => {
+    runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    const r = runCli(['read', 'config', '--path', '/nonexistent'], tmp);
+    expect(r.status).toBe(6);
+    expect(r.stderr).toContain('path_not_found');
+  });
+
+  it('read exits with code 7 when on-disk yaml fails schema validation', () => {
+    const target = join(tmp, '.project', 'config.yaml');
+    runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    // Corrupt the on-disk artifact directly (simulates manual editing).
+    writeFileSync(target, 'interaction_language: "fr"\nartifact_language: "en"\n');
+    const r = runCli(['read', 'config'], tmp);
+    expect(r.status).toBe(7);
+    expect(r.stderr).toContain('validation_failed');
+  });
+
+  it('read rejects --payload', () => {
+    runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    const r = runCli(['read', 'config', '--payload', '{}'], tmp);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('not valid with the read verb');
+  });
+
+  it('write deletes the payload file when --cleanup-payload-file is set', () => {
+    const payloadPath = join(tmp, 'payload.json');
+    writeFileSync(
+      payloadPath,
+      JSON.stringify({ interaction_language: 'es', artifact_language: 'en' }),
+    );
+    const r = runCli(
+      ['write', 'config', '--payload-file', payloadPath, '--cleanup-payload-file'],
+      tmp,
+    );
+    expect(r.status).toBe(0);
+    expect(existsSync(payloadPath)).toBe(false);
+    expect(existsSync(join(tmp, '.project/config.yaml'))).toBe(true);
+  });
+
+  it('update deletes the payload file when --cleanup-payload-file is set', () => {
+    runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    const payloadPath = join(tmp, 'payload.json');
+    writeFileSync(
+      payloadPath,
+      JSON.stringify({ interaction_language: 'en', artifact_language: 'es' }),
+    );
+    const r = runCli(
+      ['update', 'config', '--payload-file', payloadPath, '--cleanup-payload-file'],
+      tmp,
+    );
+    expect(r.status).toBe(0);
+    expect(existsSync(payloadPath)).toBe(false);
+  });
+
+  it('--cleanup-payload-file is silently ignored when --payload is inline', () => {
+    const r = runCli(
+      [
+        'write',
+        'config',
+        '--payload',
+        '{"interaction_language":"es","artifact_language":"en"}',
+        '--cleanup-payload-file',
+      ],
+      tmp,
+    );
+    expect(r.status).toBe(0);
+  });
+
+  it('--cleanup-payload-file is rejected on read', () => {
+    runCli(
+      ['write', 'config', '--payload', '{"interaction_language":"es","artifact_language":"en"}'],
+      tmp,
+    );
+    const r = runCli(['read', 'config', '--cleanup-payload-file'], tmp);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('only valid with write or update');
+  });
+
+  it('write rejects --path', () => {
+    const r = runCli(
+      [
+        'write',
+        'config',
+        '--payload',
+        '{"interaction_language":"es","artifact_language":"en"}',
+        '--path',
+        '/x',
+      ],
+      tmp,
+    );
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('only valid with the read verb');
+  });
+});
+
+describe('json-pointer', () => {
+  const sample = {
+    metadata: { spec_version: '0.1.0' },
+    languages: ['typescript@6', 'python@3.12'],
+    nested: { 'with/slash': 1, 'with~tilde': 2 },
+  };
+
+  it('returns the root for an empty pointer', () => {
+    expect(resolvePointer(sample, '')).toBe(sample);
+  });
+
+  it('walks nested objects', () => {
+    expect(resolvePointer(sample, '/metadata/spec_version')).toBe('0.1.0');
+  });
+
+  it('walks arrays by integer index', () => {
+    expect(resolvePointer(sample, '/languages/0')).toBe('typescript@6');
+    expect(resolvePointer(sample, '/languages/1')).toBe('python@3.12');
+  });
+
+  it('returns undefined for missing keys', () => {
+    expect(resolvePointer(sample, '/missing')).toBeUndefined();
+    expect(resolvePointer(sample, '/metadata/missing')).toBeUndefined();
+  });
+
+  it('returns undefined for out-of-range indices', () => {
+    expect(resolvePointer(sample, '/languages/9')).toBeUndefined();
+  });
+
+  it('decodes ~1 as / and ~0 as ~', () => {
+    expect(resolvePointer(sample, '/nested/with~1slash')).toBe(1);
+    expect(resolvePointer(sample, '/nested/with~0tilde')).toBe(2);
+  });
+
+  it('rejects pointers that do not start with /', () => {
+    expect(() => resolvePointer(sample, 'metadata/spec_version')).toThrow(JsonPointerError);
+  });
+
+  it('returns undefined when descending through a scalar', () => {
+    expect(resolvePointer(sample, '/metadata/spec_version/extra')).toBeUndefined();
   });
 });
 

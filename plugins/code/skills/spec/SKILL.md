@@ -1,104 +1,102 @@
 ---
 name: spec
-description: Conduct an exhaustive technical interview with the user and write the project's spec.yaml. Covers identity, goals, constraints, domain, architecture, stack, practices, risks, and metadata. No-op if the project already has a spec.
+description: Conduct a black-box technical interview to create the project's spec.yaml, or run a focused edit pass when one already exists. Covers identity, goals, constraints, domain, architecture, stack, practices, risks, and metadata.
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Bash AskUserQuestion Read Glob Write
+allowed-tools: AskUserQuestion Read Glob Write Task WebFetch WebSearch
 ---
 
 # Drill the project's technical specification
 
-Conducts an exhaustive technical interview and writes `.project/spec.yaml`. The plugin owns `.project/`; never write or edit files there directly — always go through the artifact-writer CLI.
+Produce a complete `.project/spec.yaml` by interviewing the user, mapping their answers to the schema at `${CLAUDE_PLUGIN_ROOT}/schemas/spec.schema.json`, and handing the final payload to the `artifact-keeper` subagent. Never read or write `spec.yaml` directly.
 
 ## Pre-flight
 
-1. **Load interaction style.** Read `${CLAUDE_PLUGIN_ROOT}/shared/interaction.md` and apply its rules (language variant, tone, format) throughout this skill.
+1. Read `${CLAUDE_PLUGIN_ROOT}/shared/interaction.md` and apply its rules throughout.
+2. Read `.project/config.yaml`. If absent, stop and tell the user to run `/code:setup` first. Use `interaction_language` for the conversation. Translate every persisted value to `artifact_language` before sending it to the subagent.
+3. Read every `.md` under `${CLAUDE_SKILL_DIR}/references/`. They are authoritative: prefer what they endorse, never propose what they exclude, ask the user when they are silent.
+4. Detect existing spec by invoking `artifact-keeper` with prompt `read spec`:
+   - `OK` → edit mode. The returned JSON is the baseline payload.
+   - `ERROR exit_code: 5` → create mode.
+   - Any other `ERROR` → surface verbatim and stop.
 
-2. **Detect existing spec.** If `.project/spec.yaml` exists, stop and tell the user (in the configured interaction language) that the project already has a spec. Do not start the interview.
+## Invariants
 
-3. **Load config.** Read `.project/config.yaml`. If it does not exist, stop and tell the user to run `/code:setup` first. From the config:
-   - `interaction_language` controls the language used to talk to the user during the interview.
-   - `artifact_language` controls the language used in the values written to `spec.yaml`. If different from the interaction language, translate the user's answers before persisting.
+These hold every turn, in both modes:
 
-4. **Load references.** Read every `.md` file under `${CLAUDE_SKILL_DIR}/references/` (use Glob if needed). These files encode the user's preferred stacks, patterns, tooling, and principles. Treat their content as authoritative:
-   - Never propose technologies, patterns, or practices that are explicitly excluded by the references.
-   - Prefer choices the references endorse when offering options.
-   - If the references are silent on a topic, ask the user instead of assuming.
+- **Black box.** The user never sees field names, section names, schema vocabulary, enum raw values, or words like "required", "optional", "list", "(YYYY-MM-DD)".
+- **One question per turn.** Never numbered lists, never "respond to all of the following".
+- **Open broad once per section, then walk fields by their nature.** Each section starts with one broad question to let the user volunteer what they have. After that, walk every remaining field one at a time and pick the question style by the field's nature: AskUserQuestion (single or multi-select) for any field with a schema enum or a curated menu in references — this is the default; free text only for genuinely open content (descriptions, narratives, names invented by the user). Never use free text just because the schema accepts a string — check the references first.
+- **Map silently.** Extract every field you can from a rich answer and fill it. Acknowledge briefly, then ask the next missing thing — never re-ask what was already said.
+- **Inference beats asking for descriptive enums.** `identity.type` and other descriptive enums are inferred from the conversation and confirmed in one line ("¿lo registramos como aplicación web?"). Use AskUserQuestion only when the conversation genuinely leaves the value ambiguous.
+- **AskUserQuestion is the default for every closed choice.** Before asking anything in free text, check whether the field has a finite set of valid answers — either from the schema (enum values) or from a curated menu in the references (`stacks.md`, `tooling.md`, `patterns.md`, `practices.md`). If yes, you must open AskUserQuestion. Free text is reserved for genuinely open content (descriptions, narratives, lists of items the user invents). Options must come from the schema enum (rephrased) or the references entries — never invented. Always include a "Type something" / "Otro" escape hatch.
+- **Coherence check before proposing.** Every option, candidate, or recap must be consistent with what the user has already said in this conversation. Before offering AskUserQuestion options or synthesizing candidate values, drop any choice that contradicts prior turns. Contradictory choices are noise, not alternatives — including them erodes trust and forces the user to re-litigate facts they already gave you.
+- **No invention.** Goals, constraints, stack choices, and priorities are user judgment — never seed them. Descriptive fields (`identity.name`, `identity.type`, `identity.domain`) may be **proposed** as 1–2 candidates synthesized strictly from what the user has typed in this conversation, then confirmed.
+- **Conversation is the only source.** Do not seed any value — proposal, candidate, or filled field — from anything outside the user's typed answers in this run. Off-limits sources include: cwd and folder names, file contents (`package.json`, README, dotfiles, lockfiles, anything on disk), the user's email, git config (`user.name`, `user.email`, remotes), environment variables, OS metadata, and auto-memory entries. If the user did not say it in this run, you do not have it. When in doubt, ask.
+- **Absolute wording.** Every persisted value describes the system as it is, not as it is becoming. "The runtime is bun" — not "for now we use bun". Move "initially no auth" to out-of-scope. Keep "we will migrate to postgres" as an open question, not a fact.
+- **No visible progress.** No TaskCreate / TaskUpdate, no "Section 1 of 9", no announcing the active section.
+- **Research fallback when references are silent.** When a field needs a vendor, library, service, or pattern not covered by `stacks.md`, `tooling.md`, `patterns.md`, or `practices.md`, or when the user explicitly expresses uncertainty ("no sé", "¿qué opciones hay?", "what do you recommend?"), invoke the `researcher` subagent before defaulting to free text. Present the returned candidates via AskUserQuestion (multi-select for arrays, single-select otherwise). Cache the result for the rest of the session — never re-research the same topic twice.
+- **Always re-run pre-flight on every entry to the skill.** Each `/code:spec` invocation, even within the same chat session, starts from step 1 of Pre-flight and re-invokes `artifact-keeper` with `read spec` to determine the current mode. Never trust prior conversation state about whether the artifact exists, what mode the skill is in, or whether previous attempts succeeded. The filesystem is the source of truth for that, accessed only via the subagent.
+- **No claim of write without a fresh OK.** Do not tell the user that `.project/spec.yaml` was created or updated unless the current `/code:spec` invocation has just received an `OK` reply from `artifact-keeper` for a `write` or `update` call. Never announce success based on memory of an earlier invocation. If the final write step did not run in this invocation, do not claim it did.
 
-## Interview style
+## Section guide
 
-The interview is a **black box** for the user. The user is having a conversation, not filling a form. They never see field names, section names, the schema, or words like "required", "optional", "list", "enum", "at least 1 item", "(YYYY-MM-DD)". Internally you map every answer to the schema; externally you ask natural questions.
+The schema is the source of truth for shape, types, and enums. Drive the conversation in this order; skip ahead when an earlier answer covers a later section. Phrase each opening in `interaction_language`.
 
-- **One question per turn.** Each turn asks ONE focused question and waits for the response. Never present a numbered list of questions in a single message. Never ask the user to "respond to all of the following".
-- **Translate schema needs to natural language.** Reformulate any field requirement into a conversational question. Avoid wording like "Out of scope (required, at least 1 item): list capabilities explicitly excluded." Use instead "¿Hay algo que conscientemente quieras dejar afuera de este proyecto?".
-- **Infer aggressively from rich answers.** When the user gives a long answer, extract every field you can map and silently fill them. Acknowledge in one sentence what you understood, then ask the next missing thing — never re-ask what was already said.
-- **No progress trackers visible to the user.** Do not call TaskCreate/TaskUpdate to render section checklists or progress bars. Do not say "Sección 1 de 9", "ahora vamos con identity", or any phrase that exposes the internal section structure.
-- **AskUserQuestion only for closed enums.** Use it for the project type, architectural style, branching model, priority levels, boundary direction. Translate raw enum values into user-friendly labels in the options. Never show the user strings like `modular-monolith` or `event-driven` verbatim — phrase them as natural concepts ("monolito modular", "arquitectura orientada a eventos") with a short clarifier.
-- **Absolute wording.** Every value written to `spec.yaml` describes the system as it is, not as it is becoming. Reformulate or push back on relative phrasing. Replace "Por ahora usamos bun" with "El runtime es bun". Move "Inicialmente sin auth" to the out-of-scope list. Keep "Vamos a migrar a postgres" as an open question, not as a fact.
-- **Exhaustive but invisible.** Cover every required field, but exhaustiveness is your job, not the user's. They just answer the current question.
-- **Confirm casually, in plain language.** When a section is complete, summarize what you understood without naming it: "Entendí esto: ... ¿es así?". Avoid headings, bullet labels, or schema-style phrasing in the recap.
-- **No assumptions.** When a response is vague, ask a precise follow-up. Do not infer goals, constraints, or stack choices from the codebase or context.
+| #   | Section      | Open with                                                                                      | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | ------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | identity     | what the project is, what problem it solves, who it is for                                     | Capture `description`, `problem`, `audience`, `domain`, `type` from the answer and follow-ups. Confirm `type` in one line only when it is not obvious; never open AskUserQuestion for it if the description already implies the value. Ask `out_of_scope` explicitly. **`name` is the last field of identity:** after everything else is captured, propose 1–2 names synthesized from the conversation and confirm. Never ask "what's the project called?" cold and never source the name from the filesystem.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2   | goals        | the concrete outcomes that define success                                                      | `outcomes` from the answer. `quality_attributes`: cap at 4–5; ask the user to rank with AskUserQuestion (priority enum). `success_metrics` asked separately and only if the user has them.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 3   | constraints  | imposed conditions — technical, budget, regulatory                                             | Sort silently into `technical` vs `compliance`. Skip if the user says no.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 4   | domain       | whether the project has its own concepts or bounded contexts that are worth naming             | Skip the entire section if the project has no non-trivial domain. `glossary` and `bounded_contexts` only if the user volunteers them.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 5   | architecture | how the system is structured                                                                   | `style` via AskUserQuestion. `patterns` from `patterns.md` via AskUserQuestion (multi-select). `cross_cutting`: walk one concern at a time, **always via AskUserQuestion** with options drawn from references. Specific menus: `auth` from `stacks.md` (auth backends), `logging`/`observability` from `stacks.md` + `tooling.md`, `error_handling` from `patterns.md` Cross-cutting, `caching` from `stacks.md`, `i18n` from `patterns.md` i18n strategies, **`security`: open AskUserQuestion multi-select with the entries from `patterns.md` Security controls, pre-filtered by the `When to apply` column against what the user has already said about the project (public surface, admin, DMs, PII, etc.)**. One question per concern. **Cross-cutting references must point to concrete stack entries** — if the chosen value is an external service, ensure it appears in `stack.*` later. `boundaries` as a list with `kind` (each kind via AskUserQuestion).                                                                                                                                                                                                                                                                                                                                                                         |
+| 6   | stack        | languages, runtime, frameworks, data stores, infrastructure, CI, tests, observability, tooling | Every stack subfield (`languages`, `runtime`, `frameworks`, `data_stores`, `infrastructure`, `ci_cd`, `testing`, `observability`, `tooling`) is filled via AskUserQuestion — multi-select for arrays, single-select for `runtime` — with options drawn from `stacks.md` and `tooling.md`. Free text only via the "Otro" escape. **`frameworks` vs `tooling`:** ORMs (drizzle, prisma) and validation libs (zod, pydantic) go in `frameworks`. Build tools, test runners, linters, formatters, monorepo orchestrators, package managers go in `tooling`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 7   | practices    | how the team works on this project                                                             | All subfields defaulted from `practices.md`, then made project-specific. **Testing strategy is filled in two passes per level**: first AskUserQuestion to confirm the generic criterion from `practices.md` (when the level applies); then a follow-up AskUserQuestion (multi-select) listing the candidate cases synthesized from earlier turns (`identity.audience`, `architecture.boundaries`, `out_of_scope`) so the user picks or edits the actual modules or flows. Persist the field as `<generic criterion>: <named items>`. For `e2e`, candidates are user-facing flows (signup, login, publishing, content consumption, DMs, exclusive / early-access, etc.); for `integration`, candidate contract surfaces (auth, persistence, external APIs); for `unit`, candidate module families (lib/utility, parsers, formatters). `branching_model` via AskUserQuestion with `practices.md` Branching model entries mapped to the schema enum. `release_strategy`: propose the convention from `practices.md` and confirm. `code_conventions`: AskUserQuestion multi-select from `practices.md` Code conventions, filtered by the chosen `stack.languages`. `definition_of_done`: AskUserQuestion multi-select from `practices.md` Definition of Done, default-checking every row that applies given the chosen stack and testing strategy. |
+| 8   | risks        | known risks, accepted tradeoffs, open questions                                                | Synthesize candidates from prior context (`identity.out_of_scope`, `audience`, `constraints`, `architecture.boundaries`, `stack` self-hosted components and single-vendor dependencies, `practices.testing_strategy` gaps) and present each subfield via AskUserQuestion multi-select. **`known`**: surface candidate (risk, mitigation) pairs derived from auto-hosted components, manual processes, single points of failure, compliance edges; user toggles which apply and edits the mitigation in place. **`tradeoffs`**: surface candidates from the explicit decisions where the user chose effort, cost, or complexity in exchange for control or alignment (bilingual from day 1, self-hosting analytics or storage, open-source vs SaaS, monorepo, etc.). **`open_questions`**: surface candidates from `identity.out_of_scope` items that may flip later, components where the design is not yet decided (visual identity, moderation policies, etc.), or decisions explicitly deferred. The user marks which apply and may add via "Otro". Skip a subfield only when the user explicitly clears all candidates.                                                                                                                                                                                                                    |
+| 9   | metadata     | (no question)                                                                                  | Fill silently. `spec_version: "0.1.0"` for a new spec; reserve `1.0.0` for first major release. `last_updated`: today's date.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
-## Internal coverage map (never expose to user)
+## Research fallback
 
-The schema at `${CLAUDE_PLUGIN_ROOT}/schemas/spec.schema.json` is the source of truth for shape, types, and enum values. Below is the internal order in which to drive the conversation. The user must never see this list, hear the names, or know which section is active.
+When a field needs options that are not covered by the references and the user has not given them — or when the user explicitly says they do not know — invoke the `researcher` subagent. Build the prompt body from the conversation so far:
 
-1. identity — what the project is, what it's called, what it solves, who it's for, what's deliberately out
-2. goals — what success looks like; what quality attributes matter most
-3. constraints — anything imposed (legal, compliance, technical) that must be respected
-4. domain — only if the project has a non-trivial domain model
-5. architecture — overall style, patterns, relevant cross-cutting concerns, integration boundaries
-6. stack — what runs in production
-7. practices — how the team works (testing strategy, branching, releases)
-8. risks — known risks with mitigations, accepted tradeoffs, open questions
-9. metadata — spec version and today's date (fill these silently, no questions)
+```
+Topic: <what to research, e.g. "transactional email providers for personal content sites">
+Context: <one-paragraph summary of the project synthesized from prior turns: type, scale, budget, region, compliance, stack, audience>
+Count: 5
+```
 
-If a response covers fields from a later section, capture them and skip those questions later.
+`Context` must be filled strictly from what the user has typed in this conversation — never from the filesystem, env, or memory.
 
-## Field mapping guidance (internal)
+The researcher replies with one of:
 
-These clarifications are not encoded in the schema. Apply them when filling the payload:
+- `OK` followed by a markdown table with columns `Name | When to apply | Notes | Source URL`.
+- `ERROR reason: <usage | no_results | network>` with a one-line message.
 
-- **`metadata.spec_version` for a new spec is `0.1.0`.** Reserve `1.0.0` for the moment the project ships its first major version.
-- **`stack.frameworks` vs `stack.tooling`.** Frameworks are runtime/build-time application dependencies (web frameworks, UI libraries, ORMs, validation libraries, state managers). Tooling is strictly how the team builds, tests, lints, formats, ships (build tools, test runners, linters, package managers, monorepo orchestrators, CI/CD, version managers, container runtimes). Concrete examples:
-  - ORMs (drizzle, prisma, sqlalchemy) → `frameworks`
-  - Validation libraries (zod, pydantic) → `frameworks`
-  - Build tools (tsup, vite, rollup) → `tooling`
-  - Test runners (vitest, pytest, playwright) → `tooling`
-  - Linters and formatters (eslint, prettier, ruff) → `tooling`
-  - Monorepo orchestrators (moonrepo, turborepo, nx) → `tooling`
-- **Cross-cutting references must point to concrete stack entries.** When `architecture.cross_cutting.<concern>` mentions an external service (e.g., "complemented with an external observability backend", "cached in Redis"), the concrete service must also appear in the matching `stack.*` array. If the user has not specified which service, ask explicitly before finishing.
-- **`architecture.patterns` may mix levels.** Patterns can be architectural (layered, hexagonal), domain modeling (DDD aggregates, repositories), code-level (Result types, factory), or cross-cutting (validation at boundaries). The schema accepts free strings; for readability, group entries of the same level together in the array.
+On `OK`: present the candidates via AskUserQuestion (multi-select for array fields, single-select otherwise). Use `Name` as the option label and `When to apply` + `Notes` as the option description. Always include a "Type something" / "Otro" escape. Source URLs are not shown to the user but you may keep them in mind to cite if asked.
+
+On `ERROR`: tell the user no curated menu was found (briefly, in plain language), then ask them to volunteer a value or skip the field if optional. Do not fabricate options.
+
+Cache mentally: if the same `Topic` comes up again in this run, reuse the previous result instead of invoking the researcher a second time.
+
+## Edit mode
+
+Run after pre-flight returns an existing spec.
+
+1. Use the returned JSON as the baseline payload.
+2. Open by asking what the user wants to adjust. Do not summarize the spec back at them.
+3. Map the request to specific fields silently. Ask follow-ups only for the parts the user wants to change or that become inconsistent (for example, dropping a stack entry that a cross-cutting concern still references).
+4. Bump metadata: `last_updated` = today; `spec_version` per semver — patch for typos, minor for additive or substantive non-breaking changes, major for changes that invalidate decisions already shipped. Ask only if unsure between minor and major, in plain language.
+5. Recap the edits in plain prose and confirm. Iterate until the user agrees.
 
 ## Final write
 
-When all sections are collected and confirmed, write the artifact:
+1. Build the complete payload. In edit mode that means baseline + agreed changes — never a diff.
+2. Write the JSON to `/tmp/spec-payload.json` (too large to inline).
+3. Invoke `artifact-keeper` with one of:
+   - Create mode: `write spec --payload-file /tmp/spec-payload.json --cleanup-payload-file`
+   - Edit mode: `update spec --payload-file /tmp/spec-payload.json --cleanup-payload-file`
 
-1. Build a single JSON object whose keys match the schema exactly. Omit optional sections that the user opted to skip.
-2. Save the JSON to a temp file (use `Write` to create a file under `/tmp/` or similar). Pass it to the writer:
+   The `--cleanup-payload-file` flag tells the CLI to delete the temp file after a successful write. No extra `Bash` step is needed and the harness will not prompt.
 
-   ```bash
-   bun "${CLAUDE_PLUGIN_ROOT}/bin/artifact-writer.js" write spec --payload-file /tmp/spec-payload.json
-   ```
-
-3. If the CLI exits non-zero, surface its stderr to the user. If the failure is a validation error, identify the offending section, correct it with the user, and retry. Do not silently re-attempt with guessed values.
-
-4. On success, delete the temp file.
-
-## Confirm and propose next step
-
-Tell the user:
-
-- `.project/spec.yaml` was created.
-- Suggest the next step: run `/code:epic` to define the first epic.
-
-## Rules
-
-- Never write to `.project/` directly. Always use the artifact-writer CLI.
-- Never invent fields or values. Every field name and enum value must match the schema.
-- Never proceed if config is missing — require `/code:setup` first.
-- Never accept relative wording in any value. Reformulate or ask for an absolute phrasing.
-- Never finish the interview while a required field is empty.
-- Never ask more than one question per turn.
-- Never expose schema field names, section names, enum raw values, or words like "required", "optional", "(at least 1)", "(YYYY-MM-DD)" to the user.
-- Never use TaskCreate/TaskUpdate to display interview progress to the user.
+4. On `ERROR exit_code: 7` (validation_failed), identify the offending section, correct with the user, retry. Do not silently re-attempt with guessed values. On any other error, surface the `message:` line verbatim and stop.
+5. Tell the user the file was created or updated. In create mode suggest `/code:epic` next; in edit mode show the new `spec_version`.

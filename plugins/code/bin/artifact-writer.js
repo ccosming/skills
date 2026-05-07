@@ -294,13 +294,13 @@ var require_directives = __commonJS((exports) => {
             onError(0, "%YAML directive should contain exactly one part");
             return false;
           }
-          const [version2] = parts;
-          if (version2 === "1.1" || version2 === "1.2") {
-            this.yaml.version = version2;
+          const [version] = parts;
+          if (version === "1.1" || version === "1.2") {
+            this.yaml.version = version;
             return true;
           } else {
-            const isValid = /^\d+\.\d+$/.test(version2);
-            onError(6, `Unsupported YAML version ${version2}`, isValid);
+            const isValid = /^\d+\.\d+$/.test(version);
+            onError(6, `Unsupported YAML version ${version}`, isValid);
             return false;
           }
         }
@@ -333,8 +333,8 @@ var require_directives = __commonJS((exports) => {
       if (prefix) {
         try {
           return prefix + decodeURIComponent(suffix);
-        } catch (error51) {
-          onError(String(error51));
+        } catch (error) {
+          onError(String(error));
           return null;
         }
       }
@@ -350,13 +350,13 @@ var require_directives = __commonJS((exports) => {
       }
       return tag[0] === "!" ? tag : `!<${tag}>`;
     }
-    toString(doc2) {
+    toString(doc) {
       const lines = this.yaml.explicit ? [`%YAML ${this.yaml.version || "1.2"}`] : [];
       const tagEntries = Object.entries(this.tags);
       let tagNames;
-      if (doc2 && tagEntries.length > 0 && identity.isNode(doc2.contents)) {
+      if (doc && tagEntries.length > 0 && identity.isNode(doc.contents)) {
         const tags = {};
-        visit.visit(doc2.contents, (_key, node) => {
+        visit.visit(doc.contents, (_key, node) => {
           if (identity.isNode(node) && node.tag)
             tags[node.tag] = true;
         });
@@ -366,7 +366,7 @@ var require_directives = __commonJS((exports) => {
       for (const [handle, prefix] of tagEntries) {
         if (handle === "!!" && prefix === "tag:yaml.org,2002:")
           continue;
-        if (!doc2 || tagNames.some((tn) => tn.startsWith(prefix)))
+        if (!doc || tagNames.some((tn) => tn.startsWith(prefix)))
           lines.push(`%TAG ${handle} ${prefix}`);
       }
       return lines.join(`
@@ -407,14 +407,14 @@ var require_anchors = __commonJS((exports) => {
         return name;
     }
   }
-  function createNodeAnchors(doc2, prefix) {
+  function createNodeAnchors(doc, prefix) {
     const aliasObjects = [];
     const sourceObjects = new Map;
     let prevAnchors = null;
     return {
       onAnchor: (source) => {
         aliasObjects.push(source);
-        prevAnchors ?? (prevAnchors = anchorNames(doc2));
+        prevAnchors ?? (prevAnchors = anchorNames(doc));
         const anchor = findNewAnchor(prefix, prevAnchors);
         prevAnchors.add(anchor);
         return anchor;
@@ -425,9 +425,9 @@ var require_anchors = __commonJS((exports) => {
           if (typeof ref === "object" && ref.anchor && (identity.isScalar(ref.node) || identity.isCollection(ref.node))) {
             ref.node.anchor = ref.anchor;
           } else {
-            const error51 = new Error("Failed to resolve repeated object (this should not happen)");
-            error51.source = source;
-            throw error51;
+            const error = new Error("Failed to resolve repeated object (this should not happen)");
+            error.source = source;
+            throw error;
           }
         }
       },
@@ -530,12 +530,12 @@ var require_Node = __commonJS((exports) => {
         copy.range = this.range.slice();
       return copy;
     }
-    toJS(doc2, { mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
-      if (!identity.isDocument(doc2))
+    toJS(doc, { mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
+      if (!identity.isDocument(doc))
         throw new TypeError("A document argument is required");
       const ctx = {
         anchors: new Map,
-        doc: doc2,
+        doc,
         keep: true,
         mapAsMap: mapAsMap === true,
         mapKeyWarned: false,
@@ -569,7 +569,7 @@ var require_Alias = __commonJS((exports) => {
         }
       });
     }
-    resolve(doc2, ctx) {
+    resolve(doc, ctx) {
       if (ctx?.maxAliasCount === 0)
         throw new ReferenceError("Alias resolution is disabled");
       let nodes;
@@ -577,7 +577,7 @@ var require_Alias = __commonJS((exports) => {
         nodes = ctx.aliasResolveCache;
       } else {
         nodes = [];
-        visit.visit(doc2, {
+        visit.visit(doc, {
           Node: (_key, node) => {
             if (identity.isAlias(node) || identity.hasAnchor(node))
               nodes.push(node);
@@ -598,8 +598,8 @@ var require_Alias = __commonJS((exports) => {
     toJSON(_arg, ctx) {
       if (!ctx)
         return { source: this.source };
-      const { anchors: anchors2, doc: doc2, maxAliasCount } = ctx;
-      const source = this.resolve(doc2, ctx);
+      const { anchors: anchors2, doc, maxAliasCount } = ctx;
+      const source = this.resolve(doc, ctx);
       if (!source) {
         const msg = `Unresolved alias (the anchor must be set before the alias): ${this.source}`;
         throw new ReferenceError(msg);
@@ -616,7 +616,7 @@ var require_Alias = __commonJS((exports) => {
       if (maxAliasCount >= 0) {
         data.count += 1;
         if (data.aliasCount === 0)
-          data.aliasCount = getAliasCount(doc2, source, anchors2);
+          data.aliasCount = getAliasCount(doc, source, anchors2);
         if (data.count * data.aliasCount > maxAliasCount) {
           const msg = "Excessive alias count indicates a resource exhaustion attack";
           throw new ReferenceError(msg);
@@ -638,22 +638,22 @@ var require_Alias = __commonJS((exports) => {
       return src;
     }
   }
-  function getAliasCount(doc2, node, anchors2) {
+  function getAliasCount(doc, node, anchors2) {
     if (identity.isAlias(node)) {
-      const source = node.resolve(doc2);
+      const source = node.resolve(doc);
       const anchor = anchors2 && source && anchors2.get(source);
       return anchor ? anchor.count * anchor.aliasCount : 0;
     } else if (identity.isCollection(node)) {
       let count = 0;
       for (const item of node.items) {
-        const c = getAliasCount(doc2, item, anchors2);
+        const c = getAliasCount(doc, item, anchors2);
         if (c > count)
           count = c;
       }
       return count;
     } else if (identity.isPair(node)) {
-      const kc = getAliasCount(doc2, node.key, anchors2);
-      const vc = getAliasCount(doc2, node.value, anchors2);
+      const kc = getAliasCount(doc, node.key, anchors2);
+      const vc = getAliasCount(doc, node.value, anchors2);
       return Math.max(kc, vc);
     }
     return 1;
@@ -711,9 +711,9 @@ var require_createNode = __commonJS((exports) => {
     if (identity.isNode(value))
       return value;
     if (identity.isPair(value)) {
-      const map2 = ctx.schema[identity.MAP].createNode?.(ctx.schema, null, ctx);
-      map2.items.push(value);
-      return map2;
+      const map = ctx.schema[identity.MAP].createNode?.(ctx.schema, null, ctx);
+      map.items.push(value);
+      return map;
     }
     if (value instanceof String || value instanceof Number || value instanceof Boolean || typeof BigInt !== "undefined" && value instanceof BigInt) {
       value = value.valueOf();
@@ -1060,27 +1060,27 @@ var require_stringifyString = __commonJS((exports) => {
     return true;
   }
   function doubleQuotedString(value, ctx) {
-    const json2 = JSON.stringify(value);
+    const json = JSON.stringify(value);
     if (ctx.options.doubleQuotedAsJSON)
-      return json2;
+      return json;
     const { implicitKey } = ctx;
     const minMultiLineLength = ctx.options.doubleQuotedMinMultiLineLength;
     const indent = ctx.indent || (containsDocumentMarker(value) ? "  " : "");
     let str = "";
     let start = 0;
-    for (let i = 0, ch = json2[i];ch; ch = json2[++i]) {
-      if (ch === " " && json2[i + 1] === "\\" && json2[i + 2] === "n") {
-        str += json2.slice(start, i) + "\\ ";
+    for (let i = 0, ch = json[i];ch; ch = json[++i]) {
+      if (ch === " " && json[i + 1] === "\\" && json[i + 2] === "n") {
+        str += json.slice(start, i) + "\\ ";
         i += 1;
         start = i;
         ch = "\\";
       }
       if (ch === "\\")
-        switch (json2[i + 1]) {
+        switch (json[i + 1]) {
           case "u":
             {
-              str += json2.slice(start, i);
-              const code = json2.substr(i + 2, 4);
+              str += json.slice(start, i);
+              const code = json.substr(i + 2, 4);
               switch (code) {
                 case "0000":
                   str += "\\0";
@@ -1110,26 +1110,26 @@ var require_stringifyString = __commonJS((exports) => {
                   if (code.substr(0, 2) === "00")
                     str += "\\x" + code.substr(2);
                   else
-                    str += json2.substr(i, 6);
+                    str += json.substr(i, 6);
               }
               i += 5;
               start = i + 1;
             }
             break;
           case "n":
-            if (implicitKey || json2[i + 2] === '"' || json2.length < minMultiLineLength) {
+            if (implicitKey || json[i + 2] === '"' || json.length < minMultiLineLength) {
               i += 1;
             } else {
-              str += json2.slice(start, i) + `
+              str += json.slice(start, i) + `
 
 `;
-              while (json2[i + 2] === "\\" && json2[i + 3] === "n" && json2[i + 4] !== '"') {
+              while (json[i + 2] === "\\" && json[i + 3] === "n" && json[i + 4] !== '"') {
                 str += `
 `;
                 i += 2;
               }
               str += indent;
-              if (json2[i + 2] === " ")
+              if (json[i + 2] === " ")
                 str += "\\";
               i += 1;
               start = i + 1;
@@ -1139,7 +1139,7 @@ var require_stringifyString = __commonJS((exports) => {
             i += 1;
         }
     }
-    str = start ? str + json2.slice(start) : json2;
+    str = start ? str + json.slice(start) : json;
     return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx, false));
   }
   function singleQuotedString(value, ctx) {
@@ -1183,9 +1183,9 @@ ${indent}`) + "'";
       return quotedString(value, ctx);
     }
     const indent = ctx.indent || (ctx.forceBlockIndent || containsDocumentMarker(value) ? "  " : "");
-    const literal2 = blockQuote === "literal" ? true : blockQuote === "folded" || type === Scalar.Scalar.BLOCK_FOLDED ? false : type === Scalar.Scalar.BLOCK_LITERAL ? true : !lineLengthOverLimit(value, lineWidth, indent.length);
+    const literal = blockQuote === "literal" ? true : blockQuote === "folded" || type === Scalar.Scalar.BLOCK_FOLDED ? false : type === Scalar.Scalar.BLOCK_LITERAL ? true : !lineLengthOverLimit(value, lineWidth, indent.length);
     if (!value)
-      return literal2 ? `|
+      return literal ? `|
 ` : `>
 `;
     let chomp;
@@ -1240,7 +1240,7 @@ ${indent}`) + "'";
       if (onComment)
         onComment();
     }
-    if (!literal2) {
+    if (!literal) {
       const foldedValue = value.replace(/\n+/g, `
 $&`).replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, "$1$2").replace(/\n+/g, `$&${indent}`);
       let literalFallback = false;
@@ -1286,8 +1286,8 @@ ${indent}${start}${value}${end}`;
 ${indent}`);
     if (actualString) {
       const test = (tag) => tag.default && tag.tag !== "tag:yaml.org,2002:str" && tag.test?.test(str);
-      const { compat: compat2, tags } = ctx.doc.schema;
-      if (tags.some(test) || compat2?.some(test))
+      const { compat, tags } = ctx.doc.schema;
+      if (tags.some(test) || compat?.some(test))
         return quotedString(value, ctx);
     }
     return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
@@ -1334,7 +1334,7 @@ var require_stringify = __commonJS((exports) => {
   var identity = require_identity();
   var stringifyComment = require_stringifyComment();
   var stringifyString = require_stringifyString();
-  function createStringifyContext(doc2, options) {
+  function createStringifyContext(doc, options) {
     const opt = Object.assign({
       blockQuote: true,
       commentString: stringifyComment.stringifyComment,
@@ -1354,7 +1354,7 @@ var require_stringify = __commonJS((exports) => {
       trailingComma: false,
       trueStr: "true",
       verifyAliasOrder: true
-    }, doc2.schema.toStringOptions, options);
+    }, doc.schema.toStringOptions, options);
     let inFlow;
     switch (opt.collectionStyle) {
       case "block":
@@ -1368,7 +1368,7 @@ var require_stringify = __commonJS((exports) => {
     }
     return {
       anchors: new Set,
-      doc: doc2,
+      doc,
       flowCollectionPadding: opt.flowCollectionPadding ? " " : "",
       indent: "",
       indentStep: typeof opt.indent === "number" ? " ".repeat(opt.indent) : "  ",
@@ -1403,8 +1403,8 @@ var require_stringify = __commonJS((exports) => {
     }
     return tagObj;
   }
-  function stringifyProps(node, tagObj, { anchors: anchors$1, doc: doc2 }) {
-    if (!doc2.directives)
+  function stringifyProps(node, tagObj, { anchors: anchors$1, doc }) {
+    if (!doc.directives)
       return "";
     const props = [];
     const anchor = (identity.isScalar(node) || identity.isCollection(node)) && node.anchor;
@@ -1414,7 +1414,7 @@ var require_stringify = __commonJS((exports) => {
     }
     const tag = node.tag ?? (tagObj.default ? null : tagObj.tag);
     if (tag)
-      props.push(doc2.directives.tagString(tag));
+      props.push(doc.directives.tagString(tag));
     return props.join(" ");
   }
   function stringify(item, ctx, onComment, onChompKeep) {
@@ -1456,7 +1456,7 @@ var require_stringifyPair = __commonJS((exports) => {
   var stringify = require_stringify();
   var stringifyComment = require_stringifyComment();
   function stringifyPair({ key, value }, ctx, onComment, onChompKeep) {
-    const { allNullValues, doc: doc2, indent, indentStep, options: { commentString, indentSeq, simpleKeys } } = ctx;
+    const { allNullValues, doc, indent, indentStep, options: { commentString, indentSeq, simpleKeys } } = ctx;
     let keyComment = identity.isNode(key) && key.comment || null;
     if (simpleKeys) {
       if (keyComment) {
@@ -1517,7 +1517,7 @@ ${indent}:`;
       vcb = null;
       valueComment = null;
       if (value && typeof value === "object")
-        value = doc2.createNode(value);
+        value = doc.createNode(value);
     }
     ctx.implicitKey = false;
     if (!explicitKey && !keyComment && identity.isScalar(value))
@@ -1609,7 +1609,7 @@ var require_merge = __commonJS((exports) => {
   var identity = require_identity();
   var Scalar = require_Scalar();
   var MERGE_KEY = "<<";
-  var merge2 = {
+  var merge = {
     identify: (value) => value === MERGE_KEY || typeof value === "symbol" && value.description === MERGE_KEY,
     default: "key",
     tag: "tag:yaml.org,2002:merge",
@@ -1619,31 +1619,31 @@ var require_merge = __commonJS((exports) => {
     }),
     stringify: () => MERGE_KEY
   };
-  var isMergeKey = (ctx, key) => (merge2.identify(key) || identity.isScalar(key) && (!key.type || key.type === Scalar.Scalar.PLAIN) && merge2.identify(key.value)) && ctx?.doc.schema.tags.some((tag) => tag.tag === merge2.tag && tag.default);
-  function addMergeToJSMap(ctx, map2, value) {
+  var isMergeKey = (ctx, key) => (merge.identify(key) || identity.isScalar(key) && (!key.type || key.type === Scalar.Scalar.PLAIN) && merge.identify(key.value)) && ctx?.doc.schema.tags.some((tag) => tag.tag === merge.tag && tag.default);
+  function addMergeToJSMap(ctx, map, value) {
     const source = resolveAliasValue(ctx, value);
     if (identity.isSeq(source))
       for (const it of source.items)
-        mergeValue(ctx, map2, it);
+        mergeValue(ctx, map, it);
     else if (Array.isArray(source))
       for (const it of source)
-        mergeValue(ctx, map2, it);
+        mergeValue(ctx, map, it);
     else
-      mergeValue(ctx, map2, source);
+      mergeValue(ctx, map, source);
   }
-  function mergeValue(ctx, map2, value) {
+  function mergeValue(ctx, map, value) {
     const source = resolveAliasValue(ctx, value);
     if (!identity.isMap(source))
       throw new Error("Merge sources must be maps or map aliases");
     const srcMap = source.toJSON(null, ctx, Map);
     for (const [key, value2] of srcMap) {
-      if (map2 instanceof Map) {
-        if (!map2.has(key))
-          map2.set(key, value2);
-      } else if (map2 instanceof Set) {
-        map2.add(key);
-      } else if (!Object.prototype.hasOwnProperty.call(map2, key)) {
-        Object.defineProperty(map2, key, {
+      if (map instanceof Map) {
+        if (!map.has(key))
+          map.set(key, value2);
+      } else if (map instanceof Set) {
+        map.add(key);
+      } else if (!Object.prototype.hasOwnProperty.call(map, key)) {
+        Object.defineProperty(map, key, {
           value: value2,
           writable: true,
           enumerable: true,
@@ -1651,49 +1651,49 @@ var require_merge = __commonJS((exports) => {
         });
       }
     }
-    return map2;
+    return map;
   }
   function resolveAliasValue(ctx, value) {
     return ctx && identity.isAlias(value) ? value.resolve(ctx.doc, ctx) : value;
   }
   exports.addMergeToJSMap = addMergeToJSMap;
   exports.isMergeKey = isMergeKey;
-  exports.merge = merge2;
+  exports.merge = merge;
 });
 
 // node_modules/yaml/dist/nodes/addPairToJSMap.js
 var require_addPairToJSMap = __commonJS((exports) => {
   var log = require_log();
-  var merge2 = require_merge();
+  var merge = require_merge();
   var stringify = require_stringify();
   var identity = require_identity();
   var toJS = require_toJS();
-  function addPairToJSMap(ctx, map2, { key, value }) {
+  function addPairToJSMap(ctx, map, { key, value }) {
     if (identity.isNode(key) && key.addToJSMap)
-      key.addToJSMap(ctx, map2, value);
-    else if (merge2.isMergeKey(ctx, key))
-      merge2.addMergeToJSMap(ctx, map2, value);
+      key.addToJSMap(ctx, map, value);
+    else if (merge.isMergeKey(ctx, key))
+      merge.addMergeToJSMap(ctx, map, value);
     else {
       const jsKey = toJS.toJS(key, "", ctx);
-      if (map2 instanceof Map) {
-        map2.set(jsKey, toJS.toJS(value, jsKey, ctx));
-      } else if (map2 instanceof Set) {
-        map2.add(jsKey);
+      if (map instanceof Map) {
+        map.set(jsKey, toJS.toJS(value, jsKey, ctx));
+      } else if (map instanceof Set) {
+        map.add(jsKey);
       } else {
         const stringKey = stringifyKey(key, jsKey, ctx);
         const jsValue = toJS.toJS(value, stringKey, ctx);
-        if (stringKey in map2)
-          Object.defineProperty(map2, stringKey, {
+        if (stringKey in map)
+          Object.defineProperty(map, stringKey, {
             value: jsValue,
             writable: true,
             enumerable: true,
             configurable: true
           });
         else
-          map2[stringKey] = jsValue;
+          map[stringKey] = jsValue;
       }
     }
-    return map2;
+    return map;
   }
   function stringifyKey(key, jsKey, ctx) {
     if (jsKey === null)
@@ -1943,14 +1943,14 @@ var require_YAMLMap = __commonJS((exports) => {
     }
     static from(schema, obj, ctx) {
       const { keepUndefined, replacer } = ctx;
-      const map2 = new this(schema);
+      const map = new this(schema);
       const add = (key, value) => {
         if (typeof replacer === "function")
           value = replacer.call(obj, key, value);
         else if (Array.isArray(replacer) && !replacer.includes(key))
           return;
         if (value !== undefined || keepUndefined)
-          map2.items.push(Pair.createPair(key, value, ctx));
+          map.items.push(Pair.createPair(key, value, ctx));
       };
       if (obj instanceof Map) {
         for (const [key, value] of obj)
@@ -1960,9 +1960,9 @@ var require_YAMLMap = __commonJS((exports) => {
           add(key, obj[key]);
       }
       if (typeof schema.sortMapEntries === "function") {
-        map2.items.sort(schema.sortMapEntries);
+        map.items.sort(schema.sortMapEntries);
       }
-      return map2;
+      return map;
     }
     add(pair, overwrite) {
       let _pair;
@@ -2010,12 +2010,12 @@ var require_YAMLMap = __commonJS((exports) => {
       this.add(new Pair.Pair(key, value), true);
     }
     toJSON(_, ctx, Type) {
-      const map2 = Type ? new Type : ctx?.mapAsMap ? new Map : {};
+      const map = Type ? new Type : ctx?.mapAsMap ? new Map : {};
       if (ctx?.onCreate)
-        ctx.onCreate(map2);
+        ctx.onCreate(map);
       for (const item of this.items)
-        addPairToJSMap.addPairToJSMap(ctx, map2, item);
-      return map2;
+        addPairToJSMap.addPairToJSMap(ctx, map, item);
+      return map;
     }
     toString(ctx, onComment, onChompKeep) {
       if (!ctx)
@@ -2043,19 +2043,19 @@ var require_YAMLMap = __commonJS((exports) => {
 var require_map = __commonJS((exports) => {
   var identity = require_identity();
   var YAMLMap = require_YAMLMap();
-  var map2 = {
+  var map = {
     collection: "map",
     default: true,
     nodeClass: YAMLMap.YAMLMap,
     tag: "tag:yaml.org,2002:map",
-    resolve(map3, onError) {
-      if (!identity.isMap(map3))
+    resolve(map2, onError) {
+      if (!identity.isMap(map2))
         onError("Expected a mapping for this tag");
-      return map3;
+      return map2;
     },
     createNode: (schema, obj, ctx) => YAMLMap.YAMLMap.from(schema, obj, ctx)
   };
-  exports.map = map2;
+  exports.map = map;
 });
 
 // node_modules/yaml/dist/nodes/YAMLSeq.js
@@ -2173,7 +2173,7 @@ var require_seq = __commonJS((exports) => {
 // node_modules/yaml/dist/schema/common/string.js
 var require_string = __commonJS((exports) => {
   var stringifyString = require_stringifyString();
-  var string4 = {
+  var string = {
     identify: (value) => typeof value === "string",
     default: true,
     tag: "tag:yaml.org,2002:str",
@@ -2183,7 +2183,7 @@ var require_string = __commonJS((exports) => {
       return stringifyString.stringifyString(item, ctx, onComment, onChompKeep);
     }
   };
-  exports.string = string4;
+  exports.string = string;
 });
 
 // node_modules/yaml/dist/schema/common/null.js
@@ -2309,7 +2309,7 @@ var require_int = __commonJS((exports) => {
     resolve: (str, _onError, opt) => intResolve(str, 2, 8, opt),
     stringify: (node) => intStringify(node, 8, "0o")
   };
-  var int2 = {
+  var int = {
     identify: intIdentify,
     default: true,
     tag: "tag:yaml.org,2002:int",
@@ -2326,29 +2326,29 @@ var require_int = __commonJS((exports) => {
     resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
     stringify: (node) => intStringify(node, 16, "0x")
   };
-  exports.int = int2;
+  exports.int = int;
   exports.intHex = intHex;
   exports.intOct = intOct;
 });
 
 // node_modules/yaml/dist/schema/core/schema.js
 var require_schema = __commonJS((exports) => {
-  var map2 = require_map();
-  var _null4 = require_null();
+  var map = require_map();
+  var _null = require_null();
   var seq = require_seq();
-  var string4 = require_string();
+  var string = require_string();
   var bool = require_bool();
   var float = require_float();
-  var int2 = require_int();
+  var int = require_int();
   var schema = [
-    map2.map,
+    map.map,
     seq.seq,
-    string4.string,
-    _null4.nullTag,
+    string.string,
+    _null.nullTag,
     bool.boolTag,
-    int2.intOct,
-    int2.int,
-    int2.intHex,
+    int.intOct,
+    int.int,
+    int.intHex,
     float.floatNaN,
     float.floatExp,
     float.float
@@ -2359,7 +2359,7 @@ var require_schema = __commonJS((exports) => {
 // node_modules/yaml/dist/schema/json/schema.js
 var require_schema2 = __commonJS((exports) => {
   var Scalar = require_Scalar();
-  var map2 = require_map();
+  var map = require_map();
   var seq = require_seq();
   function intIdentify(value) {
     return typeof value === "bigint" || Number.isInteger(value);
@@ -2416,7 +2416,7 @@ var require_schema2 = __commonJS((exports) => {
       return str;
     }
   };
-  var schema = [map2.map, seq.seq].concat(jsonScalars, jsonError);
+  var schema = [map.map, seq.seq].concat(jsonScalars, jsonError);
   exports.schema = schema;
 });
 
@@ -2571,9 +2571,9 @@ var require_omap = __commonJS((exports) => {
     toJSON(_, ctx) {
       if (!ctx)
         return super.toJSON(_);
-      const map2 = new Map;
+      const map = new Map;
       if (ctx?.onCreate)
-        ctx.onCreate(map2);
+        ctx.onCreate(map);
       for (const pair of this.items) {
         let key, value;
         if (identity.isPair(pair)) {
@@ -2582,11 +2582,11 @@ var require_omap = __commonJS((exports) => {
         } else {
           key = toJS.toJS(pair, "", ctx);
         }
-        if (map2.has(key))
+        if (map.has(key))
           throw new Error("Ordered maps must not include duplicate keys");
-        map2.set(key, value);
+        map.set(key, value);
       }
-      return map2;
+      return map;
     }
     static from(schema, iterable, ctx) {
       const pairs$1 = pairs.createPairs(schema, iterable, ctx);
@@ -2750,7 +2750,7 @@ var require_int2 = __commonJS((exports) => {
     resolve: (str, _onError, opt) => intResolve(str, 1, 8, opt),
     stringify: (node) => intStringify(node, 8, "0")
   };
-  var int2 = {
+  var int = {
     identify: intIdentify,
     default: true,
     tag: "tag:yaml.org,2002:int",
@@ -2767,7 +2767,7 @@ var require_int2 = __commonJS((exports) => {
     resolve: (str, _onError, opt) => intResolve(str, 2, 16, opt),
     stringify: (node) => intStringify(node, 16, "0x")
   };
-  exports.int = int2;
+  exports.int = int;
   exports.intBin = intBin;
   exports.intHex = intHex;
   exports.intOct = intOct;
@@ -2823,37 +2823,37 @@ var require_set = __commonJS((exports) => {
     }
     static from(schema, iterable, ctx) {
       const { replacer } = ctx;
-      const set3 = new this(schema);
+      const set2 = new this(schema);
       if (iterable && Symbol.iterator in Object(iterable))
         for (let value of iterable) {
           if (typeof replacer === "function")
             value = replacer.call(iterable, value, value);
-          set3.items.push(Pair.createPair(value, null, ctx));
+          set2.items.push(Pair.createPair(value, null, ctx));
         }
-      return set3;
+      return set2;
     }
   }
   YAMLSet.tag = "tag:yaml.org,2002:set";
-  var set2 = {
+  var set = {
     collection: "map",
     identify: (value) => value instanceof Set,
     nodeClass: YAMLSet,
     default: false,
     tag: "tag:yaml.org,2002:set",
     createNode: (schema, iterable, ctx) => YAMLSet.from(schema, iterable, ctx),
-    resolve(map2, onError) {
-      if (identity.isMap(map2)) {
-        if (map2.hasAllNullValues(true))
-          return Object.assign(new YAMLSet, map2);
+    resolve(map, onError) {
+      if (identity.isMap(map)) {
+        if (map.hasAllNullValues(true))
+          return Object.assign(new YAMLSet, map);
         else
           onError("Set items must all have null values");
       } else
         onError("Expected a mapping for this tag");
-      return map2;
+      return map;
     }
   };
   exports.YAMLSet = YAMLSet;
-  exports.set = set2;
+  exports.set = set;
 });
 
 // node_modules/yaml/dist/schema/yaml-1.1/timestamp.js
@@ -2921,15 +2921,15 @@ var require_timestamp = __commonJS((exports) => {
         throw new Error("!!timestamp expects a date, starting with yyyy-mm-dd");
       const [, year, month, day, hour, minute, second] = match.map(Number);
       const millisec = match[7] ? Number((match[7] + "00").substr(1, 3)) : 0;
-      let date5 = Date.UTC(year, month - 1, day, hour || 0, minute || 0, second || 0, millisec);
+      let date = Date.UTC(year, month - 1, day, hour || 0, minute || 0, second || 0, millisec);
       const tz = match[8];
       if (tz && tz !== "Z") {
         let d = parseSexagesimal(tz, false);
         if (Math.abs(d) < 30)
           d *= 60;
-        date5 -= 60000 * d;
+        date -= 60000 * d;
       }
-      return new Date(date5);
+      return new Date(date);
     },
     stringify: ({ value }) => value?.toISOString().replace(/(T00:00:00)?\.000Z$/, "") ?? ""
   };
@@ -2940,38 +2940,38 @@ var require_timestamp = __commonJS((exports) => {
 
 // node_modules/yaml/dist/schema/yaml-1.1/schema.js
 var require_schema3 = __commonJS((exports) => {
-  var map2 = require_map();
-  var _null4 = require_null();
+  var map = require_map();
+  var _null = require_null();
   var seq = require_seq();
-  var string4 = require_string();
+  var string = require_string();
   var binary = require_binary();
   var bool = require_bool2();
   var float = require_float2();
-  var int2 = require_int2();
-  var merge2 = require_merge();
+  var int = require_int2();
+  var merge = require_merge();
   var omap = require_omap();
   var pairs = require_pairs();
-  var set2 = require_set();
+  var set = require_set();
   var timestamp = require_timestamp();
   var schema = [
-    map2.map,
+    map.map,
     seq.seq,
-    string4.string,
-    _null4.nullTag,
+    string.string,
+    _null.nullTag,
     bool.trueTag,
     bool.falseTag,
-    int2.intBin,
-    int2.intOct,
-    int2.int,
-    int2.intHex,
+    int.intBin,
+    int.intOct,
+    int.int,
+    int.intHex,
     float.floatNaN,
     float.floatExp,
     float.float,
     binary.binary,
-    merge2.merge,
+    merge.merge,
     omap.omap,
     pairs.pairs,
-    set2.set,
+    set.set,
     timestamp.intTime,
     timestamp.floatTime,
     timestamp.timestamp
@@ -2981,25 +2981,25 @@ var require_schema3 = __commonJS((exports) => {
 
 // node_modules/yaml/dist/schema/tags.js
 var require_tags = __commonJS((exports) => {
-  var map2 = require_map();
-  var _null4 = require_null();
+  var map = require_map();
+  var _null = require_null();
   var seq = require_seq();
-  var string4 = require_string();
+  var string = require_string();
   var bool = require_bool();
   var float = require_float();
-  var int2 = require_int();
+  var int = require_int();
   var schema = require_schema();
   var schema$1 = require_schema2();
   var binary = require_binary();
-  var merge2 = require_merge();
+  var merge = require_merge();
   var omap = require_omap();
   var pairs = require_pairs();
   var schema$2 = require_schema3();
-  var set2 = require_set();
+  var set = require_set();
   var timestamp = require_timestamp();
-  var schemas3 = new Map([
+  var schemas = new Map([
     ["core", schema.schema],
-    ["failsafe", [map2.map, seq.seq, string4.string]],
+    ["failsafe", [map.map, seq.seq, string.string]],
     ["json", schema$1.schema],
     ["yaml11", schema$2.schema],
     ["yaml-1.1", schema$2.schema]
@@ -3011,38 +3011,38 @@ var require_tags = __commonJS((exports) => {
     floatExp: float.floatExp,
     floatNaN: float.floatNaN,
     floatTime: timestamp.floatTime,
-    int: int2.int,
-    intHex: int2.intHex,
-    intOct: int2.intOct,
+    int: int.int,
+    intHex: int.intHex,
+    intOct: int.intOct,
     intTime: timestamp.intTime,
-    map: map2.map,
-    merge: merge2.merge,
-    null: _null4.nullTag,
+    map: map.map,
+    merge: merge.merge,
+    null: _null.nullTag,
     omap: omap.omap,
     pairs: pairs.pairs,
     seq: seq.seq,
-    set: set2.set,
+    set: set.set,
     timestamp: timestamp.timestamp
   };
   var coreKnownTags = {
     "tag:yaml.org,2002:binary": binary.binary,
-    "tag:yaml.org,2002:merge": merge2.merge,
+    "tag:yaml.org,2002:merge": merge.merge,
     "tag:yaml.org,2002:omap": omap.omap,
     "tag:yaml.org,2002:pairs": pairs.pairs,
-    "tag:yaml.org,2002:set": set2.set,
+    "tag:yaml.org,2002:set": set.set,
     "tag:yaml.org,2002:timestamp": timestamp.timestamp
   };
   function getTags(customTags, schemaName, addMergeTag) {
-    const schemaTags = schemas3.get(schemaName);
+    const schemaTags = schemas.get(schemaName);
     if (schemaTags && !customTags) {
-      return addMergeTag && !schemaTags.includes(merge2.merge) ? schemaTags.concat(merge2.merge) : schemaTags.slice();
+      return addMergeTag && !schemaTags.includes(merge.merge) ? schemaTags.concat(merge.merge) : schemaTags.slice();
     }
     let tags = schemaTags;
     if (!tags) {
       if (Array.isArray(customTags))
         tags = [];
       else {
-        const keys = Array.from(schemas3.keys()).filter((key) => key !== "yaml11").map((key) => JSON.stringify(key)).join(", ");
+        const keys = Array.from(schemas.keys()).filter((key) => key !== "yaml11").map((key) => JSON.stringify(key)).join(", ");
         throw new Error(`Unknown schema "${schemaName}"; use one of ${keys} or define customTags array`);
       }
     }
@@ -3053,7 +3053,7 @@ var require_tags = __commonJS((exports) => {
       tags = customTags(tags.slice());
     }
     if (addMergeTag)
-      tags = tags.concat(merge2.merge);
+      tags = tags.concat(merge.merge);
     return tags.reduce((tags2, tag) => {
       const tagObj = typeof tag === "string" ? tagsByName[tag] : tag;
       if (!tagObj) {
@@ -3073,21 +3073,21 @@ var require_tags = __commonJS((exports) => {
 // node_modules/yaml/dist/schema/Schema.js
 var require_Schema = __commonJS((exports) => {
   var identity = require_identity();
-  var map2 = require_map();
+  var map = require_map();
   var seq = require_seq();
-  var string4 = require_string();
+  var string = require_string();
   var tags = require_tags();
   var sortMapEntriesByKey = (a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
 
   class Schema {
-    constructor({ compat: compat2, customTags, merge: merge2, resolveKnownTags, schema, sortMapEntries, toStringDefaults }) {
-      this.compat = Array.isArray(compat2) ? tags.getTags(compat2, "compat") : compat2 ? tags.getTags(null, compat2) : null;
+    constructor({ compat, customTags, merge, resolveKnownTags, schema, sortMapEntries, toStringDefaults }) {
+      this.compat = Array.isArray(compat) ? tags.getTags(compat, "compat") : compat ? tags.getTags(null, compat) : null;
       this.name = typeof schema === "string" && schema || "core";
       this.knownTags = resolveKnownTags ? tags.coreKnownTags : {};
-      this.tags = tags.getTags(customTags, this.name, merge2);
+      this.tags = tags.getTags(customTags, this.name, merge);
       this.toStringOptions = toStringDefaults ?? null;
-      Object.defineProperty(this, identity.MAP, { value: map2.map });
-      Object.defineProperty(this, identity.SCALAR, { value: string4.string });
+      Object.defineProperty(this, identity.MAP, { value: map.map });
+      Object.defineProperty(this, identity.SCALAR, { value: string.string });
       Object.defineProperty(this, identity.SEQ, { value: seq.seq });
       this.sortMapEntries = typeof sortMapEntries === "function" ? sortMapEntries : sortMapEntries === true ? sortMapEntriesByKey : null;
     }
@@ -3105,42 +3105,42 @@ var require_stringifyDocument = __commonJS((exports) => {
   var identity = require_identity();
   var stringify = require_stringify();
   var stringifyComment = require_stringifyComment();
-  function stringifyDocument(doc2, options) {
+  function stringifyDocument(doc, options) {
     const lines = [];
     let hasDirectives = options.directives === true;
-    if (options.directives !== false && doc2.directives) {
-      const dir = doc2.directives.toString(doc2);
+    if (options.directives !== false && doc.directives) {
+      const dir = doc.directives.toString(doc);
       if (dir) {
         lines.push(dir);
         hasDirectives = true;
-      } else if (doc2.directives.docStart)
+      } else if (doc.directives.docStart)
         hasDirectives = true;
     }
     if (hasDirectives)
       lines.push("---");
-    const ctx = stringify.createStringifyContext(doc2, options);
+    const ctx = stringify.createStringifyContext(doc, options);
     const { commentString } = ctx.options;
-    if (doc2.commentBefore) {
+    if (doc.commentBefore) {
       if (lines.length !== 1)
         lines.unshift("");
-      const cs = commentString(doc2.commentBefore);
+      const cs = commentString(doc.commentBefore);
       lines.unshift(stringifyComment.indentComment(cs, ""));
     }
     let chompKeep = false;
     let contentComment = null;
-    if (doc2.contents) {
-      if (identity.isNode(doc2.contents)) {
-        if (doc2.contents.spaceBefore && hasDirectives)
+    if (doc.contents) {
+      if (identity.isNode(doc.contents)) {
+        if (doc.contents.spaceBefore && hasDirectives)
           lines.push("");
-        if (doc2.contents.commentBefore) {
-          const cs = commentString(doc2.contents.commentBefore);
+        if (doc.contents.commentBefore) {
+          const cs = commentString(doc.contents.commentBefore);
           lines.push(stringifyComment.indentComment(cs, ""));
         }
-        ctx.forceBlockIndent = !!doc2.comment;
-        contentComment = doc2.contents.comment;
+        ctx.forceBlockIndent = !!doc.comment;
+        contentComment = doc.contents.comment;
       }
       const onChompKeep = contentComment ? undefined : () => chompKeep = true;
-      let body = stringify.stringify(doc2.contents, ctx, () => contentComment = null, onChompKeep);
+      let body = stringify.stringify(doc.contents, ctx, () => contentComment = null, onChompKeep);
       if (contentComment)
         body += stringifyComment.lineComment(body, "", commentString(contentComment));
       if ((body[0] === "|" || body[0] === ">") && lines[lines.length - 1] === "---") {
@@ -3148,11 +3148,11 @@ var require_stringifyDocument = __commonJS((exports) => {
       } else
         lines.push(body);
     } else {
-      lines.push(stringify.stringify(doc2.contents, ctx));
+      lines.push(stringify.stringify(doc.contents, ctx));
     }
-    if (doc2.directives?.docEnd) {
-      if (doc2.comment) {
-        const cs = commentString(doc2.comment);
+    if (doc.directives?.docEnd) {
+      if (doc.comment) {
+        const cs = commentString(doc.comment);
         if (cs.includes(`
 `)) {
           lines.push("...");
@@ -3164,7 +3164,7 @@ var require_stringifyDocument = __commonJS((exports) => {
         lines.push("...");
       }
     } else {
-      let dc = doc2.comment;
+      let dc = doc.comment;
       if (dc && chompKeep)
         dc = dc.replace(/^\n+/, "");
       if (dc) {
@@ -3219,14 +3219,14 @@ var require_Document = __commonJS((exports) => {
         version: "1.2"
       }, options);
       this.options = opt;
-      let { version: version2 } = opt;
+      let { version } = opt;
       if (options?._directives) {
         this.directives = options._directives.atDocument();
         if (this.directives.yaml.explicit)
-          version2 = this.directives.yaml.version;
+          version = this.directives.yaml.version;
       } else
-        this.directives = new directives.Directives({ version: version2 });
-      this.setSchema(version2, options);
+        this.directives = new directives.Directives({ version });
+      this.setSchema(version, options);
       this.contents = value === undefined ? null : this.createNode(value, _replacer, options);
     }
     clone() {
@@ -3342,11 +3342,11 @@ var require_Document = __commonJS((exports) => {
         this.contents.setIn(path, value);
       }
     }
-    setSchema(version2, options = {}) {
-      if (typeof version2 === "number")
-        version2 = String(version2);
+    setSchema(version, options = {}) {
+      if (typeof version === "number")
+        version = String(version);
       let opt;
-      switch (version2) {
+      switch (version) {
         case "1.1":
           if (this.directives)
             this.directives.yaml.version = "1.1";
@@ -3357,9 +3357,9 @@ var require_Document = __commonJS((exports) => {
         case "1.2":
         case "next":
           if (this.directives)
-            this.directives.yaml.version = version2;
+            this.directives.yaml.version = version;
           else
-            this.directives = new directives.Directives({ version: version2 });
+            this.directives = new directives.Directives({ version });
           opt = { resolveKnownTags: true, schema: "core" };
           break;
         case null:
@@ -3368,7 +3368,7 @@ var require_Document = __commonJS((exports) => {
           opt = null;
           break;
         default: {
-          const sv = JSON.stringify(version2);
+          const sv = JSON.stringify(version);
           throw new Error(`Expected '1.1', '1.2' or null as first argument, but found: ${sv}`);
         }
       }
@@ -3379,11 +3379,11 @@ var require_Document = __commonJS((exports) => {
       else
         throw new Error(`With a null YAML version, the { schema: Schema } option is required`);
     }
-    toJS({ json: json2, jsonArg, mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
+    toJS({ json, jsonArg, mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
       const ctx = {
         anchors: new Map,
         doc: this,
-        keep: !json2,
+        keep: !json,
         mapAsMap: mapAsMap === true,
         mapKeyWarned: false,
         maxAliasCount: typeof maxAliasCount === "number" ? maxAliasCount : 100
@@ -3438,12 +3438,12 @@ var require_errors = __commonJS((exports) => {
       super("YAMLWarning", pos, code, message);
     }
   }
-  var prettifyError2 = (src, lc) => (error51) => {
-    if (error51.pos[0] === -1)
+  var prettifyError = (src, lc) => (error) => {
+    if (error.pos[0] === -1)
       return;
-    error51.linePos = error51.pos.map((pos) => lc.linePos(pos));
-    const { line, col } = error51.linePos[0];
-    error51.message += ` at line ${line}, column ${col}`;
+    error.linePos = error.pos.map((pos) => lc.linePos(pos));
+    const { line, col } = error.linePos[0];
+    error.message += ` at line ${line}, column ${col}`;
     let ci = col - 1;
     let lineStr = src.substring(lc.lineStarts[line - 1], lc.lineStarts[line]).replace(/[\n\r]+$/, "");
     if (ci >= 60 && lineStr.length > 80) {
@@ -3462,12 +3462,12 @@ var require_errors = __commonJS((exports) => {
     }
     if (/[^ ]/.test(lineStr)) {
       let count = 1;
-      const end = error51.linePos[1];
+      const end = error.linePos[1];
       if (end?.line === line && end.col > col) {
         count = Math.max(1, Math.min(end.col - col, 80 - ci));
       }
       const pointer = " ".repeat(ci) + "^".repeat(count);
-      error51.message += `:
+      error.message += `:
 
 ${lineStr}
 ${pointer}
@@ -3477,7 +3477,7 @@ ${pointer}
   exports.YAMLError = YAMLError;
   exports.YAMLParseError = YAMLParseError;
   exports.YAMLWarning = YAMLWarning;
-  exports.prettifyError = prettifyError2;
+  exports.prettifyError = prettifyError;
 });
 
 // node_modules/yaml/dist/compose/resolve-props.js
@@ -3689,7 +3689,7 @@ var require_resolve_block_map = __commonJS((exports) => {
   var startColMsg = "All mapping items must start at the same column";
   function resolveBlockMap({ composeNode, composeEmptyNode }, ctx, bm, onError, tag) {
     const NodeClass = tag?.nodeClass ?? YAMLMap.YAMLMap;
-    const map2 = new NodeClass(ctx.schema);
+    const map = new NodeClass(ctx.schema);
     if (ctx.atRoot)
       ctx.atRoot = false;
     let offset = bm.offset;
@@ -3715,11 +3715,11 @@ var require_resolve_block_map = __commonJS((exports) => {
         if (!keyProps.anchor && !keyProps.tag && !sep) {
           commentEnd = keyProps.end;
           if (keyProps.comment) {
-            if (map2.comment)
-              map2.comment += `
+            if (map.comment)
+              map.comment += `
 ` + keyProps.comment;
             else
-              map2.comment = keyProps.comment;
+              map.comment = keyProps.comment;
           }
           continue;
         }
@@ -3735,7 +3735,7 @@ var require_resolve_block_map = __commonJS((exports) => {
       if (ctx.schema.compat)
         utilFlowIndentCheck.flowIndentCheck(bm.indent, key, onError);
       ctx.atKey = false;
-      if (utilMapIncludes.mapIncludes(ctx, map2.items, keyNode))
+      if (utilMapIncludes.mapIncludes(ctx, map.items, keyNode))
         onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
       const valueProps = resolveProps.resolveProps(sep ?? [], {
         indicator: "map-value-ind",
@@ -3760,7 +3760,7 @@ var require_resolve_block_map = __commonJS((exports) => {
         const pair = new Pair.Pair(keyNode, valueNode);
         if (ctx.options.keepSourceTokens)
           pair.srcToken = collItem;
-        map2.items.push(pair);
+        map.items.push(pair);
       } else {
         if (implicitKey)
           onError(keyNode.range, "MISSING_CHAR", "Implicit map keys need to be followed by map values");
@@ -3774,13 +3774,13 @@ var require_resolve_block_map = __commonJS((exports) => {
         const pair = new Pair.Pair(keyNode);
         if (ctx.options.keepSourceTokens)
           pair.srcToken = collItem;
-        map2.items.push(pair);
+        map.items.push(pair);
       }
     }
     if (commentEnd && commentEnd < offset)
       onError(commentEnd, "IMPOSSIBLE", "Map comment with trailing content");
-    map2.range = [bm.offset, offset, commentEnd ?? offset];
-    return map2;
+    map.range = [bm.offset, offset, commentEnd ?? offset];
+    return map;
   }
   exports.resolveBlockMap = resolveBlockMap;
 });
@@ -4019,17 +4019,17 @@ var require_resolve_flow_collection = __commonJS((exports) => {
         if (ctx.options.keepSourceTokens)
           pair.srcToken = collItem;
         if (isMap) {
-          const map2 = coll;
-          if (utilMapIncludes.mapIncludes(ctx, map2.items, keyNode))
+          const map = coll;
+          if (utilMapIncludes.mapIncludes(ctx, map.items, keyNode))
             onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-          map2.items.push(pair);
+          map.items.push(pair);
         } else {
-          const map2 = new YAMLMap.YAMLMap(ctx.schema);
-          map2.flow = true;
-          map2.items.push(pair);
+          const map = new YAMLMap.YAMLMap(ctx.schema);
+          map.flow = true;
+          map.items.push(pair);
           const endRange = (valueNode ?? keyNode).range;
-          map2.range = [keyNode.range[0], endRange[1], endRange[2]];
-          coll.items.push(map2);
+          map.range = [keyNode.range[0], endRange[1], endRange[2]];
+          coll.items.push(map);
         }
         offset = valueNode ? valueNode.range[2] : valueProps.end;
       }
@@ -4257,7 +4257,7 @@ var require_resolve_block_scalar = __commonJS((exports) => {
     const mode = source[0];
     let indent = 0;
     let chomp = "";
-    let error51 = -1;
+    let error = -1;
     for (let i = 1;i < source.length; ++i) {
       const ch = source[i];
       if (!chomp && (ch === "-" || ch === "+"))
@@ -4266,12 +4266,12 @@ var require_resolve_block_scalar = __commonJS((exports) => {
         const n = Number(ch);
         if (!indent && n)
           indent = n;
-        else if (error51 === -1)
-          error51 = offset + i;
+        else if (error === -1)
+          error = offset + i;
       }
     }
-    if (error51 !== -1)
-      onError(error51, "UNEXPECTED_TOKEN", `Block scalar header includes extra characters: ${source}`);
+    if (error !== -1)
+      onError(error, "UNEXPECTED_TOKEN", `Block scalar header includes extra characters: ${source}`);
     let hasSpace = false;
     let comment = "";
     let length = source.length;
@@ -4558,8 +4558,8 @@ var require_compose_scalar = __commonJS((exports) => {
     try {
       const res = tag.resolve(value, (msg) => onError(tagToken ?? token, "TAG_RESOLVE_FAILED", msg), ctx.options);
       scalar = identity.isScalar(res) ? res : new Scalar.Scalar(res);
-    } catch (error51) {
-      const msg = error51 instanceof Error ? error51.message : String(error51);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       onError(tagToken ?? token, "TAG_RESOLVE_FAILED", msg);
       scalar = new Scalar.Scalar(value);
     }
@@ -4601,10 +4601,10 @@ var require_compose_scalar = __commonJS((exports) => {
   function findScalarTagByTest({ atKey, directives, schema }, value, token, onError) {
     const tag = schema.tags.find((tag2) => (tag2.default === true || atKey && tag2.default === "key") && tag2.test?.test(value)) || schema[identity.SCALAR];
     if (schema.compat) {
-      const compat2 = schema.compat.find((tag2) => tag2.default && tag2.test?.test(value)) ?? schema[identity.SCALAR];
-      if (tag.tag !== compat2.tag) {
+      const compat = schema.compat.find((tag2) => tag2.default && tag2.test?.test(value)) ?? schema[identity.SCALAR];
+      if (tag.tag !== compat.tag) {
         const ts = directives.tagString(tag.tag);
-        const cs = directives.tagString(compat2.tag);
+        const cs = directives.tagString(compat.tag);
         const msg = `Value may be parsed as either ${ts} or ${cs}`;
         onError(token, "TAG_RESOLVE_FAILED", msg, true);
       }
@@ -4676,8 +4676,8 @@ var require_compose_node = __commonJS((exports) => {
           node = composeCollection.composeCollection(CN, ctx, token, props, onError);
           if (anchor)
             node.anchor = anchor.source.substring(1);
-        } catch (error51) {
-          const message = error51 instanceof Error ? error51.message : String(error51);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
           onError(token, "RESOURCE_EXHAUSTION", message);
         }
         break;
@@ -4752,13 +4752,13 @@ var require_compose_doc = __commonJS((exports) => {
   var resolveProps = require_resolve_props();
   function composeDoc(options, directives, { offset, start, value, end }, onError) {
     const opts = Object.assign({ _directives: directives }, options);
-    const doc2 = new Document.Document(undefined, opts);
+    const doc = new Document.Document(undefined, opts);
     const ctx = {
       atKey: false,
       atRoot: true,
-      directives: doc2.directives,
-      options: doc2.options,
-      schema: doc2.schema
+      directives: doc.directives,
+      options: doc.options,
+      schema: doc.schema
     };
     const props = resolveProps.resolveProps(start, {
       indicator: "doc-start",
@@ -4769,17 +4769,17 @@ var require_compose_doc = __commonJS((exports) => {
       startOnNewline: true
     });
     if (props.found) {
-      doc2.directives.docStart = true;
+      doc.directives.docStart = true;
       if (value && (value.type === "block-map" || value.type === "block-seq") && !props.hasNewline)
         onError(props.end, "MISSING_CHAR", "Block collection cannot start on same line with directives-end marker");
     }
-    doc2.contents = value ? composeNode.composeNode(ctx, value, props, onError) : composeNode.composeEmptyNode(ctx, props.end, start, null, props, onError);
-    const contentEnd = doc2.contents.range[2];
+    doc.contents = value ? composeNode.composeNode(ctx, value, props, onError) : composeNode.composeEmptyNode(ctx, props.end, start, null, props, onError);
+    const contentEnd = doc.contents.range[2];
     const re = resolveEnd.resolveEnd(end, contentEnd, false, onError);
     if (re.comment)
-      doc2.comment = re.comment;
-    doc2.range = [offset, contentEnd, re.offset];
-    return doc2;
+      doc.comment = re.comment;
+    doc.range = [offset, contentEnd, re.offset];
+    return doc;
   }
   exports.composeDoc = composeDoc;
 });
@@ -4789,7 +4789,7 @@ var require_composer = __commonJS((exports) => {
   var node_process = __require("process");
   var directives = require_directives();
   var Document = require_Document();
-  var errors3 = require_errors();
+  var errors = require_errors();
   var identity = require_identity();
   var composeDoc = require_compose_doc();
   var resolveEnd = require_resolve_end();
@@ -4840,22 +4840,22 @@ var require_composer = __commonJS((exports) => {
       this.onError = (source, code, message, warning) => {
         const pos = getErrorPos(source);
         if (warning)
-          this.warnings.push(new errors3.YAMLWarning(pos, code, message));
+          this.warnings.push(new errors.YAMLWarning(pos, code, message));
         else
-          this.errors.push(new errors3.YAMLParseError(pos, code, message));
+          this.errors.push(new errors.YAMLParseError(pos, code, message));
       };
       this.directives = new directives.Directives({ version: options.version || "1.2" });
       this.options = options;
     }
-    decorate(doc2, afterDoc) {
+    decorate(doc, afterDoc) {
       const { comment, afterEmptyLine } = parsePrelude(this.prelude);
       if (comment) {
-        const dc = doc2.contents;
+        const dc = doc.contents;
         if (afterDoc) {
-          doc2.comment = doc2.comment ? `${doc2.comment}
+          doc.comment = doc.comment ? `${doc.comment}
 ${comment}` : comment;
-        } else if (afterEmptyLine || doc2.directives.docStart || !dc) {
-          doc2.commentBefore = comment;
+        } else if (afterEmptyLine || doc.directives.docStart || !dc) {
+          doc.commentBefore = comment;
         } else if (identity.isCollection(dc) && !dc.flow && dc.items.length > 0) {
           let it = dc.items[0];
           if (identity.isPair(it))
@@ -4870,11 +4870,11 @@ ${cb}` : comment;
         }
       }
       if (afterDoc) {
-        Array.prototype.push.apply(doc2.errors, this.errors);
-        Array.prototype.push.apply(doc2.warnings, this.warnings);
+        Array.prototype.push.apply(doc.errors, this.errors);
+        Array.prototype.push.apply(doc.warnings, this.warnings);
       } else {
-        doc2.errors = this.errors;
-        doc2.warnings = this.warnings;
+        doc.errors = this.errors;
+        doc.warnings = this.warnings;
       }
       this.prelude = [];
       this.errors = [];
@@ -4907,13 +4907,13 @@ ${cb}` : comment;
           this.atDirectives = true;
           break;
         case "document": {
-          const doc2 = composeDoc.composeDoc(this.options, this.directives, token, this.onError);
-          if (this.atDirectives && !doc2.directives.docStart)
+          const doc = composeDoc.composeDoc(this.options, this.directives, token, this.onError);
+          if (this.atDirectives && !doc.directives.docStart)
             this.onError(token, "MISSING_CHAR", "Missing directives-end/doc-start indicator line");
-          this.decorate(doc2, false);
+          this.decorate(doc, false);
           if (this.doc)
             yield this.doc;
-          this.doc = doc2;
+          this.doc = doc;
           this.atDirectives = false;
           break;
         }
@@ -4926,17 +4926,17 @@ ${cb}` : comment;
           break;
         case "error": {
           const msg = token.source ? `${token.message}: ${JSON.stringify(token.source)}` : token.message;
-          const error51 = new errors3.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", msg);
+          const error = new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", msg);
           if (this.atDirectives || !this.doc)
-            this.errors.push(error51);
+            this.errors.push(error);
           else
-            this.doc.errors.push(error51);
+            this.doc.errors.push(error);
           break;
         }
         case "doc-end": {
           if (!this.doc) {
             const msg = "Unexpected doc-end without preceding document";
-            this.errors.push(new errors3.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", msg));
+            this.errors.push(new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", msg));
             break;
           }
           this.doc.directives.docEnd = true;
@@ -4951,7 +4951,7 @@ ${end.comment}` : end.comment;
           break;
         }
         default:
-          this.errors.push(new errors3.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", `Unsupported token ${token.type}`));
+          this.errors.push(new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", `Unsupported token ${token.type}`));
       }
     }
     *end(forceDoc = false, endOffset = -1) {
@@ -4961,12 +4961,12 @@ ${end.comment}` : end.comment;
         this.doc = null;
       } else if (forceDoc) {
         const opts = Object.assign({ _directives: this.directives }, this.options);
-        const doc2 = new Document.Document(undefined, opts);
+        const doc = new Document.Document(undefined, opts);
         if (this.atDirectives)
           this.onError(endOffset, "MISSING_CHAR", "Missing directives-end indicator line");
-        doc2.range = [0, endOffset, endOffset];
-        this.decorate(doc2, false);
-        yield doc2;
+        doc.range = [0, endOffset, endOffset];
+        this.decorate(doc, false);
+        yield doc;
       }
     }
   }
@@ -4977,7 +4977,7 @@ ${end.comment}` : end.comment;
 var require_cst_scalar = __commonJS((exports) => {
   var resolveBlockScalar = require_resolve_block_scalar();
   var resolveFlowScalar = require_resolve_flow_scalar();
-  var errors3 = require_errors();
+  var errors = require_errors();
   var stringifyString = require_stringifyString();
   function resolveAsScalar(token, strict = true, onError) {
     if (token) {
@@ -4986,7 +4986,7 @@ var require_cst_scalar = __commonJS((exports) => {
         if (onError)
           onError(offset, code, message);
         else
-          throw new errors3.YAMLParseError([offset, offset + 1], code, message);
+          throw new errors.YAMLParseError([offset, offset + 1], code, message);
       };
       switch (token.type) {
         case "scalar":
@@ -6203,8 +6203,8 @@ var require_parser = __commonJS((exports) => {
     peek(n) {
       return this.stack[this.stack.length - n];
     }
-    *pop(error51) {
-      const token = error51 ?? this.stack.pop();
+    *pop(error) {
+      const token = error ?? this.stack.pop();
       if (!token) {
         const message = "Tried to pop an empty stack";
         yield { type: "error", offset: this.offset, source: "", message };
@@ -6288,14 +6288,14 @@ var require_parser = __commonJS((exports) => {
           return;
         case "doc-mode":
         case "doc-start": {
-          const doc2 = {
+          const doc = {
             type: "document",
             offset: this.offset,
             start: []
           };
           if (this.type === "doc-start")
-            doc2.start.push(this.sourceToken);
-          this.stack.push(doc2);
+            doc.start.push(this.sourceToken);
+          this.stack.push(doc);
           return;
         }
       }
@@ -6306,16 +6306,16 @@ var require_parser = __commonJS((exports) => {
         source: this.source
       };
     }
-    *document(doc2) {
-      if (doc2.value)
-        return yield* this.lineEnd(doc2);
+    *document(doc) {
+      if (doc.value)
+        return yield* this.lineEnd(doc);
       switch (this.type) {
         case "doc-start": {
-          if (findNonEmptyIndex(doc2.start) !== -1) {
+          if (findNonEmptyIndex(doc.start) !== -1) {
             yield* this.pop();
             yield* this.step();
           } else
-            doc2.start.push(this.sourceToken);
+            doc.start.push(this.sourceToken);
           return;
         }
         case "anchor":
@@ -6323,10 +6323,10 @@ var require_parser = __commonJS((exports) => {
         case "space":
         case "comment":
         case "newline":
-          doc2.start.push(this.sourceToken);
+          doc.start.push(this.sourceToken);
           return;
       }
-      const bv = this.startBlockValue(doc2);
+      const bv = this.startBlockValue(doc);
       if (bv)
         this.stack.push(bv);
       else {
@@ -6349,14 +6349,14 @@ var require_parser = __commonJS((exports) => {
           delete scalar.end;
         } else
           sep = [this.sourceToken];
-        const map2 = {
+        const map = {
           type: "block-map",
           offset: scalar.offset,
           indent: scalar.indent,
           items: [{ start, key: scalar, sep }]
         };
         this.onKeyLine = true;
-        this.stack[this.stack.length - 1] = map2;
+        this.stack[this.stack.length - 1] = map;
       } else
         yield* this.lineEnd(scalar);
     }
@@ -6387,8 +6387,8 @@ var require_parser = __commonJS((exports) => {
           yield* this.step();
       }
     }
-    *blockMap(map2) {
-      const it = map2.items[map2.items.length - 1];
+    *blockMap(map) {
+      const it = map.items[map.items.length - 1];
       switch (this.type) {
         case "newline":
           this.onKeyLine = false;
@@ -6398,7 +6398,7 @@ var require_parser = __commonJS((exports) => {
             if (last?.type === "comment")
               end?.push(this.sourceToken);
             else
-              map2.items.push({ start: [this.sourceToken] });
+              map.items.push({ start: [this.sourceToken] });
           } else if (it.sep) {
             it.sep.push(this.sourceToken);
           } else {
@@ -6408,17 +6408,17 @@ var require_parser = __commonJS((exports) => {
         case "space":
         case "comment":
           if (it.value) {
-            map2.items.push({ start: [this.sourceToken] });
+            map.items.push({ start: [this.sourceToken] });
           } else if (it.sep) {
             it.sep.push(this.sourceToken);
           } else {
-            if (this.atIndentedComment(it.start, map2.indent)) {
-              const prev = map2.items[map2.items.length - 2];
+            if (this.atIndentedComment(it.start, map.indent)) {
+              const prev = map.items[map.items.length - 2];
               const end = prev?.value?.end;
               if (Array.isArray(end)) {
                 Array.prototype.push.apply(end, it.start);
                 end.push(this.sourceToken);
-                map2.items.pop();
+                map.items.pop();
                 return;
               }
             }
@@ -6426,8 +6426,8 @@ var require_parser = __commonJS((exports) => {
           }
           return;
       }
-      if (this.indent >= map2.indent) {
-        const atMapIndent = !this.onKeyLine && this.indent === map2.indent;
+      if (this.indent >= map.indent) {
+        const atMapIndent = !this.onKeyLine && this.indent === map.indent;
         const atNextItem = atMapIndent && (it.sep || it.explicitKey) && this.type !== "seq-item-ind";
         let start = [];
         if (atNextItem && it.sep && !it.value) {
@@ -6441,7 +6441,7 @@ var require_parser = __commonJS((exports) => {
               case "space":
                 break;
               case "comment":
-                if (st.indent > map2.indent)
+                if (st.indent > map.indent)
                   nl.length = 0;
                 break;
               default:
@@ -6456,7 +6456,7 @@ var require_parser = __commonJS((exports) => {
           case "tag":
             if (atNextItem || it.value) {
               start.push(this.sourceToken);
-              map2.items.push({ start });
+              map.items.push({ start });
               this.onKeyLine = true;
             } else if (it.sep) {
               it.sep.push(this.sourceToken);
@@ -6470,7 +6470,7 @@ var require_parser = __commonJS((exports) => {
               it.explicitKey = true;
             } else if (atNextItem || it.value) {
               start.push(this.sourceToken);
-              map2.items.push({ start, explicitKey: true });
+              map.items.push({ start, explicitKey: true });
             } else {
               this.stack.push({
                 type: "block-map",
@@ -6496,7 +6496,7 @@ var require_parser = __commonJS((exports) => {
                   });
                 }
               } else if (it.value) {
-                map2.items.push({ start: [], key: null, sep: [this.sourceToken] });
+                map.items.push({ start: [], key: null, sep: [this.sourceToken] });
               } else if (includesToken(it.sep, "map-value-ind")) {
                 this.stack.push({
                   type: "block-map",
@@ -6526,7 +6526,7 @@ var require_parser = __commonJS((exports) => {
               if (!it.sep) {
                 Object.assign(it, { key: null, sep: [this.sourceToken] });
               } else if (it.value || atNextItem) {
-                map2.items.push({ start, key: null, sep: [this.sourceToken] });
+                map.items.push({ start, key: null, sep: [this.sourceToken] });
               } else if (includesToken(it.sep, "map-value-ind")) {
                 this.stack.push({
                   type: "block-map",
@@ -6546,7 +6546,7 @@ var require_parser = __commonJS((exports) => {
           case "double-quoted-scalar": {
             const fs = this.flowScalar(this.type);
             if (atNextItem || it.value) {
-              map2.items.push({ start, key: fs, sep: [] });
+              map.items.push({ start, key: fs, sep: [] });
               this.onKeyLine = true;
             } else if (it.sep) {
               this.stack.push(fs);
@@ -6557,7 +6557,7 @@ var require_parser = __commonJS((exports) => {
             return;
           }
           default: {
-            const bv = this.startBlockValue(map2);
+            const bv = this.startBlockValue(map);
             if (bv) {
               if (bv.type === "block-seq") {
                 if (!it.explicitKey && it.sep && !includesToken(it.sep, "newline")) {
@@ -6570,7 +6570,7 @@ var require_parser = __commonJS((exports) => {
                   return;
                 }
               } else if (atMapIndent) {
-                map2.items.push({ start });
+                map.items.push({ start });
               }
               this.stack.push(bv);
               return;
@@ -6711,14 +6711,14 @@ var require_parser = __commonJS((exports) => {
           fixFlowSeqItems(fc);
           const sep = fc.end.splice(1, fc.end.length);
           sep.push(this.sourceToken);
-          const map2 = {
+          const map = {
             type: "block-map",
             offset: fc.offset,
             indent: fc.indent,
             items: [{ start, key: fc, sep }]
           };
           this.onKeyLine = true;
-          this.stack[this.stack.length - 1] = map2;
+          this.stack[this.stack.length - 1] = map;
         } else {
           yield* this.lineEnd(fc);
         }
@@ -6848,7 +6848,7 @@ var require_parser = __commonJS((exports) => {
 var require_public_api = __commonJS((exports) => {
   var composer = require_composer();
   var Document = require_Document();
-  var errors3 = require_errors();
+  var errors = require_errors();
   var log = require_log();
   var identity = require_identity();
   var lineCounter = require_line_counter();
@@ -6864,9 +6864,9 @@ var require_public_api = __commonJS((exports) => {
     const composer$1 = new composer.Composer(options);
     const docs = Array.from(composer$1.compose(parser$1.parse(source)));
     if (prettyErrors && lineCounter2)
-      for (const doc2 of docs) {
-        doc2.errors.forEach(errors3.prettifyError(source, lineCounter2));
-        doc2.warnings.forEach(errors3.prettifyError(source, lineCounter2));
+      for (const doc of docs) {
+        doc.errors.forEach(errors.prettifyError(source, lineCounter2));
+        doc.warnings.forEach(errors.prettifyError(source, lineCounter2));
       }
     if (docs.length > 0)
       return docs;
@@ -6876,39 +6876,39 @@ var require_public_api = __commonJS((exports) => {
     const { lineCounter: lineCounter2, prettyErrors } = parseOptions(options);
     const parser$1 = new parser.Parser(lineCounter2?.addNewLine);
     const composer$1 = new composer.Composer(options);
-    let doc2 = null;
+    let doc = null;
     for (const _doc of composer$1.compose(parser$1.parse(source), true, source.length)) {
-      if (!doc2)
-        doc2 = _doc;
-      else if (doc2.options.logLevel !== "silent") {
-        doc2.errors.push(new errors3.YAMLParseError(_doc.range.slice(0, 2), "MULTIPLE_DOCS", "Source contains multiple documents; please use YAML.parseAllDocuments()"));
+      if (!doc)
+        doc = _doc;
+      else if (doc.options.logLevel !== "silent") {
+        doc.errors.push(new errors.YAMLParseError(_doc.range.slice(0, 2), "MULTIPLE_DOCS", "Source contains multiple documents; please use YAML.parseAllDocuments()"));
         break;
       }
     }
     if (prettyErrors && lineCounter2) {
-      doc2.errors.forEach(errors3.prettifyError(source, lineCounter2));
-      doc2.warnings.forEach(errors3.prettifyError(source, lineCounter2));
+      doc.errors.forEach(errors.prettifyError(source, lineCounter2));
+      doc.warnings.forEach(errors.prettifyError(source, lineCounter2));
     }
-    return doc2;
+    return doc;
   }
-  function parse5(src, reviver, options) {
+  function parse(src, reviver, options) {
     let _reviver = undefined;
     if (typeof reviver === "function") {
       _reviver = reviver;
     } else if (options === undefined && reviver && typeof reviver === "object") {
       options = reviver;
     }
-    const doc2 = parseDocument(src, options);
-    if (!doc2)
+    const doc = parseDocument(src, options);
+    if (!doc)
       return null;
-    doc2.warnings.forEach((warning) => log.warn(doc2.options.logLevel, warning));
-    if (doc2.errors.length > 0) {
-      if (doc2.options.logLevel !== "silent")
-        throw doc2.errors[0];
+    doc.warnings.forEach((warning) => log.warn(doc.options.logLevel, warning));
+    if (doc.errors.length > 0) {
+      if (doc.options.logLevel !== "silent")
+        throw doc.errors[0];
       else
-        doc2.errors = [];
+        doc.errors = [];
     }
-    return doc2.toJS(Object.assign({ reviver: _reviver }, options));
+    return doc.toJS(Object.assign({ reviver: _reviver }, options));
   }
   function stringify(value, replacer, options) {
     let _replacer = null;
@@ -6932,7 +6932,7 @@ var require_public_api = __commonJS((exports) => {
       return value.toString(options);
     return new Document.Document(value, _replacer, options).toString(options);
   }
-  exports.parse = parse5;
+  exports.parse = parse;
   exports.parseAllDocuments = parseAllDocuments;
   exports.parseDocument = parseDocument;
   exports.stringify = stringify;
@@ -6940,10 +6940,91 @@ var require_public_api = __commonJS((exports) => {
 
 // src/artifact-writer.ts
 import { existsSync } from "fs";
-import { readFile } from "fs/promises";
+import { readFile, unlink } from "fs/promises";
 import { dirname as dirname2, resolve as resolve2 } from "path";
 import { fileURLToPath } from "url";
 import { parseArgs } from "util";
+
+// node_modules/yaml/dist/index.js
+var composer = require_composer();
+var Document = require_Document();
+var Schema = require_Schema();
+var errors = require_errors();
+var Alias = require_Alias();
+var identity = require_identity();
+var Pair = require_Pair();
+var Scalar = require_Scalar();
+var YAMLMap = require_YAMLMap();
+var YAMLSeq = require_YAMLSeq();
+var cst = require_cst();
+var lexer = require_lexer();
+var lineCounter = require_line_counter();
+var parser = require_parser();
+var publicApi = require_public_api();
+var visit = require_visit();
+var $Composer = composer.Composer;
+var $Document = Document.Document;
+var $Schema = Schema.Schema;
+var $YAMLError = errors.YAMLError;
+var $YAMLParseError = errors.YAMLParseError;
+var $YAMLWarning = errors.YAMLWarning;
+var $Alias = Alias.Alias;
+var $isAlias = identity.isAlias;
+var $isCollection = identity.isCollection;
+var $isDocument = identity.isDocument;
+var $isMap = identity.isMap;
+var $isNode = identity.isNode;
+var $isPair = identity.isPair;
+var $isScalar = identity.isScalar;
+var $isSeq = identity.isSeq;
+var $Pair = Pair.Pair;
+var $Scalar = Scalar.Scalar;
+var $YAMLMap = YAMLMap.YAMLMap;
+var $YAMLSeq = YAMLSeq.YAMLSeq;
+var $Lexer = lexer.Lexer;
+var $LineCounter = lineCounter.LineCounter;
+var $Parser = parser.Parser;
+var $parse = publicApi.parse;
+var $parseAllDocuments = publicApi.parseAllDocuments;
+var $parseDocument = publicApi.parseDocument;
+var $stringify = publicApi.stringify;
+var $visit = visit.visit;
+var $visitAsync = visit.visitAsync;
+
+// src/lib/json-pointer.ts
+class JsonPointerError extends Error {
+}
+function resolvePointer(data, pointer) {
+  if (pointer === "")
+    return data;
+  if (!pointer.startsWith("/")) {
+    throw new JsonPointerError(`JSON Pointer must start with '/' or be empty, got: ${pointer}`);
+  }
+  const segments = pointer.slice(1).split("/").map((seg) => seg.replace(/~1/g, "/").replace(/~0/g, "~"));
+  let current = data;
+  for (const segment of segments) {
+    if (current === null || current === undefined)
+      return;
+    if (Array.isArray(current)) {
+      if (!/^\d+$/.test(segment))
+        return;
+      const idx = Number(segment);
+      if (idx < 0 || idx >= current.length)
+        return;
+      current = current[idx];
+      continue;
+    }
+    if (typeof current === "object") {
+      const obj = current;
+      if (!(segment in obj))
+        return;
+      current = obj[segment];
+      continue;
+    }
+    return;
+  }
+  return current;
+}
 
 // src/lib/registry.ts
 import { basename, resolve } from "path";
@@ -21306,54 +21387,6 @@ function validatePayload(schema, payload) {
 // src/lib/yaml-write.ts
 import { mkdir, writeFile } from "fs/promises";
 import { dirname } from "path";
-
-// node_modules/yaml/dist/index.js
-var composer = require_composer();
-var Document = require_Document();
-var Schema = require_Schema();
-var errors3 = require_errors();
-var Alias = require_Alias();
-var identity = require_identity();
-var Pair = require_Pair();
-var Scalar = require_Scalar();
-var YAMLMap = require_YAMLMap();
-var YAMLSeq = require_YAMLSeq();
-var cst = require_cst();
-var lexer = require_lexer();
-var lineCounter = require_line_counter();
-var parser = require_parser();
-var publicApi = require_public_api();
-var visit = require_visit();
-var $Composer = composer.Composer;
-var $Document = Document.Document;
-var $Schema = Schema.Schema;
-var $YAMLError = errors3.YAMLError;
-var $YAMLParseError = errors3.YAMLParseError;
-var $YAMLWarning = errors3.YAMLWarning;
-var $Alias = Alias.Alias;
-var $isAlias = identity.isAlias;
-var $isCollection = identity.isCollection;
-var $isDocument = identity.isDocument;
-var $isMap = identity.isMap;
-var $isNode = identity.isNode;
-var $isPair = identity.isPair;
-var $isScalar = identity.isScalar;
-var $isSeq = identity.isSeq;
-var $Pair = Pair.Pair;
-var $Scalar = Scalar.Scalar;
-var $YAMLMap = YAMLMap.YAMLMap;
-var $YAMLSeq = YAMLSeq.YAMLSeq;
-var $Lexer = lexer.Lexer;
-var $LineCounter = lineCounter.LineCounter;
-var $Parser = parser.Parser;
-var $parse = publicApi.parse;
-var $parseAllDocuments = publicApi.parseAllDocuments;
-var $parseDocument = publicApi.parseDocument;
-var $stringify = publicApi.stringify;
-var $visit = visit.visit;
-var $visitAsync = visit.visitAsync;
-
-// src/lib/yaml-write.ts
 var LINE_WIDTH = 100;
 function orderBySchema(value, schema) {
   if (!schema || value === null || typeof value !== "object")
@@ -21435,8 +21468,15 @@ async function writeYaml(targetPath, data, options = {}) {
 // src/artifact-writer.ts
 var EXIT_USAGE = 1;
 var EXIT_ALREADY = 2;
-var EXIT_INVALID = 3;
+var EXIT_INVALID_JSON = 3;
 var EXIT_IO = 4;
+var EXIT_NOT_CONFIGURED = 5;
+var EXIT_PATH_NOT_FOUND = 6;
+var EXIT_VALIDATION = 7;
+var VERBS = ["write", "update", "read"];
+function isVerb(value) {
+  return VERBS.includes(value);
+}
 function pluginRoot() {
   const fromEnv = process.env["CLAUDE_PLUGIN_ROOT"];
   if (fromEnv)
@@ -21466,41 +21506,132 @@ async function readPayload(values) {
   }
   fail(EXIT_USAGE, "Missing --payload <json> or --payload-file <path>");
 }
+async function loadSchema(schemaPath) {
+  const schemaRaw = await readFile(schemaPath, "utf-8");
+  return JSON.parse(schemaRaw);
+}
+function validateOrFail(schema, parsed) {
+  try {
+    return validatePayload(schema, parsed);
+  } catch (err) {
+    fail(EXIT_VALIDATION, `validation_failed: ${err.message}`);
+  }
+}
+async function handleWrite(schema, parsed, targetPath, artifactName) {
+  const validated = validateOrFail(schema, parsed);
+  const writeOptions = { schema, schemaUrl: schemaUrl(artifactName) };
+  await writeYaml(targetPath, validated, writeOptions);
+  console.log(`written: ${targetPath}`);
+}
+async function handleUpdate(schema, parsed, targetPath, artifactName) {
+  const validated = validateOrFail(schema, parsed);
+  const writeOptions = { schema, schemaUrl: schemaUrl(artifactName) };
+  await writeYaml(targetPath, validated, writeOptions);
+  console.log(`updated: ${targetPath}`);
+}
+async function handleRead(schema, targetPath, pathSelector) {
+  let yamlText;
+  try {
+    yamlText = await readFile(targetPath, "utf-8");
+  } catch (err) {
+    fail(EXIT_IO, `Cannot read artifact: ${err.message}`);
+  }
+  let parsed;
+  try {
+    parsed = $parse(yamlText);
+  } catch (err) {
+    fail(EXIT_VALIDATION, `validation_failed: malformed YAML \u2014 ${err.message}`);
+  }
+  const validated = validateOrFail(schema, parsed);
+  if (pathSelector === undefined) {
+    console.log(JSON.stringify(validated));
+    return;
+  }
+  const slice = resolvePointer(validated, pathSelector);
+  if (slice === undefined) {
+    fail(EXIT_PATH_NOT_FOUND, `path_not_found: ${pathSelector}`);
+  }
+  console.log(JSON.stringify(slice));
+}
 async function main() {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
       payload: { type: "string" },
-      "payload-file": { type: "string" }
+      "payload-file": { type: "string" },
+      path: { type: "string" },
+      "cleanup-payload-file": { type: "boolean" }
     },
     allowPositionals: true
   });
   const verb = positionals[0];
   const name = positionals[1];
-  if (verb !== "write" || !name) {
-    fail(EXIT_USAGE, "Usage: artifact-writer write <name> (--payload <json> | --payload-file <path>)");
+  if (!verb || !isVerb(verb) || !name) {
+    fail(EXIT_USAGE, `Usage:
+` + `  artifact-writer write <name> (--payload <json> | --payload-file <path>)
+` + `  artifact-writer update <name> (--payload <json> | --payload-file <path>)
+` + "  artifact-writer read <name> [--path <json-pointer>]");
   }
   if (!isArtifactName(name)) {
     fail(EXIT_USAGE, `Unknown artifact: ${name}. Known: ${Object.keys(ARTIFACTS).join(", ")}`);
   }
-  const payloadText = await readPayload(values);
-  let parsed;
-  try {
-    parsed = JSON.parse(payloadText);
-  } catch (err) {
-    fail(EXIT_INVALID, `Invalid JSON in payload: ${err.message}`);
-  }
   const root = pluginRoot();
   const cwd = process.cwd();
   const { schemaPath, targetPath } = resolveArtifact(name, root, cwd);
-  if (existsSync(targetPath)) {
-    fail(EXIT_ALREADY, `already_configured: ${targetPath}`);
+  const exists = existsSync(targetPath);
+  if (verb === "read" && values["cleanup-payload-file"]) {
+    fail(EXIT_USAGE, "--cleanup-payload-file is only valid with write or update.");
   }
-  const schemaRaw = await readFile(schemaPath, "utf-8");
-  const schema = JSON.parse(schemaRaw);
-  const validated = validatePayload(schema, parsed);
-  const writeOptions = { schema, schemaUrl: schemaUrl(name) };
-  await writeYaml(targetPath, validated, writeOptions);
-  console.log(`written: ${targetPath}`);
+  if (verb === "write") {
+    if (exists)
+      fail(EXIT_ALREADY, `already_configured: ${targetPath}`);
+    if (values.path !== undefined)
+      fail(EXIT_USAGE, "--path is only valid with the read verb.");
+    const payloadText = await readPayload(values);
+    let parsed;
+    try {
+      parsed = JSON.parse(payloadText);
+    } catch (err) {
+      fail(EXIT_INVALID_JSON, `Invalid JSON in payload: ${err.message}`);
+    }
+    const schema2 = await loadSchema(schemaPath);
+    await handleWrite(schema2, parsed, targetPath, name);
+    await maybeCleanup(values);
+    return;
+  }
+  if (verb === "update") {
+    if (!exists)
+      fail(EXIT_NOT_CONFIGURED, `not_configured: ${targetPath}`);
+    if (values.path !== undefined)
+      fail(EXIT_USAGE, "--path is only valid with the read verb.");
+    const payloadText = await readPayload(values);
+    let parsed;
+    try {
+      parsed = JSON.parse(payloadText);
+    } catch (err) {
+      fail(EXIT_INVALID_JSON, `Invalid JSON in payload: ${err.message}`);
+    }
+    const schema2 = await loadSchema(schemaPath);
+    await handleUpdate(schema2, parsed, targetPath, name);
+    await maybeCleanup(values);
+    return;
+  }
+  if (!exists)
+    fail(EXIT_NOT_CONFIGURED, `not_configured: ${targetPath}`);
+  if (values.payload !== undefined || values["payload-file"] !== undefined) {
+    fail(EXIT_USAGE, "--payload / --payload-file are not valid with the read verb.");
+  }
+  const schema = await loadSchema(schemaPath);
+  await handleRead(schema, targetPath, values.path);
+}
+async function maybeCleanup(values) {
+  if (!values["cleanup-payload-file"])
+    return;
+  const path = values["payload-file"];
+  if (!path)
+    return;
+  try {
+    await unlink(path);
+  } catch {}
 }
 await main();
