@@ -7,7 +7,7 @@ allowed-tools: Bash AskUserQuestion Read
 argument-hint: "[interaction:en|es] [artifact:en|es]"
 ---
 
-# code:setup
+# Initialize the code plugin in the current project
 
 Initializes the `code` plugin for the current project by writing `.project/config.yaml`. The plugin owns `.project/`; never write or edit files there directly — always go through the artifact-writer CLI.
 
@@ -24,6 +24,10 @@ Examples:
 - `/code:setup es en` — non-interactive; uses `es` for interaction and `en` for artifacts.
 
 ## Workflow
+
+### Step 0: Load interaction style
+
+Read `${CLAUDE_PLUGIN_ROOT}/shared/interaction.md` and apply its rules (tone, format, what-never-to-do). The `Language` section starts to apply only after the user picks `interaction_language` later in this skill.
 
 ### Step 1: Detect existing configuration
 

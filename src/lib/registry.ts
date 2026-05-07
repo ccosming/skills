@@ -14,6 +14,10 @@ export const ARTIFACTS = {
     schemaPath: 'schemas/config.schema.json',
     targetPath: '.project/config.yaml',
   },
+  spec: {
+    schemaPath: 'schemas/spec.schema.json',
+    targetPath: '.project/spec.yaml',
+  },
 } as const satisfies Record<string, ArtifactDef>;
 
 export type ArtifactName = keyof typeof ARTIFACTS;

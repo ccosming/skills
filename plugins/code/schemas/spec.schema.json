@@ -1,0 +1,389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spec",
+  "description": "Project-level technical specification: identity, goals, architecture, stack, and practices that govern the software.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["identity", "goals", "architecture", "stack", "practices", "metadata"],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What the software is and what is explicitly out of its scope.",
+      "required": ["name", "type", "description", "out_of_scope"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Canonical project name."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "web-app",
+            "service",
+            "cli",
+            "library",
+            "mobile",
+            "desktop",
+            "embedded",
+            "plugin",
+            "hybrid"
+          ],
+          "description": "Software category that drives architectural assumptions."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One-line absolute description of what the software is."
+        },
+        "problem": {
+          "type": "string",
+          "description": "Concrete problem the software solves."
+        },
+        "audience": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Target users or personas."
+        },
+        "domain": {
+          "type": "string",
+          "description": "Business or industry domain the software operates in."
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Capabilities or concerns explicitly excluded from this software."
+        }
+      }
+    },
+    "goals": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Outcomes the software delivers and the quality bar that frames them.",
+      "required": ["outcomes"],
+      "properties": {
+        "outcomes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Outcomes the software delivers to its users or operators."
+        },
+        "quality_attributes": {
+          "type": "array",
+          "description": "Non-functional requirements ranked by priority.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "priority"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Quality attribute name (e.g., performance, security, scalability)."
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical"],
+                "description": "Priority of this attribute relative to others."
+              },
+              "target": {
+                "type": "string",
+                "description": "Concrete target or measurable threshold for the attribute."
+              }
+            }
+          }
+        },
+        "success_metrics": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Measures used to determine whether the outcomes are met."
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "External or imposed conditions the software must respect.",
+      "properties": {
+        "technical": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Mandated technologies, integrations, or technical limits."
+        },
+        "compliance": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Regulatory or compliance frameworks that apply (e.g., GDPR, HIPAA, SOC2)."
+        }
+      }
+    },
+    "domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Domain model elements: glossary, contexts, and core concepts.",
+      "properties": {
+        "glossary": {
+          "type": "array",
+          "description": "Domain terms with absolute definitions.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["term", "definition"],
+            "properties": {
+              "term": { "type": "string", "minLength": 1 },
+              "definition": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "bounded_contexts": {
+          "type": "array",
+          "description": "Bounded contexts that partition the domain.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "description"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "description": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "core_concepts": {
+          "type": "array",
+          "description": "Aggregates or main entities that represent the core domain.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "description"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "description": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Architectural style, patterns, cross-cutting concerns, and system boundaries.",
+      "required": ["style"],
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": [
+            "monolith",
+            "modular-monolith",
+            "microservices",
+            "event-driven",
+            "serverless",
+            "hybrid"
+          ],
+          "description": "Top-level architectural style."
+        },
+        "patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Design patterns applied (e.g., hexagonal, CQRS, layered, clean)."
+        },
+        "cross_cutting": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "How cross-cutting concerns are handled across the system.",
+          "properties": {
+            "auth": {
+              "type": "string",
+              "description": "Authentication and authorization approach."
+            },
+            "logging": { "type": "string", "description": "Logging strategy and conventions." },
+            "observability": {
+              "type": "string",
+              "description": "Metrics, traces, and dashboards approach."
+            },
+            "error_handling": {
+              "type": "string",
+              "description": "Error handling philosophy and conventions."
+            },
+            "caching": { "type": "string", "description": "Caching strategy and layers." },
+            "i18n": { "type": "string", "description": "Internationalization approach." },
+            "security": {
+              "type": "string",
+              "description": "Security posture, threat model, and controls."
+            }
+          }
+        },
+        "boundaries": {
+          "type": "array",
+          "description": "Inbound and outbound integration points of the system.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "kind", "description"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "kind": {
+                "type": "string",
+                "enum": ["inbound", "outbound"],
+                "description": "Whether the boundary receives or initiates communication."
+              },
+              "description": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "stack": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Concrete technologies the software is built on.",
+      "required": ["languages"],
+      "properties": {
+        "languages": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Programming languages used (with versions when relevant, e.g., 'typescript@6')."
+        },
+        "runtime": {
+          "type": "string",
+          "description": "Primary runtime or interpreter (e.g., bun, node, deno, jvm)."
+        },
+        "frameworks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Application frameworks in use."
+        },
+        "data_stores": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Databases, queues, caches, blob storage, search engines."
+        },
+        "infrastructure": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Hosting, orchestration, and cloud services."
+        },
+        "ci_cd": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "CI/CD systems and pipelines."
+        },
+        "testing": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Testing frameworks and runners."
+        },
+        "observability": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Observability and monitoring tools."
+        },
+        "tooling": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Build, package, lint, and format tools."
+        }
+      }
+    },
+    "practices": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How the team works on the software.",
+      "required": ["testing_strategy", "branching_model"],
+      "properties": {
+        "testing_strategy": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "When each kind of test is applied.",
+          "required": ["unit", "integration", "e2e"],
+          "properties": {
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "description": "When and where unit tests apply."
+            },
+            "integration": {
+              "type": "string",
+              "minLength": 1,
+              "description": "When and where integration tests apply."
+            },
+            "e2e": {
+              "type": "string",
+              "minLength": 1,
+              "description": "When and where end-to-end tests apply."
+            }
+          }
+        },
+        "branching_model": {
+          "type": "string",
+          "enum": ["trunk", "gitflow", "github-flow", "gitlab-flow"],
+          "description": "Branching strategy for the repository."
+        },
+        "release_strategy": {
+          "type": "string",
+          "description": "How releases are produced and shipped."
+        },
+        "code_conventions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "References to coding standards or conventions enforced."
+        },
+        "definition_of_done": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Default Definition of Done applied to features and epics."
+        }
+      }
+    },
+    "risks": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Known risks, tradeoffs, and open questions that affect the software.",
+      "properties": {
+        "known": {
+          "type": "array",
+          "description": "Identified risks with their mitigations.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["description", "mitigation"],
+            "properties": {
+              "description": { "type": "string", "minLength": 1 },
+              "mitigation": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "tradeoffs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conscious tradeoffs accepted in the design."
+        },
+        "open_questions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Unresolved questions that affect the design or scope."
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Bookkeeping about the spec itself.",
+      "required": ["spec_version", "last_updated"],
+      "properties": {
+        "spec_version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Semantic version of this spec instance."
+        },
+        "last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO date (YYYY-MM-DD) of the last update."
+        }
+      }
+    }
+  }
+}

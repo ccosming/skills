@@ -11,6 +11,7 @@ import { writeYaml, type WriteYamlOptions } from './lib/yaml-write.ts';
 const EXIT_USAGE = 1;
 const EXIT_ALREADY = 2;
 const EXIT_INVALID = 3;
+const EXIT_IO = 4;
 
 function pluginRoot(): string {
   const fromEnv = process.env['CLAUDE_PLUGIN_ROOT'];
@@ -27,11 +28,27 @@ function fail(code: number, message: string): never {
   process.exit(code);
 }
 
+async function readPayload(values: { payload?: string; 'payload-file'?: string }): Promise<string> {
+  if (values.payload && values['payload-file']) {
+    fail(EXIT_USAGE, 'Pass either --payload or --payload-file, not both.');
+  }
+  if (values.payload) return values.payload;
+  if (values['payload-file']) {
+    try {
+      return await readFile(values['payload-file'], 'utf-8');
+    } catch (err) {
+      fail(EXIT_IO, `Cannot read --payload-file: ${(err as Error).message}`);
+    }
+  }
+  fail(EXIT_USAGE, 'Missing --payload <json> or --payload-file <path>');
+}
+
 async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
       payload: { type: 'string' },
+      'payload-file': { type: 'string' },
     },
     allowPositionals: true,
   });
@@ -40,22 +57,23 @@ async function main(): Promise<void> {
   const name = positionals[1];
 
   if (verb !== 'write' || !name) {
-    fail(EXIT_USAGE, 'Usage: artifact-writer write <name> --payload <json>');
+    fail(
+      EXIT_USAGE,
+      'Usage: artifact-writer write <name> (--payload <json> | --payload-file <path>)',
+    );
   }
 
   if (!isArtifactName(name)) {
     fail(EXIT_USAGE, `Unknown artifact: ${name}. Known: ${Object.keys(ARTIFACTS).join(', ')}`);
   }
 
-  if (!values.payload) {
-    fail(EXIT_USAGE, 'Missing --payload <json>');
-  }
+  const payloadText = await readPayload(values);
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(values.payload);
+    parsed = JSON.parse(payloadText);
   } catch (err) {
-    fail(EXIT_INVALID, `Invalid JSON in --payload: ${(err as Error).message}`);
+    fail(EXIT_INVALID, `Invalid JSON in payload: ${(err as Error).message}`);
   }
 
   const root = pluginRoot();

@@ -6952,6 +6952,10 @@ var ARTIFACTS = {
   config: {
     schemaPath: "schemas/config.schema.json",
     targetPath: ".project/config.yaml"
+  },
+  spec: {
+    schemaPath: "schemas/spec.schema.json",
+    targetPath: ".project/spec.yaml"
   }
 };
 function isArtifactName(name) {
@@ -21246,6 +21250,7 @@ function date4(params) {
 // node_modules/zod/v4/classic/external.js
 config(en_default());
 // src/lib/validate.ts
+var ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 function compileSchema(schema) {
   if (schema.enum) {
     if (!schema.enum.every((v) => typeof v === "string")) {
@@ -21256,8 +21261,18 @@ function compileSchema(schema) {
       throw new Error("Enum must have at least one value.");
     return exports_external.enum(values);
   }
-  if (schema.type === "string")
-    return exports_external.string();
+  if (schema.type === "string") {
+    let s = exports_external.string();
+    if (typeof schema.minLength === "number")
+      s = s.min(schema.minLength);
+    if (typeof schema.maxLength === "number")
+      s = s.max(schema.maxLength);
+    if (schema.pattern)
+      s = s.regex(new RegExp(schema.pattern));
+    if (schema.format === "date")
+      s = s.regex(ISO_DATE_RE, "Expected ISO date YYYY-MM-DD");
+    return s;
+  }
   if (schema.type === "number" || schema.type === "integer")
     return exports_external.number();
   if (schema.type === "boolean")
@@ -21265,7 +21280,12 @@ function compileSchema(schema) {
   if (schema.type === "array") {
     if (!schema.items)
       throw new Error('Array schema requires "items".');
-    return exports_external.array(compileSchema(schema.items));
+    let arr = exports_external.array(compileSchema(schema.items));
+    if (typeof schema.minItems === "number")
+      arr = arr.min(schema.minItems);
+    if (typeof schema.maxItems === "number")
+      arr = arr.max(schema.maxItems);
+    return arr;
   }
   if (schema.type === "object") {
     const required2 = new Set(schema.required ?? []);
@@ -21416,6 +21436,7 @@ async function writeYaml(targetPath, data, options = {}) {
 var EXIT_USAGE = 1;
 var EXIT_ALREADY = 2;
 var EXIT_INVALID = 3;
+var EXIT_IO = 4;
 function pluginRoot() {
   const fromEnv = process.env["CLAUDE_PLUGIN_ROOT"];
   if (fromEnv)
@@ -21430,30 +21451,44 @@ function fail(code, message) {
   console.error(message);
   process.exit(code);
 }
+async function readPayload(values) {
+  if (values.payload && values["payload-file"]) {
+    fail(EXIT_USAGE, "Pass either --payload or --payload-file, not both.");
+  }
+  if (values.payload)
+    return values.payload;
+  if (values["payload-file"]) {
+    try {
+      return await readFile(values["payload-file"], "utf-8");
+    } catch (err) {
+      fail(EXIT_IO, `Cannot read --payload-file: ${err.message}`);
+    }
+  }
+  fail(EXIT_USAGE, "Missing --payload <json> or --payload-file <path>");
+}
 async function main() {
   const { values, positionals } = parseArgs({
     args: process.argv.slice(2),
     options: {
-      payload: { type: "string" }
+      payload: { type: "string" },
+      "payload-file": { type: "string" }
     },
     allowPositionals: true
   });
   const verb = positionals[0];
   const name = positionals[1];
   if (verb !== "write" || !name) {
-    fail(EXIT_USAGE, "Usage: artifact-writer write <name> --payload <json>");
+    fail(EXIT_USAGE, "Usage: artifact-writer write <name> (--payload <json> | --payload-file <path>)");
   }
   if (!isArtifactName(name)) {
     fail(EXIT_USAGE, `Unknown artifact: ${name}. Known: ${Object.keys(ARTIFACTS).join(", ")}`);
   }
-  if (!values.payload) {
-    fail(EXIT_USAGE, "Missing --payload <json>");
-  }
+  const payloadText = await readPayload(values);
   let parsed;
   try {
-    parsed = JSON.parse(values.payload);
+    parsed = JSON.parse(payloadText);
   } catch (err) {
-    fail(EXIT_INVALID, `Invalid JSON in --payload: ${err.message}`);
+    fail(EXIT_INVALID, `Invalid JSON in payload: ${err.message}`);
   }
   const root = pluginRoot();
   const cwd = process.cwd();
