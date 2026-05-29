@@ -6,11 +6,9 @@ allowed-tools: Bash, Read, Grep, AskUserQuestion
 disable-model-invocation: true
 ---
 
-# /factory:commit · Git commit with approval
+# Git commit with approval
 
 Creates a commit following [Conventional Commits](https://www.conventionalcommits.org/). Message **in English**, no `Co-Authored-By` line, no `--no-verify`, no `--amend` to "rescue" a failed commit.
-
-This skill is invoked explicitly via `/factory:commit`. It runs five sequential steps; the model **must not** skip any of them.
 
 ## Workflow
 
@@ -148,5 +146,5 @@ Solution: run `git status` and `git diff --staged` to confirm what is staged bef
 - No `Co-Authored-By` trailer.
 - No `--no-verify`, no `--no-gpg-sign`.
 - No `git add -A` nor `git add .`.
-- No commits without explicit user approval in the same conversation.
+- No commits without explicit user approval in the same conversation via AskUserQuestion.
 - No `--amend` unless the user explicitly requests amending the previous commit (different intent than this skill).

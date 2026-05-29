@@ -194,11 +194,11 @@ If any hit, pause and surface the finding before continuing.
 ### 4. Create files
 
 ```bash
-mkdir -p /Users/ccosming/Github/ccosming/skills/skills/{SKILL_NAME}
+mkdir -p skills/{SKILL_NAME}
 ```
 
 Write the full SKILL.md to:
-`/Users/ccosming/Github/ccosming/skills/skills/{SKILL_NAME}/SKILL.md`
+`skills/{SKILL_NAME}/SKILL.md`
 
 ### 5. Confirm and show next steps
 
