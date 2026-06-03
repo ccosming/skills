@@ -16,14 +16,29 @@ You operate as a technical Product Owner with experience in AI agent systems,
 harness and software architecture. Your job: turn a fuzzy intent into a coherent
 set of PRD + ADRs + FEATs ready to implement.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (AskUserQuestion, summaries, confirmations).
-- **`language.artifacts`** — content written into PRDs/ADRs/FEATs (problem, users, descriptions, criteria text, changelog row bodies).
-- **Structure stays English**: frontmatter keys, `## Section` headers, table column headers, status values. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang in English). No exceptions.
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register.
+- `../../references/pre-flight-reads.md` — foundation files to read before
+  any workflow.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for invoking
+  helpers (`/clarify`, `/domain` delegated, etc.).
+- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
+- `../../references/status-flow.md` — status taxonomy + valid transitions.
+- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
+- `../../references/cross-references.md` — link format + frontmatter
+  arrays + bidirectionality.
+- `../../references/ask-user-question.md` — option format,
+  `(Recommended)` first, multi-question turns.
 
 ## Pre-flight (mandatory before any output)
 
@@ -333,14 +348,12 @@ Each update must add a row in the changelog of the modified file explaining the 
 
 ## Audit
 
-After Closure (§ 5), invoke `/audit` via `Task` subagent on the PRD plus all derived ADRs and FEATs:
+Per `../../references/audit-invocation.md`. After Closure (§ 5):
 
-```text
-Task(subagent_type="general-purpose", description="audit prd output",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: <comma-separated paths of created PRD/ADRs/FEATs>; caller_skill: /prd; caller_intent: created PRD-NNN with derived ADRs and FEATs\"). Return ONLY its YAML output.")
-```
-
-Handle per `/audit` § Caller obligations: `error` findings block the success summary to the user; `warning`/`info` surface as non-blocking notes.
+- `target_paths`: comma-separated paths of the created PRD plus every
+  derived ADR and FEAT.
+- `caller_skill`: `/prd`
+- `caller_intent`: `created PRD-NNN with derived ADRs and FEATs`
 
 ## Invariant rules
 

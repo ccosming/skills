@@ -33,18 +33,25 @@ Detect the mode from invocation context:
 If `.spec/stack.md` does not exist, mode is forced to `bootstrap` regardless of
 user phrasing.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and
-direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (AskUserQuestion, summaries, reports).
-- **`language.artifacts`** — content written into artifacts (descriptions,
-  changelog row bodies).
-- **Structure stays English**: frontmatter keys, `## Section` headers, table
-  column headers, status values. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang
-  in English). No exceptions.
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register.
+- `../../references/pre-flight-reads.md` — foundation files to read before
+  any workflow.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for `delegated`
+  mode invocations from `/code` and any helpers.
+- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
+- `../../references/status-flow.md` — status taxonomy + valid transitions.
+- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
 
 ## Pre-flight (mandatory)
 
@@ -287,18 +294,16 @@ Files and decisions `/stack` owns. `/code` must delegate any change to these:
 
 ## Audit
 
-After any mode that writes to `.spec/stack.md` or creates an ADR (`bootstrap`,
-`update`, `sync-check` when divergence is applied, `delegated`), invoke `/audit`
-via `Task` subagent before reporting closure:
+Per `../../references/audit-invocation.md`. After any mode that writes to
+`.spec/stack.md` or creates an ADR (`bootstrap`, `update`, `sync-check` with
+divergence applied, `delegated`):
 
-```text
-Task(subagent_type="general-purpose", description="audit stack output",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: .spec/stack.md<,additional ADR paths if created>; caller_skill: /stack; caller_intent: <mode>: <one-line>\"). Return ONLY its YAML output.")
-```
+- `target_paths`: `.spec/stack.md` plus any additional ADR paths created.
+- `caller_skill`: `/stack`
+- `caller_intent`: `<mode>: <one-line summary>`
 
-Handle per `/audit` § Caller obligations: `error` findings block the success
-report; `warning`/`info` surface as non-blocking notes. In `delegated` mode, the
-audit findings are included in the structured summary returned to `/code`.
+In `delegated` mode, include the audit findings in the structured summary
+returned to `/code`.
 
 ## Invariant rules
 

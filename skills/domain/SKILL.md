@@ -32,20 +32,30 @@ Detect mode from invocation context:
 If `.spec/domain.md` does not exist and the mode is not `delegated --create`,
 force `init`.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and
-direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (AskUserQuestion, summaries, reports).
-- **`language.artifacts`** — content written into `domain.md` (definition prose,
-  term descriptions, context responsibility prose, changelog row bodies). **Term
-  names themselves stay in the language they were coined in** — don't translate
-  domain terms.
-- **Structure stays English**: frontmatter keys, `## Section` headers, table
-  column headers. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang
-  in English). No exceptions.
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register. **Domain term names stay in
+  the language they were coined in; never translate them.**
+- `../../references/pre-flight-reads.md` — foundation files to read before
+  any workflow.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for being invoked
+  by `/prd` in `delegated` mode.
+- `../../references/semver.md` — version bump rules.
+- `../../references/status-flow.md` — status taxonomy + valid transitions.
+- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
+- `../../references/cross-references.md` — link format + frontmatter
+  arrays + bidirectionality.
+- `../../references/ask-user-question.md` — option format,
+  `(Recommended)` first, multi-question turns.
 
 ## Pre-flight (mandatory)
 
@@ -308,15 +318,15 @@ text-only.)
 
 ## Audit
 
-After any mode that writes to `.spec/domain.md`, invoke `/audit` via `Task`:
+Per `../../references/audit-invocation.md`. After any mode that writes to
+`.spec/domain.md`:
 
-```text
-Task(subagent_type="general-purpose", description="audit domain output",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: .spec/domain.md; caller_skill: /domain; caller_intent: <mode>: <one-line>\"). Return ONLY its YAML output.")
-```
+- `target_paths`: `.spec/domain.md`
+- `caller_skill`: `/domain`
+- `caller_intent`: `<mode>: <one-line summary>`
 
-Handle per `/audit` § Caller obligations. In `delegated` mode, fold audit
-findings into the YAML return to the caller.
+In `delegated` mode, fold the audit findings into the YAML return to the
+caller.
 
 ## Invariant rules
 

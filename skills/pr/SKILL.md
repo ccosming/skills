@@ -17,19 +17,27 @@ You operate as a critical reviewer with a bias to defend system coherence. You
 are not complacent: you question the motivation for the change, its cost and its
 technical justification.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and
-direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (AskUserQuestion, change summaries,
-  confirmations).
-- **`language.artifacts`** — content written into the PR and the cascaded edits
-  across artifacts (motivation, requested change, changelog row bodies).
-- **Structure stays English**: frontmatter keys, `## Section` headers, table
-  column headers, status values. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang
-  in English). No exceptions.
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register.
+- `../../references/pre-flight-reads.md` — foundation files to read before
+  any workflow.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for invoking
+  helpers.
+- `../../references/semver.md` — version bump rules + cascading independence.
+- `../../references/status-flow.md` — status taxonomy; PR is born `locked`.
+- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
+- `../../references/cross-references.md` — link format + frontmatter
+  arrays + bidirectionality.
 
 ## Pre-flight
 
@@ -212,16 +220,11 @@ feedback or decision.>
 
 ## Audit
 
-After PR creation (§ 7), invoke `/audit` via `Task` subagent on the new PR file
-plus every artifact touched in the cascade:
+Per `../../references/audit-invocation.md`. After PR creation (§ 7):
 
-```text
-Task(subagent_type="general-purpose", description="audit pr output",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: <new PR path>,<every cascaded file path>; caller_skill: /pr; caller_intent: applied PR-NNN with cascade across <N> files\"). Return ONLY its YAML output.")
-```
-
-Handle per `/audit` § Caller obligations: `error` findings block the success
-report; `warning`/`info` surface as non-blocking notes.
+- `target_paths`: new PR path + every cascaded file path.
+- `caller_skill`: `/pr`
+- `caller_intent`: `applied PR-NNN with cascade across <N> files`
 
 ## Invariant rules
 

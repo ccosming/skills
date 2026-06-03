@@ -16,19 +16,28 @@ You operate as a senior reviewer with critical judgment. Your job: identify real
 problems (not opinions), classify them by severity, generate the `REV-NNN` file
 and conduct a remediation loop with `/code` review mode.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and
-direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (AskUserQuestion, findings reports,
-  summaries).
-- **`language.artifacts`** — content written into the REV (executive summary,
-  finding descriptions, changelog row bodies).
-- **Structure stays English**: frontmatter keys, `## Section` headers, severity
-  labels (`blocker`/`major`/`minor`/`nit`), verdict values. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang
-  in English). No exceptions.
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register. **Severity labels
+  (`blocker`/`major`/`minor`/`nit`) and verdict values stay English.**
+- `../../references/pre-flight-reads.md` — foundation files to read before
+  any workflow.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for invoking
+  `/code` in review mode and any helpers.
+- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
+- `../../references/status-flow.md` — status taxonomy + valid transitions.
+- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
+- `../../references/cross-references.md` — link format + frontmatter
+  arrays + bidirectionality.
 
 ## Pre-flight (mandatory)
 
@@ -228,16 +237,11 @@ executed, next steps.
 
 ## Audit
 
-After Closure (§ 5), invoke `/audit` via `Task` subagent on the REV file plus
-the targeted FEAT (metadata may have changed):
+Per `../../references/audit-invocation.md`. After Closure (§ 5):
 
-```text
-Task(subagent_type="general-purpose", description="audit rev output",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: <REV path>,<targeted FEAT path>; caller_skill: /rev; caller_intent: closed REV-NNN with verdict <approve|request-changes|reject>\"). Return ONLY its YAML output.")
-```
-
-Handle per `/audit` § Caller obligations: `error` findings block the verdict
-report; `warning`/`info` surface as non-blocking notes.
+- `target_paths`: REV path + targeted FEAT path.
+- `caller_skill`: `/rev`
+- `caller_intent`: `closed REV-NNN with verdict <approve|request-changes|reject>`
 
 ## Invariant rules
 

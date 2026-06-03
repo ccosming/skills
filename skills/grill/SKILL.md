@@ -172,14 +172,20 @@ Guard these every write — structure rot is the most common failure:
   loop**. They are created once, in Step 6, appended after
   `## Resolved questions`.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (the questions you ask, your summaries).
-- **`language.artifacts`** — content written into the grill notes file (answers, implications, resolved sections, verdict prose).
-- **Structure stays English**: frontmatter keys, `## Section` headers (`## Resolved questions`, `## Decisions made`, etc.), status values. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang in English). No exceptions. (This supersedes the language-matching note in `## Rules` for register; Spanish replies still use "tú"/impersonal, never voseo.)
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register.
+- `../../references/skill-invocation.md` — Task pattern for invoking
+  helpers (`/clarify`, `/research`, `/summarize`).
+- `../../references/ask-user-question.md` — option format,
+  `(Recommended)` first, multi-question turns.
 
 ## Pre-flights
 

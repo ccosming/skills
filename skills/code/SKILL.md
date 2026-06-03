@@ -28,19 +28,28 @@ turn a `ready` FEAT into maintainable, tested code aligned with
 Detect the mode according to the received arguments. If you receive `REV-NNN`,
 you are in `review`.
 
-## Localization
+## Canonical rules (mandatory)
 
-Before any other pre-flight step, read `.spec/config.yaml`. If missing, stop and
-direct the user to `/start`. Then apply throughout this skill's execution:
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
 
-- **`language.chat`** — user-facing prose (AskUserQuestion, summaries, reports).
-- **`language.artifacts`** — content written into artifacts (descriptions,
-  changelog row bodies). Code identifiers and comments may follow the project's
-  stack-specific convention from `stack.md`.
-- **Structure stays English**: frontmatter keys, `## Section` headers, table
-  column headers, status values. Never translated.
-- **Neutral register always**, no regional idioms (no voseo in Spanish, no slang
-  in English). No exceptions.
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register. **Code identifiers and
+  comments may follow `stack.md` conventions instead of `language.artifacts`.**
+- `../../references/pre-flight-reads.md` — foundation files to read before
+  any workflow.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for invoking
+  helpers and `/stack` in delegated mode.
+- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
+- `../../references/status-flow.md` — status taxonomy + valid transitions.
+- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
+- `../../references/cross-references.md` — link format + frontmatter
+  arrays + bidirectionality.
 
 ## Pre-flight (mandatory)
 
@@ -241,17 +250,13 @@ For each addressed finding:
 
 ## Audit
 
-After Closure of either `implement` mode (§ 6) or `review` mode (§ 4), invoke
-`/audit` via `Task` subagent on the modified FEAT and any other `.spec/` files
-touched:
+Per `../../references/audit-invocation.md`. After Closure of either
+`implement` mode (§ 6) or `review` mode (§ 4):
 
-```text
-Task(subagent_type="general-purpose", description="audit code output",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: <FEAT path + any other .spec/ paths modified>; caller_skill: /code; caller_intent: <one-line: implemented FEAT-NNN or applied REV-NNN iteration>\"). Return ONLY its YAML output.")
-```
-
-Handle per `/audit` § Caller obligations: `error` findings block the success
-report; `warning`/`info` surface alongside the closure report.
+- `target_paths`: FEAT path plus any other `.spec/` paths modified.
+- `caller_skill`: `/code`
+- `caller_intent`: one-line, e.g. `implemented FEAT-NNN` or
+  `applied REV-NNN iteration N`.
 
 ## Invariant rules
 

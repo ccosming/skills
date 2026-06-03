@@ -43,22 +43,42 @@ Your job: extract what is already in the user's head but not yet articulated.
 Surface inferences explicitly: emit `Inferred: [X]. Confirm?` before
 recording. Never write content the user did not state.
 
+## Canonical rules (mandatory)
+
+These plugin-wide rules govern every step of this skill. Read each one at
+pre-flight and apply throughout the execution. A workflow that violates any
+canonical rule produces an invalid result. No exception.
+
+- `../../references/voice.md` — speak only as the operator persona; never
+  narrate workflow internals.
+- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
+  vs `language.artifacts`; neutral register.
+- `../../references/audit-invocation.md` — Task pattern + caller
+  obligations for `/audit`.
+- `../../references/skill-invocation.md` — Task pattern for invoking
+  helpers (`/clarify`, etc.).
+- `../../references/ask-user-question.md` — option format,
+  `(Recommended)` first, multi-question turns.
+
 ## Pre-flight
 
-1. List foundation files:
+1. Read every file listed in `## Canonical rules` and internalize the
+   rules before responding.
+
+2. List foundation files:
 
    ```bash
    ls .spec/config.yaml .spec/overview.md .spec/guidelines.md .spec/personality.md 2>/dev/null
    ```
 
-2. Decide flow:
+3. Decide flow:
    - **All 4 exist** → stop. Direct user to `/pr`.
    - **`config.yaml` missing** → Phase 1 runs first.
    - **Some orthogonal files exist** → AskUserQuestion: regenerate all
      (overwrite) OR generate only the missing ones.
    - **None** → run Phases 1–4.
 
-3. Create `.spec/` if absent:
+4. Create `.spec/` if absent:
 
    ```bash
    mkdir -p .spec
@@ -128,12 +148,13 @@ changelog row. If (c), stop and recommend `/grill`.
 
 ### `/clarify` invocation
 
-After every open answer:
+Per `../../references/skill-invocation.md`. For every open answer, pass:
 
-```text
-Task(subagent_type="general-purpose", description="clarify term",
-     prompt="Invoke the clarify skill: Skill(skill=\"clarify\", args=\"user_input: <reply>; domain_context: project foundation grilling, phase <N>, dimension <name>; prior_resolutions: <n>; written_sections: <n>\"). Return ONLY its YAML output. Do not ask the user anything.")
-```
+- `user_input`: the user's reply.
+- `domain_context`: `project foundation grilling, phase <N>, dimension <name>`.
+- `prior_resolutions`: count of disambiguations already resolved in this
+  phase.
+- `written_sections`: count of sections already written.
 
 If `NEEDS_DISAMBIGUATION` returns, present the spec's `question` via
 `AskUserQuestion` yourself, fold the resolution into the recorded answer,
@@ -150,21 +171,6 @@ After writing the phase artifact:
 
 If Adjust, ask which dimension, re-run the engine narrowed to that dimension
 only, then re-write and re-confirm.
-
-## Localization
-
-Once Phase 1 sets `.spec/config.yaml`, apply throughout this skill and every
-downstream skill on this project:
-
-- **`language.chat`** — all prose to the user: questions, summaries,
-  confirmations.
-- **`language.artifacts`** — content written into artifacts.
-- **Structure stays English** — frontmatter keys, `## Section` headers,
-  table column headers, status values.
-- **Neutral register always** — no regional idioms; for Spanish, use `tú` or
-  impersonal forms, never voseo; for English, no slang.
-
-Before Phase 1 completes, default to English with neutral register.
 
 ## Workflow
 
@@ -236,12 +242,12 @@ confirmed:
 
 ## Audit
 
-After Phase 4 confirmation, invoke `/audit`:
+Per `../../references/audit-invocation.md`. After Phase 4 confirmation,
+invoke `/audit` with:
 
-```text
-Task(subagent_type="general-purpose", description="audit foundation",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: .spec/config.yaml,.spec/overview.md,.spec/guidelines.md,.spec/personality.md; caller_skill: /start; caller_intent: bootstrapped config.yaml + 3 orthogonal foundation files\"). Return ONLY its YAML output.")
-```
+- `target_paths`: `.spec/config.yaml,.spec/overview.md,.spec/guidelines.md,.spec/personality.md`
+- `caller_skill`: `/start`
+- `caller_intent`: `bootstrapped config.yaml + 3 orthogonal foundation files`
 
 `error` findings block the "Foundation complete" message; `warning`/`info`
 surface as non-blocking notes.
@@ -259,13 +265,9 @@ surface as non-blocking notes.
 - Capabilities table requires ≥1 `output` row AND ≥1 `quality` row.
 - Every Outcome row lists ≥1 Capability in `Enabled by`, or moves to a note
   acknowledging external dependency.
-- Changelog Description column: max ~100 chars per row. Split into multiple
-  rows if longer.
 - Stop if `config.yaml` and all 3 orthogonal files exist. Use `/pr` to modify
   existing foundation files; edit `config.yaml` directly or re-run `/start`
   to change languages.
 - One file = one phase. Phase N+1 cannot start without explicit Phase N
   confirmation.
 - `/clarify` runs on every open answer.
-- SemVer: foundation files born at `0.1.0`. Subsequent edits handled by
-  `/pr`.
