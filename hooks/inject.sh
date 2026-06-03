@@ -39,12 +39,12 @@ if [ -f "$SPEC/config.yaml" ] && [ -f "$SPEC/overview.md" ] \
   echo
   echo "### Optional artifacts present"
   echo
-  for a in domain arch ui stack; do
+  for a in domain arch ux stack; do
     if [ -f "$SPEC/$a.md" ]; then echo "- $a ✓"; else echo "- $a ✗"; fi
   done
 else
   echo "## Bootstrap status"
   echo
   echo "This project is not yet bootstrapped (.spec/ foundation incomplete)."
-  echo "Recommended path: /setup → /overview → /guidelines → /personality → /arch → /stack"
+  echo "Recommended path: /setup → /overview → /guidelines → /personality → /stack. Optional: /domain, /arch, /ux."
 fi

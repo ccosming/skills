@@ -22,6 +22,7 @@ one clear view over exhaustive documentation.
 | What is the control flow of a process?             | UML Activity  | `flowchart`       |
 | What states does an entity move through?           | UML State     | `stateDiagram-v2` |
 | How is the system split into software components?  | UML Component | `flowchart`       |
+| What does the user feel across a journey?          | User Journey  | `journey`         |
 
 ## C4 family
 
@@ -194,4 +195,20 @@ flowchart LR
   api --> logic[Business Logic]
   logic --> db[(Database)]
   logic --> mq[Message Queue]
+```
+
+### User journey — phases, steps, and sentiment (experience)
+
+Maps the experience over time with a sentiment score (1–5) per step. Descriptive
+context, not behaviorally enforceable; pair it with testable quality criteria.
+
+```mermaid
+journey
+  title Checkout journey
+  section Browse
+    Find product: 4: Customer
+    Compare options: 3: Customer
+  section Buy
+    Add to cart: 5: Customer
+    Pay: 2: Customer
 ```

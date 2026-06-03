@@ -54,7 +54,7 @@ Per the constitution (_Invoking helpers and /audit_). After confirmation:
 
 Once personality.md is confirmed and audit passes, report that the foundation is
 complete: _"Foundation complete. Next: /stack to set up tooling; optionally
-/domain, /arch, /ui."_
+/domain, /arch, /ux."_
 
 ## Invariant rules
 

@@ -205,7 +205,7 @@ before editing.
 Read `stack.md` on demand when touching code, structure, devtools, or configs;
 if it is missing and the skill needs it, stop and direct the user to `/stack`.
 Read `domain.md` if present; when absent, operate without ubiquitous-language
-enforcement (graceful degradation, never abort). `arch.md` and `ui.md` are
+enforcement (graceful degradation, never abort). `arch.md` and `ux.md` are
 optional; the injected "Optional artifacts present" line states which exist.
 
 If the foundation is absent (no `.spec/` project), stop and direct the user to
