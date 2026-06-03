@@ -1,4 +1,4 @@
-# personality.md — Phase 4 reference
+# Personality rubric
 
 Dimensions, coverage criteria, question seeds, and the artifact template.
 
@@ -16,7 +16,7 @@ No strict order.
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and apply the 4 probes.
+After every open answer, run `/clarify` and surface inferences for confirmation.
 
 ### `persona`
 

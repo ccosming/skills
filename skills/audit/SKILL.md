@@ -6,9 +6,9 @@ description: >
   file-naming, orphans, and domain consistency. Returns a structured YAML
   findings report. Read-only.
 when_to_use: >
-  Invoked by other skills (/start, /stack, /prd, /code, /rev, /pr, /domain) at
-  the closure of any workflow that creates or modifies `.spec/` files. Not
-  user-invocable.
+  Invoked by other skills (/overview, /guidelines, /personality, /stack, /prd,
+  /code, /rev, /pr, /domain) at the closure of any workflow that creates or
+  modifies `.spec/` files. Not user-invocable.
 allowed-tools: Read, Glob, Grep, Bash
 user-invocable: false
 ---
@@ -22,7 +22,8 @@ report. The caller decides what to do with the findings.
 ## Invocation
 
 Invoked from other skills via `Task` subagent, never directly by the user.
-Expected callers: `/start`, `/stack`, `/prd`, `/code`, `/rev`, `/pr`, `/domain`.
+Expected callers: `/overview`, `/guidelines`, `/personality`, `/stack`, `/prd`,
+`/code`, `/rev`, `/pr`, `/domain`.
 
 Standard caller pattern:
 

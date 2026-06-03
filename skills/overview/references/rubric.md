@@ -1,4 +1,4 @@
-# overview.md — Phase 2 reference
+# Overview rubric
 
 Dimensions, coverage criteria, question seeds, and the artifact template.
 
@@ -11,7 +11,7 @@ Partial order: `mission → roles → archetype → capabilities → outcomes �
 | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
 | `mission`      | —                 | active verb + object + end-to-end purpose present                                     |
 | `roles`        | mission           | ≥1 primary role named (specific, not "users")                                         |
-| `archetype`    | mission + roles   | user picked from inferred top-3 or chose Otro                                         |
+| `archetype`    | mission + roles   | user picked from inferred top-3 or chose Other                                        |
 | `capabilities` | archetype         | ≥1 `output` row AND ≥1 `quality` row, each with target + window                       |
 | `outcomes`     | capabilities      | each outcome row lists ≥1 capability metric in `enabled_by`                           |
 | `scope`        | archetype         | user answered "none" OR ≥1 explicit exclusion                                         |
@@ -20,8 +20,8 @@ Partial order: `mission → roles → archetype → capabilities → outcomes �
 
 ## Question seeds per dimension
 
-The engine picks one seed based on the current gap. After every open answer,
-run `/clarify` and apply the 4 probes from the Operator profile.
+The engine picks one seed based on the current gap. After every open answer, run
+`/clarify` and apply the probes from the skill body.
 
 ### `mission`
 
@@ -45,7 +45,7 @@ run `/clarify` and apply the 4 probes from the Operator profile.
 
 | Gap         | Seed                                                                                       |
 | ----------- | ------------------------------------------------------------------------------------------ |
-| not asked   | AskUserQuestion with top-3 inferred + Otro (see `archetypes.md` § Presentation)            |
+| not asked   | AskUserQuestion with top-3 inferred + Other (see `archetypes.md` § Presentation)           |
 
 ### `capabilities`
 
@@ -84,8 +84,8 @@ run `/clarify` and apply the 4 probes from the Operator profile.
 | -------------------------------------------- | ----------------------------------------------------------------------------------- |
 | not asked, archetype known                   | First unanswered probe from `archetypes.md` for the chosen archetype                |
 | more probes remaining                        | Next unanswered probe                                                               |
-| archetype is "Otro"                          | "What context matters that we haven't captured yet?"                                |
-| user says "no more" / "nada más"             | mark covered                                                                        |
+| archetype is "Other"                         | "What context matters that we haven't captured yet?"                                |
+| user says "no more"                          | mark covered                                                                        |
 
 ## Branching cues
 

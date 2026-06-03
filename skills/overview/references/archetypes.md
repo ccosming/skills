@@ -1,8 +1,7 @@
 # Archetypes
 
-Used by Phase 2: archetype dimension ranks top 3 from this list based on
-mission + roles. Context dimension iterates over the chosen archetype's
-context probes.
+Used by the archetype dimension (ranks top 3 from this list based on mission +
+roles) and the context dimension (iterates over the chosen archetype's probes).
 
 ## Catalog
 
@@ -40,19 +39,19 @@ Match mission + roles content against these signals to rank top-3 candidates.
 | "course", "learners", "students", "lessons"   | Educational platform                        |
 
 If no signal matches with confidence, present top 3 by partial match plus
-**Otro (especificar)** as last option.
+**Other (specify)** as the last option.
 
 ## Presentation
 
 Single-select AskUserQuestion. Top inferred = **(Recommended)**. Each option
-includes a 1-line rationale citing the matched signal:
+includes a one-line rationale citing the matched signal:
 
 ```text
 - [Top 1 archetype] (Recommended) — matched "[signal]" in your mission
 - [Top 2 archetype] — matched "[signal]"
 - [Top 3 archetype] — partial match on "[signal]"
-- Otro (especificar)
+- Other (specify)
 ```
 
-If user picks **Otro**, the Context dimension runs as free-form grilling
+If the user picks **Other**, the context dimension runs as free-form grilling
 instead of archetype-driven probes.

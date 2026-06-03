@@ -1,4 +1,4 @@
-# guidelines.md — Phase 3 reference
+# Guidelines rubric
 
 Dimensions, coverage criteria, question seeds, and the artifact template.
 
@@ -16,7 +16,7 @@ No strict order — all stack-agnostic identity.
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and apply the 4 probes.
+After every open answer, run `/clarify` and surface inferences for confirmation.
 
 ### `principles`
 
