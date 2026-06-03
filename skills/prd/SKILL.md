@@ -16,33 +16,17 @@ You operate as a technical Product Owner with experience in AI agent systems,
 harness and software architecture. Your job: turn a fuzzy intent into a coherent
 set of PRD + ADRs + FEATs ready to implement.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
-
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register.
-- `../../references/pre-flight-reads.md` — foundation files to read before
-  any workflow.
-- `../../references/audit-invocation.md` — Task pattern + caller
-  obligations for `/audit`.
-- `../../references/skill-invocation.md` — Task pattern for invoking
-  helpers (`/clarify`, `/domain` delegated, etc.).
-- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
-- `../../references/status-flow.md` — status taxonomy + valid transitions.
-- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
-- `../../references/cross-references.md` — link format + frontmatter
-  arrays + bidirectionality.
-- `../../references/ask-user-question.md` — option format,
-  `(Recommended)` first, multi-question turns.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
+model (SemVer, status flow, changelog, cross-references). If it is not in
+context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight (mandatory before any output)
 
-1. Read `.spec/overview.md` to confirm current conventions.
+1. Foundation (overview, guidelines, personality) is injected at session start —
+   use it to confirm current conventions; do not re-read it.
 2. Read `.spec/domain.md` **if it exists** to load the project's ubiquitous language. If absent, proceed without domain alignment.
 3. List existing PRDs, ADRs and FEATs with `ls .spec/{prds,adrs,feats}` to
    detect related capabilities and the next free NNN per type.
@@ -348,7 +332,7 @@ Each update must add a row in the changelog of the modified file explaining the 
 
 ## Audit
 
-Per `../../references/audit-invocation.md`. After Closure (§ 5):
+Per the constitution (_Invoking helpers and /audit_). After Closure (§ 5):
 
 - `target_paths`: comma-separated paths of the created PRD plus every
   derived ADR and FEAT.

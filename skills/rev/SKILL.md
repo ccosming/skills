@@ -16,35 +16,20 @@ You operate as a senior reviewer with critical judgment. Your job: identify real
 problems (not opinions), classify them by severity, generate the `REV-NNN` file
 and conduct a remediation loop with `/code` review mode.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
+model (SemVer, status flow, changelog, cross-references). If it is not in
+context, read `../../references/constitution.md` before proceeding.
 
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register. **Severity labels
-  (`blocker`/`major`/`minor`/`nit`) and verdict values stay English.**
-- `../../references/pre-flight-reads.md` — foundation files to read before
-  any workflow.
-- `../../references/audit-invocation.md` — Task pattern + caller
-  obligations for `/audit`.
-- `../../references/skill-invocation.md` — Task pattern for invoking
-  `/code` in review mode and any helpers.
-- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
-- `../../references/status-flow.md` — status taxonomy + valid transitions.
-- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
-- `../../references/cross-references.md` — link format + frontmatter
-  arrays + bidirectionality.
+Localization exception: severity labels (`blocker`/`major`/`minor`/`nit`) and
+verdict values stay English.
 
 ## Pre-flight (mandatory)
 
-1. **Always read**:
-   - `.spec/overview.md`
-   - `.spec/guidelines.md`
-   - `.spec/personality.md`
+1. **Foundation** (overview, guidelines, personality) is injected at session
+   start — do not re-read. Read:
    - `.spec/domain.md` (optional — if exists, evaluate term consistency in code
      and artifacts)
 
@@ -237,7 +222,7 @@ executed, next steps.
 
 ## Audit
 
-Per `../../references/audit-invocation.md`. After Closure (§ 5):
+Per the constitution (_Invoking helpers and /audit_). After Closure (§ 5):
 
 - `target_paths`: REV path + targeted FEAT path.
 - `caller_skill`: `/rev`

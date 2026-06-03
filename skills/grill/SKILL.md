@@ -172,20 +172,11 @@ Guard these every write — structure rot is the most common failure:
   loop**. They are created once, in Step 6, appended after
   `## Resolved questions`.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
-
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register.
-- `../../references/skill-invocation.md` — Task pattern for invoking
-  helpers (`/clarify`, `/research`, `/summarize`).
-- `../../references/ask-user-question.md` — option format,
-  `(Recommended)` first, multi-question turns.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, and helper invocation via `Task`. If it is not in context,
+read `../../references/constitution.md` before proceeding.
 
 ## Pre-flights
 

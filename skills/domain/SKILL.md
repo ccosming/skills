@@ -32,37 +32,20 @@ Detect mode from invocation context:
 If `.spec/domain.md` does not exist and the mode is not `delegated --create`,
 force `init`.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
+model (SemVer, status flow, changelog, cross-references). If it is not in
+context, read `../../references/constitution.md` before proceeding.
 
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register. **Domain term names stay in
-  the language they were coined in; never translate them.**
-- `../../references/pre-flight-reads.md` — foundation files to read before
-  any workflow.
-- `../../references/audit-invocation.md` — Task pattern + caller
-  obligations for `/audit`.
-- `../../references/skill-invocation.md` — Task pattern for being invoked
-  by `/prd` in `delegated` mode.
-- `../../references/semver.md` — version bump rules.
-- `../../references/status-flow.md` — status taxonomy + valid transitions.
-- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
-- `../../references/cross-references.md` — link format + frontmatter
-  arrays + bidirectionality.
-- `../../references/ask-user-question.md` — option format,
-  `(Recommended)` first, multi-question turns.
+Localization exception: domain term names stay in the language they were coined
+in; never translate them.
 
 ## Pre-flight (mandatory)
 
-1. **Always read**:
-   - `.spec/overview.md`
-   - `.spec/guidelines.md`
-   - `.spec/personality.md`
+1. **Foundation** (overview, guidelines, personality) is injected at session
+   start — do not re-read.
 
 2. **Check `.spec/domain.md`**:
    - If exists → load it; determine mode from user input or invocation.
@@ -318,8 +301,8 @@ text-only.)
 
 ## Audit
 
-Per `../../references/audit-invocation.md`. After any mode that writes to
-`.spec/domain.md`:
+Per the constitution (_Invoking helpers and /audit_). After any mode that writes
+to `.spec/domain.md`:
 
 - `target_paths`: `.spec/domain.md`
 - `caller_skill`: `/domain`

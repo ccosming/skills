@@ -28,35 +28,20 @@ turn a `ready` FEAT into maintainable, tested code aligned with
 Detect the mode according to the received arguments. If you receive `REV-NNN`,
 you are in `review`.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
+model (SemVer, status flow, changelog, cross-references). If it is not in
+context, read `../../references/constitution.md` before proceeding.
 
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register. **Code identifiers and
-  comments may follow `stack.md` conventions instead of `language.artifacts`.**
-- `../../references/pre-flight-reads.md` — foundation files to read before
-  any workflow.
-- `../../references/audit-invocation.md` — Task pattern + caller
-  obligations for `/audit`.
-- `../../references/skill-invocation.md` — Task pattern for invoking
-  helpers and `/stack` in delegated mode.
-- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
-- `../../references/status-flow.md` — status taxonomy + valid transitions.
-- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
-- `../../references/cross-references.md` — link format + frontmatter
-  arrays + bidirectionality.
+Localization exception: code identifiers and comments may follow `stack.md`
+conventions instead of `language.artifacts`.
 
 ## Pre-flight (mandatory)
 
-1. **Always read**:
-   - `.spec/overview.md`
-   - `.spec/guidelines.md`
-   - `.spec/personality.md`
+1. **Foundation** (overview, guidelines, personality) is injected at session
+   start — do not re-read. Additionally read:
    - `.spec/stack.md` (if missing, stop and direct the user to run `/stack`
      first)
    - `.spec/domain.md` (optional — if exists, use its terms when generating code
@@ -250,7 +235,7 @@ For each addressed finding:
 
 ## Audit
 
-Per `../../references/audit-invocation.md`. After Closure of either
+Per the constitution (_Invoking helpers and /audit_). After Closure of either
 `implement` mode (§ 6) or `review` mode (§ 4):
 
 - `target_paths`: FEAT path plus any other `.spec/` paths modified.

@@ -43,27 +43,17 @@ Your job: extract what is already in the user's head but not yet articulated.
 Surface inferences explicitly: emit `Inferred: [X]. Confirm?` before
 recording. Never write content the user did not state.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
-
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register.
-- `../../references/audit-invocation.md` — Task pattern + caller
-  obligations for `/audit`.
-- `../../references/skill-invocation.md` — Task pattern for invoking
-  helpers (`/clarify`, etc.).
-- `../../references/ask-user-question.md` — option format,
-  `(Recommended)` first, multi-question turns.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
+model. If it is not in context, read `../../references/constitution.md` before
+proceeding.
 
 ## Pre-flight
 
-1. Read every file listed in `## Canonical rules` and internalize the
-   rules before responding.
+1. Operate under the injected constitution; if absent, read
+   `../../references/constitution.md` before responding.
 
 2. List foundation files:
 
@@ -148,7 +138,7 @@ changelog row. If (c), stop and recommend `/grill`.
 
 ### `/clarify` invocation
 
-Per `../../references/skill-invocation.md`. For every open answer, pass:
+Per the constitution (_Invoking helpers and /audit_). For every open answer, pass:
 
 - `user_input`: the user's reply.
 - `domain_context`: `project foundation grilling, phase <N>, dimension <name>`.
@@ -242,7 +232,7 @@ confirmed:
 
 ## Audit
 
-Per `../../references/audit-invocation.md`. After Phase 4 confirmation,
+Per the constitution (_Invoking helpers and /audit_). After Phase 4 confirmation,
 invoke `/audit` with:
 
 - `target_paths`: `.spec/config.yaml,.spec/overview.md,.spec/guidelines.md,.spec/personality.md`

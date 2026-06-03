@@ -33,32 +33,17 @@ Detect the mode from invocation context:
 If `.spec/stack.md` does not exist, mode is forced to `bootstrap` regardless of
 user phrasing.
 
-## Canonical rules (mandatory)
+## Constitution
 
-These plugin-wide rules govern every step of this skill. Read each one at
-pre-flight and apply throughout the execution. A workflow that violates any
-canonical rule produces an invalid result. No exception.
-
-- `../../references/voice.md` — speak only as the operator persona; never
-  narrate workflow internals.
-- `../../references/localization.md` — `.spec/config.yaml`; `language.chat`
-  vs `language.artifacts`; neutral register.
-- `../../references/pre-flight-reads.md` — foundation files to read before
-  any workflow.
-- `../../references/audit-invocation.md` — Task pattern + caller
-  obligations for `/audit`.
-- `../../references/skill-invocation.md` — Task pattern for `delegated`
-  mode invocations from `/code` and any helpers.
-- `../../references/semver.md` — version bump rules + promotion to `1.0.0`.
-- `../../references/status-flow.md` — status taxonomy + valid transitions.
-- `../../references/changelog.md` — row format + when to bump + ≤100 chars.
+Operate under the constitution injected at session start — voice, localization,
+`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
+model (SemVer, status flow, changelog, cross-references). If it is not in
+context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight (mandatory)
 
-1. **Always read**:
-   - `.spec/overview.md`
-   - `.spec/guidelines.md`
-   - `.spec/personality.md`
+1. **Foundation** (overview, guidelines, personality) is injected at session
+   start — do not re-read. Read:
    - `.spec/domain.md` (optional — if exists, use domain terms when naming
      packages, modules, contexts)
 
@@ -294,8 +279,8 @@ Files and decisions `/stack` owns. `/code` must delegate any change to these:
 
 ## Audit
 
-Per `../../references/audit-invocation.md`. After any mode that writes to
-`.spec/stack.md` or creates an ADR (`bootstrap`, `update`, `sync-check` with
+Per the constitution (_Invoking helpers and /audit_). After any mode that writes
+to `.spec/stack.md` or creates an ADR (`bootstrap`, `update`, `sync-check` with
 divergence applied, `delegated`):
 
 - `target_paths`: `.spec/stack.md` plus any additional ADR paths created.
