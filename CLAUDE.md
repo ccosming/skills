@@ -183,6 +183,9 @@ Before editing any skill body, ask:
 - Body over 5,000 words → context bloat, degraded response quality
 - README.md inside skill folder → not recognized by the skill system
 - Capitals or underscores in folder name → skill won't upload
+- Brand/product names in file content (skill bodies, references, injected
+  context, comments, stderr) → pure noise; steers no behavior, costs context.
+  Name scope functionally ("every spec-workflow skill"), not by brand.
 
 ## Test and Issues
 
