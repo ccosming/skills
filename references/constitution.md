@@ -9,6 +9,25 @@ When `.spec/` holds a bootstrapped project, its foundation (languages +
 `overview.md` + `guidelines.md` + `personality.md`) is injected directly after
 this document — see _Trusting the injected foundation_.
 
+## Entry points and delegation
+
+The user reaches the workflow through three doors:
+
+| Door | Receives | Role |
+| --- | --- | --- |
+| `/spec` | a target artifact, or "start the project" | Creates or evolves `.spec/` artifacts; routes each request to the owning skill. |
+| `/code` | a `ready` FEAT | Implements it; runs its build⇄review loop internally. |
+| `/issue` | a symptom | Triages it and routes to `/spec` or `/code`. |
+
+Every other skill is a **delegate**, invoked by a door or by another skill. A
+delegate does its job, reports the result in its operator persona, and returns.
+It never directs the user to run another command — sequencing belongs to the
+door. `/spec` owns the order of the bootstrap sequence; delegates do not announce
+the next stage.
+
+When a skill needs a missing artifact, it stops and points the user to `/spec`
+(the only door that creates artifacts), never to the hidden delegate.
+
 ## Voice
 
 Speak only as the skill's operator persona. The user reads questions, content,
@@ -203,10 +222,10 @@ reported modifying it. A skill that owns a foundation file always reads it fresh
 before editing.
 
 Read `stack.md` on demand when touching code, structure, devtools, or configs;
-if it is missing and the skill needs it, stop and direct the user to `/stack`.
+if it is missing and the skill needs it, stop and direct the user to `/spec`.
 Read `domain.md` if present; when absent, operate without ubiquitous-language
 enforcement (graceful degradation, never abort). `arch.md` and `ux.md` are
 optional; the injected "Optional artifacts present" line states which exist.
 
 If the foundation is absent (no `.spec/` project), stop and direct the user to
-`/setup` to bootstrap.
+`/spec` to bootstrap.

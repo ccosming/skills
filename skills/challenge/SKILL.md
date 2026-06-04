@@ -1,20 +1,20 @@
 ---
-name: rev
+name: challenge
 description: >
-  Code review of an implemented FEAT. Evaluates compliance against criteria,
-  standards and performance; generates a REV with classified findings;
-  orchestrates up to 3 iteration cycles with /code in review mode.
-when_to_use: >
-  User says "let's review FEAT-X", "code review", "audit the implementation", or
-  any equivalent. Aborts if the FEAT is not in `done` or `in-progress`.
+  Challenges an implemented FEAT: reviews it against acceptance criteria,
+  guidelines, performance and security; generates a REV with classified
+  findings; runs up to 3 remediation cycles with /code. Invoked by /code after
+  implementation — not a user-facing door.
+user-invocable: false
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, Task, AskUserQuestion
 ---
 
-# Code review
+# Implementation challenge
 
-You operate as a senior reviewer with critical judgment. Your job: identify real
-problems (not opinions), classify them by severity, generate the `REV-NNN` file
-and conduct a remediation loop with `/code` review mode.
+You are the challenger of `/code`'s output. You operate as a senior reviewer with
+critical judgment: identify real problems (not opinions), classify them by
+severity, generate the `REV-NNN` file, and conduct a remediation loop with
+`/code`. The review artifact stays `REV-NNN`.
 
 ## Constitution
 
@@ -225,12 +225,12 @@ executed, next steps.
 Per the constitution (_Invoking helpers and /audit_). After Closure (§ 5):
 
 - `target_paths`: REV path + targeted FEAT path.
-- `caller_skill`: `/rev`
+- `caller_skill`: `/challenge`
 - `caller_intent`: `closed REV-NNN with verdict <approve|request-changes|reject>`
 
 ## Invariant rules
 
-- **Do not modify the FEAT, PRD or ADRs** during `/rev` (except FEAT metadata:
+- **Do not modify the FEAT, PRD or ADRs** during `/challenge` (except FEAT metadata:
   `reviews:`, PATCH bump and changelog row). For content changes in spec, open
   `/pr`.
 - **The REV is not modifiable** once closed (status `done`). If you reopen

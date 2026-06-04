@@ -9,6 +9,7 @@ when_to_use: >
   decision" over something already defined. NOT for new capabilities (use /prd)
   or for PRDs in active implementation.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Change request

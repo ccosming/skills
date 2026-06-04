@@ -11,6 +11,7 @@ when_to_use: >
   should this feel to use", runs it after the foundation, or when a product with
   any user-facing surface needs an experience source of truth.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Experience design
@@ -28,7 +29,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight
 
-1. If config.yaml is missing, stop and direct the user to `/setup`.
+1. If config.yaml is missing, stop and direct the user to `/spec`.
 2. From the injected `overview.md` archetype (and `stack.md` if present), infer
    the surfaces likely in scope.
 3. Check the artifact:
@@ -82,9 +83,8 @@ Per the constitution (_Invoking helpers and /audit_). After confirmation:
 
 ## Hand off
 
-Once ux.md is confirmed and audit passes: _"Experience defined. Next: /prd to
-break capabilities into FEATs that inherit these qualities, or /stack to set up
-tooling."_
+Once ux.md is confirmed and audit passes, report that the experience is defined
+and return. `/spec` drives the next stage.
 
 ## Invariant rules
 

@@ -10,6 +10,7 @@ when_to_use: >
   consistency", or any equivalent. Also invoked by /prd in delegated mode when a
   candidate term is detected during grilling.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Ubiquitous language

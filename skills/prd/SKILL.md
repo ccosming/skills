@@ -8,6 +8,7 @@ when_to_use: >
   equivalent that opens a new capability. NOT for modifying existing
   capabilities (use /pr).
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Capability definition

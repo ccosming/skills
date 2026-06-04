@@ -8,6 +8,7 @@ when_to_use: >
   User says "set the personality", "profile the agent", "how should the coder
   behave", runs it after /guidelines, or when personality.md is missing.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Agent personality
@@ -23,7 +24,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight
 
-1. If config.yaml is missing, stop and direct the user to `/setup`.
+1. If config.yaml is missing, stop and direct the user to `/spec`.
 2. Check the artifact:
 
    ```bash
@@ -53,8 +54,7 @@ Per the constitution (_Invoking helpers and /audit_). After confirmation:
 ## Hand off
 
 Once personality.md is confirmed and audit passes, report that the foundation is
-complete: _"Foundation complete. Next: /stack to set up tooling; optionally
-/domain, /arch, /ux."_
+complete and return. `/spec` surfaces the next stages.
 
 ## Invariant rules
 

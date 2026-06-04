@@ -10,6 +10,7 @@ when_to_use: >
   if the stack matches the repo", "let's add X to the stack", or any equivalent.
   Also invoked by /code in delegated mode for stack-touching blocks.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Repository stack management

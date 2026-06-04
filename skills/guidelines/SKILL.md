@@ -8,6 +8,7 @@ when_to_use: >
   User says "set the guidelines", "engineering conventions", "how we build",
   runs it after /overview, or when guidelines.md is missing.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Engineering guidelines
@@ -23,7 +24,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight
 
-1. If config.yaml is missing, stop and direct the user to `/setup`.
+1. If config.yaml is missing, stop and direct the user to `/spec`.
 2. Check the artifact:
 
    ```bash
@@ -52,8 +53,8 @@ Per the constitution (_Invoking helpers and /audit_). After confirmation:
 
 ## Hand off
 
-Once guidelines.md is confirmed and audit passes, point to the next step:
-_"Next: /personality to profile the implementer agent."_
+Once guidelines.md is confirmed and audit passes, report what was captured and
+return. `/spec` drives the next stage.
 
 ## Invariant rules
 

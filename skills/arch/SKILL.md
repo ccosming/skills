@@ -10,6 +10,7 @@ when_to_use: >
   runs it after the foundation, or when implementation needs a technical
   structure. Sits upstream of /stack (architecture before tooling).
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Technical architecture
@@ -26,7 +27,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight
 
-1. If config.yaml is missing, stop and direct the user to `/setup`.
+1. If config.yaml is missing, stop and direct the user to `/spec`.
 2. Check the artifact:
 
    ```bash
@@ -68,8 +69,8 @@ notes.
 
 ## Hand off
 
-Once arch.md is confirmed and audit passes: _"Architecture defined. Next: /stack
-to choose the concrete tooling that realizes it."_
+Once arch.md is confirmed and audit passes, report that the architecture is
+defined and return. `/spec` drives the next stage.
 
 ## Invariant rules
 

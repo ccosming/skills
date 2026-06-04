@@ -7,6 +7,7 @@ when_to_use: >
   User says "set up the project", "bootstrap", "configure languages", or any
   skill needs config.yaml and it does not exist yet.
 allowed-tools: Read, Write, Bash, AskUserQuestion
+user-invocable: false
 ---
 
 # Language setup
@@ -61,8 +62,7 @@ language:
 
 ### 4. Hand off
 
-Report the chosen languages and point to the next step: _"Next: /overview to
-define the project."_
+Report the chosen languages and return. `/spec` drives the next stage.
 
 ## Invariant rules
 

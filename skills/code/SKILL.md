@@ -4,10 +4,10 @@ description: >
   Implements the most available FEAT in `ready` whose dependencies are `done`.
   Loads FEAT + dependencies + ADRs + guidelines + personality and builds a plan
   in blocks with gates before coding. Supports "review" mode when invoked from
-  /rev to apply findings.
+  /challenge to apply findings.
 when_to_use: >
   User says "let's implement", "let's code FEAT-X", "let's program", or any
-  equivalent that opens implementation work. Also invoked by /rev to apply
+  equivalent that opens implementation work. Also invoked by /challenge to apply
   review findings.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
 ---
@@ -23,7 +23,7 @@ turn a `ready` FEAT into maintainable, tested code aligned with
 | Mode                  | When                      | Origin                                         |
 | --------------------- | ------------------------- | ---------------------------------------------- |
 | `implement` (default) | New FEAT to code          | Direct user invocation                         |
-| `review`              | Apply findings from a REV | Invocation from `/rev` with `REV-NNN` as input |
+| `review`              | Apply findings from a REV | Invocation from `/challenge` with `REV-NNN` as input |
 
 Detect the mode according to the received arguments. If you receive `REV-NNN`,
 you are in `review`.
@@ -42,8 +42,7 @@ conventions instead of `language.artifacts`.
 
 1. **Foundation** (overview, guidelines, personality) is injected at session
    start — do not re-read. Additionally read:
-   - `.spec/stack.md` (if missing, stop and direct the user to run `/stack`
-     first)
+   - `.spec/stack.md` (if missing, stop and direct the user to `/spec`)
    - `.spec/domain.md` (optional — if exists, use its terms when generating code
      identifiers and comments)
 
@@ -175,8 +174,9 @@ For each block:
 5. Update `version:` and add a row to the changelog citing the new version:
    _"Implementation completed.
    <Brief summary of what was built and specific decisions not documented in ADR>"_.
-6. Report to the user: completed blocks, commands to verify locally, suggested
-   next steps (`/rev` recommended).
+6. Report to the user: completed blocks and commands to verify locally. Then
+   offer to challenge the implementation; on yes, invoke
+   `Skill(skill="challenge")`. The build⇄review loop runs inside `/code`.
 
 ## Workflow — `review` mode
 
@@ -223,9 +223,9 @@ For each addressed finding:
    iteration applied via [REV-NNN](../reviews/REV-NNN-slug.md):
    <resolved findings>, <rejected findings with reason>"_.
 3. Keeps `status: done` if blockers/majors were resolved; drops to `in-progress`
-   if any remained pending and `/rev` will decide whether to iterate again. The
-   version never goes backward even if the status drops.
-4. Return control to `/rev` with a structured summary:
+   if any remained pending and `/challenge` will decide whether to iterate again.
+   The version never goes backward even if the status drops.
+4. Return control to `/challenge` with a structured summary:
 
    ```text
    Resolved: N (blockers: N, majors: N, minors: N)

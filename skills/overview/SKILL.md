@@ -8,6 +8,7 @@ when_to_use: >
   User says "define the project", "create the overview", "what are we building",
   runs it after /setup, or when overview.md is missing.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
+user-invocable: false
 ---
 
 # Project overview
@@ -35,7 +36,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight
 
-1. If config.yaml is missing, stop and direct the user to `/setup`.
+1. If config.yaml is missing, stop and direct the user to `/spec`.
 2. Check the artifact:
 
    ```bash
@@ -65,8 +66,8 @@ Per the constitution (_Invoking helpers and /audit_). After confirmation:
 
 ## Hand off
 
-Once overview.md is confirmed and audit passes, point to the next step: _"Next:
-/guidelines to set engineering conventions."_
+Once overview.md is confirmed and audit passes, report what was captured and
+return. `/spec` drives the next stage.
 
 ## Invariant rules
 

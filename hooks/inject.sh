@@ -46,5 +46,5 @@ else
   echo "## Bootstrap status"
   echo
   echo "This project is not yet bootstrapped (.spec/ foundation incomplete)."
-  echo "Recommended path: /setup → /overview → /guidelines → /personality → /stack. Optional: /domain, /arch, /ux."
+  echo "Run /spec to begin — it sets up languages and guides the foundation."
 fi
