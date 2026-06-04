@@ -48,6 +48,7 @@ Determine:
 - **Scope** (optional) — affected area, e.g. `feat(extensions)`, `fix(commit)`, `chore(toolchain)`. Pick the narrowest accurate scope.
 - **Subject** — imperative mood, lowercase after `type(scope):`, ≤ 72 chars, no trailing period.
 - **Body** — atomic bullets prefixed with `-`. One change per bullet. No prose narrative, no "this commit…" framing.
+- **No internal references** — the message describes the change on its own terms. Never cite internal process labels (phase names, finding/resolution IDs) or gitignored working notes (e.g. `notes/`); those are private to the workflow, not part of the repository.
 
 Format:
 
@@ -60,9 +61,9 @@ type(scope): concise subject line
 
 If the change set spans unrelated concerns, **propose splitting** into multiple commits instead of one fat message.
 
-### 4. Propose and wait for approval
+### 4. Propose and confirm via AskUserQuestion
 
-End the turn with **exactly** this structure (no tool calls in this turn):
+Present the proposal as text:
 
 ```
 ## Proposed commit
@@ -78,15 +79,14 @@ type(scope): subject
 - bullet 2
 
 **Secrets check**: clean | <list findings>
-
-Approve? Reply `yes` / `approve` to execute, or describe changes for me to adjust.
 ```
 
-Then **stop**. Wait for the user's next message.
+Then collect approval with **`AskUserQuestion`** — never open free-text:
 
-- User approves (`yes`, `approve`, `lgtm`, `ok`, …) → step 5.
-- User rejects or asks for changes → adjust the draft and repeat step 4.
-- Anything ambiguous → ask one clarifying question and repeat step 4.
+- One question, options **Approve** | **Adjust**.
+- The user's "Other" free-text or **Adjust** = a change request: revise the draft and repeat step 4.
+- Commit only when the user picks **Approve** → step 5.
+- If a secrets finding surfaced, state it in the proposal and require an explicit Approve that acknowledges it before executing.
 
 ### 5. Execute
 
