@@ -41,6 +41,9 @@ Skip in user-facing prose:
 - Process meta ("now I'll", "I have everything I need", "let me load X").
 
 A transition between phases is the next question itself, not an announcement.
+Orchestration is invisible: dispatching to the next stage, running `/audit`, or
+chaining a skill produces no announcement — only the next question or the
+confirmation gate is visible.
 
 | Bad | Good |
 | --- | --- |
@@ -48,12 +51,16 @@ A transition between phases is the next question itself, not an announcement.
 | "Done, `config.yaml` created. We'll talk in Spanish now." | (silent — the next prompt is the transition) |
 | "I have everything I need. I'll ask you dimension by dimension." | "Mission: what does this system do end to end? Verb + object + purpose." |
 | "Let me load the references and we'll begin." | (silent — first question of the next phase) |
+| "I'll start the bootstrap sequence; first, languages." | (silent — just ask the first setup question) |
+| "Overview written. Before closing, I'll validate its integrity." | (silent — audit runs unannounced; the Accept/Adjust gate is the transition) |
 
 ## Localization
 
 Read `language.chat` and `language.artifacts` from the injected foundation (or
 `.spec/config.yaml`). If config is missing — only possible during `/setup` —
-default to English with neutral register until `/setup` writes it.
+narrate in a **single language for the whole turn**: the language of the user's
+request, or English if unclear. Never mix languages in one message. `/setup` then
+writes the config that governs the rest.
 
 - **`language.chat`** — all prose to the user: questions, summaries,
   confirmations, `AskUserQuestion` text, error messages.
@@ -86,21 +93,37 @@ Open free-text is the default for grilling. Reach for `AskUserQuestion` when the
 dimension has a closed taxonomy, the user signaled they need options, or the
 decision is binary/single-pick with stable alternatives.
 
+## Grilling depth
+
+Grill in proportion to the stakes, not uniformly. On a contested, irreversible,
+or high-blast-radius decision — or when an answer is vague or contradicts earlier
+evidence — present alternatives, challenge, and confirm every material inference
+before recording it. On trivial, well-specified points, confirm and move on.
+Applies to every grilling skill, whether or not it uses the shared grilling
+engine.
+
+## Confirming artifacts
+
+No artifact is final until the user accepts it. After writing one, summarize what
+was captured (one line per section or dimension) and ask `Accept` / `Adjust` via
+`AskUserQuestion`. Nothing advances — no next stage, no chaining, no hand-off —
+until the user accepts. On `Adjust`, revise the named part, rewrite, and
+re-confirm. This gate is the user's chance to rebut before the artifact stands.
+
 ## Invoking helpers and /audit
 
 Helper skills (`/clarify`, `/research`, `/summarize`, `/audit`, `/domain` in
-delegated mode) are read-only or single-shot. The `Skill` tool by itself does
-not return control to the caller; only `Task` does. Always invoke a helper
-through a `Task` subagent so its context stays isolated and its result returns.
+delegated mode) are read-only or single-shot and declare `context: fork` in their
+frontmatter. Invoking one runs it in an isolated subagent that returns its result
+to the caller without polluting the caller's context. Invoke directly:
 
 ````text
-Task(subagent_type="general-purpose", description="<short verb phrase>",
-     prompt="Invoke the <name> skill: Skill(skill=\"<name>\", args=\"<key>: <value>; <key>: <value>\"). Return ONLY its YAML output.")
+Skill(skill="<name>", args="<key>: <value>; <key>: <value>")
 ````
 
-- Args are semicolon-separated `key: value` pairs.
-- The subagent prompt always ends with "Return ONLY its YAML output."
-- The caller parses the returned YAML and folds the result into its workflow.
+- Args are semicolon-separated `key: value` pairs, interpolated into the helper.
+- The helper returns its output verbatim (its own body says so); the caller parses it.
+- Do not wrap helpers in `Task` — `context: fork` provides the isolation.
 
 | Helper | When |
 | --- | --- |
@@ -122,7 +145,9 @@ only reads `.spec/`. Parse the report and apply per severity:
 ## The .spec artifact model
 
 Every artifact under `.spec/` carries frontmatter with at least `id`, `status`,
-`version`, and a `## Changelog` section at the bottom.
+and `version` — **no `title:`** (the human title is the body `# H1`). It ends
+with a `## Changelog` section; when user interventions shaped it, an
+`## Interaction notes` section sits just above the Changelog.
 
 ### SemVer
 
@@ -212,6 +237,26 @@ Examples: `[PRD-007 search-engine](../prds/PRD-007-search-engine.md)`,
 
 If artifact A lists B in its array, B lists A back (or is A's declared target).
 One-sided references are flagged by `/audit`.
+
+## Markdown conventions
+
+- One `# H1` per artifact: the human title, **without** the artifact code
+  (`ADR-001`, `FEAT-003`). The code lives in `id` and the filename.
+- Section headers stay English; their content follows `language.artifacts`.
+- Diagrams use the minimalist Mermaid style from the catalog — `flowchart`/`graph`
+  with `theme: neutral`, no custom colors.
+- Line wrapping, table-column alignment, and blank-line spacing are the project
+  formatter's job (`/setup` provisions `.markdownlint.json` + `.prettierrc`).
+  Write valid Markdown and let the formatter normalize it — never hand-pad table
+  cells or count columns.
+
+### Interaction notes
+
+The `## Interaction notes` section records user interventions that **changed the
+skill's stance** or surfaced a project-relevant point the grilling missed — not
+routine answers. Each entry is one line in `language.artifacts`: what the user
+corrected or emphasized, and how it shifted the artifact. Omit the section when
+no such intervention occurred (no "none" line).
 
 ## Trusting the injected foundation
 

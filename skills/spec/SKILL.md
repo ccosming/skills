@@ -98,9 +98,10 @@ recommendation is surfaced once; the user decides whether to take it first.
 ## Bootstrap sequence
 
 You own this order. Run it when the project is not bootstrapped and the user
-wants to start. Invoke each stage with `Skill(...)`; when its artifact is
-confirmed, continue to the next stage. Do not ask the user to type the next
-command — drive it.
+wants to start. Invoke each stage with `Skill(...)`. Continue to the next stage
+only after the user **accepts** the current artifact (the confirmation gate).
+Drive it **silently** — no "next stage" announcement, no naming the sequence; the
+next stage's first question is the transition.
 
 1. `Skill(skill="setup")` — languages → `.spec/config.yaml`.
 2. `Skill(skill="overview")` — what the system is.

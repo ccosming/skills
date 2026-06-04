@@ -1,10 +1,13 @@
 # Grilling engine
 
-A dimension-coverage loop shared by the foundation skills (`/overview`,
-`/guidelines`, `/personality`, and any skill that grills toward a fixed
-template). The calling skill passes a rubric (`references/rubric.md`) that
-defines the dimensions, coverage criteria, question seeds, branching cues, and
-the artifact template. This engine consumes them; it never invents sections.
+A dimension-coverage loop used by the rubric-driven skills — `/overview`,
+`/guidelines`, `/personality`, `/arch`, `/ux` — each of which ships a
+`references/rubric.md`. Other grilling skills (`/prd`, `/domain`, `/stack`,
+`/pr`) run bespoke workflows and do not consume this engine; they still obey the
+constitution's grilling principles. The calling skill passes a rubric
+(`references/rubric.md`) that defines the dimensions, coverage criteria, question
+seeds, branching cues, and the artifact template. This engine consumes them; it
+never invents sections.
 
 ## Loop
 
@@ -21,17 +24,34 @@ while not all required dimensions covered:
   answer    = ask the user
 
   if open answer:
-    run /clarify via Task
+    run /clarify (per the constitution)
     apply the calling skill's probes (if it defines any)
-    surface inferences for confirmation — emit "Inferred: [X]. Confirm?"
+    set depth from materiality (see Depth)
+    if material: present 2-3 framings, or challenge a weak/contradictory answer
+    surface every material inference for confirmation — emit "Inferred: [X]. Confirm?"
 
   evidence[next_dim] += extracted facts
   detect branching
   detect unreadiness
 
-write the artifact from the template
-confirm with the user
+write the artifact from the template, recording stance-changing interventions
+  in its ## Interaction notes (per the constitution)
+run the confirmation gate (mandatory — see Confirmation)
 ```
+
+## Depth (adaptive)
+
+Per the constitution (_Grilling depth_), operationalized here:
+
+| Signal in the answer / decision | Depth |
+| --- | --- |
+| Contested (several viable approaches), irreversible, high blast-radius (architecture, data, contracts) | Full: present 2–3 framings; have the user react; record the trade-off |
+| Vague, short, underspecified | Probe until concrete |
+| Contradicts prior evidence (overview constraints, an earlier dimension) | Challenge it openly before recording |
+| Trivial, clear, well-specified, low-impact | Confirm the inference and move on |
+
+Default to challenge on material points, light on the rest. Confirming a material
+inference is mandatory; never record a material assumption silently.
 
 ## Branching
 
@@ -77,7 +97,11 @@ proceed.
 
 ## Confirmation
 
-After writing the artifact:
+The mandatory gate (per the constitution, _Confirming artifacts_). Nothing
+advances — no return to `/spec`, no chaining, no next stage — until the user
+accepts.
+
+After writing the artifact (and after `/audit` passes):
 
 1. Summarize: one bullet per dimension — value or "omitted".
 2. `AskUserQuestion`: **Accept** (Recommended) | **Adjust**.
