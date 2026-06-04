@@ -113,7 +113,6 @@ After every open answer, run `/clarify` and surface inferences for confirmation.
 ````markdown
 ---
 id: ux
-title: Experience design
 status: ready
 version: 0.1.0
 prs: []
@@ -191,6 +190,11 @@ Per-feature flows live in FEATs.>
 ## Content & voice
 
 <Voice & tone rules + message-catalog approach (ICU keys). Omit if N/A.>
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

@@ -59,16 +59,12 @@ After every open answer, run `/clarify` and surface inferences for confirmation.
 ```markdown
 ---
 id: guidelines
-title: Engineering guidelines
 status: ready
 version: 0.1.0
 prs: []
 ---
 
 # Guidelines
-
-Transversal engineering practices every skill enforces in pre-flight.
-Stack-specific conventions live in `stack.md`.
 
 ## Working principles
 
@@ -126,6 +122,11 @@ Stack-specific conventions live in `stack.md`.
 - Validate at system boundaries (external input, third-party APIs).
 - Secrets never in code or commits.
 - Outputs to untrusted contexts go through proper escaping.
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

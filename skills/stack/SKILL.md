@@ -133,6 +133,11 @@ adrs: [ADR-NNN, ...]
 
 - `<config file>`: <what it controls>
 
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
+
 ## Changelog
 
 | Timestamp (UTC)  | Version | Description                                                         |

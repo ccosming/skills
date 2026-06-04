@@ -254,7 +254,6 @@ context: <bounded context> # for caller to know which context this term lives in
 ````markdown
 ---
 id: domain
-title: Domain language
 status: ready
 version: 0.1.0
 prs: []
@@ -292,6 +291,11 @@ flowchart LR
 
 (Or bullet list of "Context A → Context B: relationship" if user chose
 text-only.)
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

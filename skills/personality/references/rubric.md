@@ -59,16 +59,12 @@ After every open answer, run `/clarify` and surface inferences for confirmation.
 ```markdown
 ---
 id: personality
-title: Agent personality
 status: ready
 version: 0.1.0
 prs: []
 ---
 
 # Personality
-
-Profile the `/code` agent embodies when implementing. Calibrated against the
-guidelines and the overview.
 
 ## Persona
 
@@ -100,6 +96,11 @@ What this engineer does when faced with ambiguity, bad code, disagreement.>
 - When two valid paths exist, pick the one closer to the optimization priority
   above and report the choice.
 - Match the user's language. Neutral, no overclaiming.
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

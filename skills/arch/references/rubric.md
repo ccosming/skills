@@ -91,7 +91,6 @@ After every open answer, run `/clarify` and surface inferences for confirmation.
 ````markdown
 ---
 id: arch
-title: System architecture
 status: ready
 version: 0.1.0
 prs: []
@@ -168,6 +167,11 @@ if no container needs it.>
 ## Decisions
 
 - [ADR-NNN slug](adrs/ADR-NNN-slug.md) — <one line>.
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

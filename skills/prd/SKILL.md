@@ -105,7 +105,6 @@ Links always with markdown `[ID slug](../{type}s/ID-slug.md)`.
 ```markdown
 ---
 id: PRD-NNN
-title: <Concise title>
 status: draft
 version: 0.1.0
 prs: []
@@ -113,7 +112,7 @@ adrs: [ADR-NNN, ...]
 feats: [FEAT-NNN, ...]
 ---
 
-# PRD-NNN: <Title>
+# <Title>
 
 ## Problem
 
@@ -162,6 +161,11 @@ feats: [FEAT-NNN, ...]
 
 - [FEAT-NNN slug](../feats/FEAT-NNN-slug.md) — <one line>
 
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
+
 ## Changelog
 
 | Timestamp (UTC)  | Version | Description                                                                          |
@@ -174,7 +178,6 @@ feats: [FEAT-NNN, ...]
 ```markdown
 ---
 id: ADR-NNN
-title: <Decision>
 status: draft
 version: 0.1.0
 prs: []
@@ -182,7 +185,7 @@ prds: [PRD-NNN]
 feats: [FEAT-NNN, ...]
 ---
 
-# ADR-NNN: <Decision>
+# <Decision>
 
 ## Context
 
@@ -212,6 +215,11 @@ feats: [FEAT-NNN, ...]
 - [PRD-NNN](../prds/PRD-NNN-slug.md)
 - [FEAT-NNN](../feats/FEAT-NNN-slug.md)
 
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
+
 ## Changelog
 
 | Timestamp (UTC)  | Version | Description                                                          |
@@ -224,7 +232,6 @@ feats: [FEAT-NNN, ...]
 ````markdown
 ---
 id: FEAT-NNN
-title: <Implementable unit>
 status: draft
 version: 0.1.0
 prs: []
@@ -234,7 +241,7 @@ adrs: [ADR-NNN, ...]
 depends_on: [FEAT-NNN, ...]
 ---
 
-# FEAT-NNN: <Title>
+# <Title>
 
 ## Summary
 
@@ -305,6 +312,11 @@ sequenceDiagram
 ## Implementation plan
 
 _(Completed in `/code`)_
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

@@ -106,7 +106,6 @@ list. Never invent a section.
 ````markdown
 ---
 id: overview
-title: <project name> — System overview
 status: ready
 version: 0.1.0
 prs: []
@@ -167,6 +166,11 @@ without content. Omit section if no probes yielded content.>
 ### [Probe name]
 
 <Free-form content from the user's answer.>
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

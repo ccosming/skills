@@ -92,7 +92,6 @@ draft; they are born ready to be acted on).
 ```markdown
 ---
 id: REV-NNN
-title: Review of FEAT-NNN <slug>
 status: ready
 version: 0.1.0
 target: FEAT-NNN
@@ -100,7 +99,7 @@ iterations: []
 verdict: pending
 ---
 
-# REV-NNN: Review of [FEAT-NNN slug](../feats/FEAT-NNN-slug.md)
+# Review of <feat name>
 
 ## Evaluated context
 
@@ -150,6 +149,11 @@ _(Completed upon executing /code review mode)_
 ## Verdict
 
 <approve | request-changes | reject — completed upon closing the cycle>
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 

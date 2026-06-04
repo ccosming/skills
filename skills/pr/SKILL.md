@@ -155,7 +155,6 @@ Create `.spec/prs/PR-NNN-{slug}.md` using the template. Final status: `locked`.
 ```markdown
 ---
 id: PR-NNN
-title: <Change summary>
 status: locked
 version: 1.0.0
 target: PRD-NNN
@@ -166,7 +165,7 @@ affects:
   orthogonal: [overview, guidelines, personality]
 ---
 
-# PR-NNN: <Summary>
+# <Summary>
 
 ## Motivation
 
@@ -197,6 +196,11 @@ feedback or decision.>
 ## Result
 
 <Final state of each file after application.>
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
 
 ## Changelog
 
