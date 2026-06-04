@@ -54,74 +54,21 @@ in; never translate them.
 
 ## Workflow — `init` mode
 
-### 1. Scan existing artifacts for candidate terms
+### 1. Scan for candidate terms
 
 `Glob` `.spec/overview.md`, `.spec/prds/*.md`, `.spec/feats/*.md`. Extract
-candidates:
+candidates — nouns repeated 3+ times, capitalized non-keyword phrases, compound
+terms and acronyms — and list each with its reference counts. These pre-fill the
+`terms` dimension.
 
-- Nouns repeated 3+ times across artifacts (likely entities/concepts).
-- Capitalized non-keyword phrases (likely domain entities).
-- Compound terms and acronyms.
+### 2. Grill and write
 
-List candidates with reference counts (which PRDs/FEATs use each).
-
-### 2. Grilling — domain definition
-
-**Phase A**:
-
-- **Q1**: _"What IS the domain of this project? Describe in **max 3 lines** what
-  concrete area of reality the system models."_
-
-After answer, invoke `/clarify` via `Task` (same pattern as `/grill`). If
-polysemy detected, present and resolve before recording.
-
-### 3. Grilling — terms
-
-For each candidate from step 1, present via `AskUserQuestion`:
-
-- **Confirm** — add as-is to `## Terms`.
-- **Rename** — user types canonical alternative (then add).
-- **Merge** — link to an already-confirmed term as alias.
-- **Reject** — not a domain term, skip.
-
-For each confirmed/renamed term, follow up with free-text: _"Describe `{term}`
-in one sentence."_
-
-### 4. Grilling — bounded contexts
-
-**Phase A**:
-
-- **Q2**: _"What are the major areas of responsibility in this project? Each one
-  is a bounded context where terms have consistent meaning."_
-
-**Phase B**:
-
-- **Q3**: For each context proposed, multi-select via `AskUserQuestion` from the
-  confirmed terms: which terms does this context OWN?
-- **Q4**: For each context, identify which OTHER context's terms it borrows.
-
-### 5. Context map
-
-`AskUserQuestion`:
-
-- **Mermaid flowchart** (Recommended) — visual diagram of context relationships.
-- **Text-based bullet list** — plain "Context A → Context B: relationship"
-  lines.
-- **Both**.
-
-Generate the chosen representation following the chosen patterns:
-
-- Sharing — both contexts use the same term.
-- Customer/Supplier — upstream defines, downstream conforms.
-- Anti-corruption layer — explicit translation between contexts.
-
-### 6. Write `.spec/domain.md`
-
-Use the template at the end of this file.
-
-### 7. Audit at closure
-
-Invoke `/audit` via `Task` (see `## Audit` below).
+Run the grilling engine (`../../references/grilling-engine.md`) against
+`references/rubric.md`, applying the domain-modeler persona. The engine covers
+the dimensions (the `terms` dimension runs the candidate triage defined in the
+rubric), scales depth by materiality, records interaction notes, writes
+`.spec/domain.md` from the rubric template, and runs the confirmation gate.
+Audit at closure per `## Audit` below.
 
 ## Workflow — `update` mode
 
@@ -248,61 +195,6 @@ canonical_term: <name> # the term the caller should use, or empty if rejected
 description: <one line> # for caller to copy if relevant
 context: <bounded context> # for caller to know which context this term lives in
 ```
-
-## Template
-
-````markdown
----
-id: domain
-status: ready
-version: 0.1.0
-prs: []
----
-
-# Domain
-
-## Definition
-
-<Max 3 lines: the concrete area of reality this system models.>
-
-## Terms
-
-Every artifact uses these terms. Adding new ones goes through `/domain`.
-
-| Term   | Description           | Owning context | References             |
-| ------ | --------------------- | -------------- | ---------------------- |
-| <Term> | <One-line definition> | <Context>      | PRD-NNN, FEAT-NNN, ... |
-
-## Bounded contexts
-
-Each context is a logical boundary where terms have consistent meaning.
-
-| Context   | Responsibility            | Owns terms              | External (from)         |
-| --------- | ------------------------- | ----------------------- | ----------------------- |
-| <Context> | <One-line responsibility> | <comma-separated terms> | <Term> (from <Context>) |
-
-## Context map
-
-```mermaid
-flowchart LR
-  ContextA -->|relationship| ContextB
-  ContextC -->|anti-corruption| ContextA
-```
-
-(Or bullet list of "Context A → Context B: relationship" if user chose
-text-only.)
-
-## Interaction notes
-
-<Only when a user intervention changed the outcome. One line each, in
-language.artifacts. Omit the whole section if there were none.>
-
-## Changelog
-
-| Timestamp (UTC)  | Version | Description                                                                                 |
-| ---------------- | ------- | ------------------------------------------------------------------------------------------- |
-| YYYY-MM-DD HH:MM | 0.1.0   | Initial creation via `/domain` init mode: <synthesis of definition + N terms + M contexts>. |
-````
 
 ## Audit
 
