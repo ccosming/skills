@@ -57,95 +57,22 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Workflow — `bootstrap` mode
 
-### 1. Grilling
+### 1. Grill and write
 
-Conduct 2–4 rounds with `AskUserQuestion`. Cover at minimum:
+Run the grilling engine (`../../references/grilling-engine.md`) against
+`references/rubric.md`, applying the Tech Lead persona. The engine covers the
+dimensions, scales depth by materiality, records interaction notes, writes
+`.spec/stack.md` from the rubric template, and runs the confirmation gate.
 
-- **Primary language & runtime**: Node, Python, Go, etc. with version.
-- **Package manager & monorepo**: pnpm/npm/yarn/bun +
-  turborepo/nx/workspaces/none.
-- **Framework & primary libraries**: Next.js, Astro, FastAPI, etc.
-- **Devtools**: type checker, linter, formatter, test runner.
-- **Folder structure convention**: apps/packages, src/lib, flat, etc.
-- **CI/CD target**: GitHub Actions, GitLab CI, etc.
-- **Deploy target**: Vercel, Fly.io, self-hosted, etc.
+### 2. ADRs
 
-### 2. ADR generation for major decisions
+For each contested decision (`pnpm vs npm`, `turborepo vs nx`, `vitest vs jest`,
+App Router vs Pages…), create an ADR with the standard template (see `/prd`).
+Each ADR's References section includes `.spec/stack.md`; collect the created ADR
+IDs into stack.md's `adrs:`. A decision without a genuine alternative gets a
+changelog row, not an ADR.
 
-For each decision with real trade-off (e.g., `pnpm vs npm`, `turborepo vs nx`,
-`vitest vs jest`, `Next.js App Router vs Pages`), create an ADR using the
-standard template (see `/prd` for the ADR template).
-
-Each ADR's References section includes `.spec/stack.md`. Collect the created ADR
-IDs to add to stack.md frontmatter `adrs:`.
-
-### 3. Write stack.md
-
-Write `.spec/stack.md` with this template:
-
-````markdown
----
-doc: stack
-status: ready
-sync_status: in-sync
-version: 0.1.0
-last_verified: YYYY-MM-DD HH:MM UTC
-adrs: [ADR-NNN, ...]
----
-
-# Stack
-
-## Languages & runtimes
-
-- <Language vX.Y>
-
-## Package manager & monorepo
-
-- <Manager vX.Y>
-- <Monorepo tool or "single package">
-
-## Framework
-
-- <Framework + key flags>
-
-## Folder structure
-
-```
-<top-level tree>
-```
-
-## Devtools
-
-- Type checker: <…>
-- Linter: <…>
-- Formatter: <…>
-- Tests: <…>
-
-## CI / Build
-
-- <…>
-
-## Deploy
-
-- <…>
-
-## Configurations
-
-- `<config file>`: <what it controls>
-
-## Interaction notes
-
-<Only when a user intervention changed the outcome. One line each, in
-language.artifacts. Omit the whole section if there were none.>
-
-## Changelog
-
-| Timestamp (UTC)  | Version | Description                                                         |
-| ---------------- | ------- | ------------------------------------------------------------------- |
-| YYYY-MM-DD HH:MM | 0.1.0   | Bootstrap: <synthesis of choices and trade-offs from the grilling>. |
-````
-
-### 4. Apply the bootstrap
+### 3. Apply the bootstrap
 
 Execute the actual repo operations (or print the commands if the user prefers a
 dry run):
@@ -155,7 +82,7 @@ dry run):
 - Install devtools and write their configs.
 - Create the folder skeleton.
 
-### 5. Sync verification
+### 4. Sync verification
 
 Run `sync-check` mode steps internally. Set `sync_status: in-sync`, update
 `last_verified`.
