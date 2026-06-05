@@ -8,8 +8,9 @@ prompt), and `SessionStart` (startup/resume/compact — a catch-up that reconcil
 any turn a missed trigger left unfolded). Each run folds the new transcript lines
 into the project's `.spec/usage.md`: a cost ledger with one row per `.spec/`
 artifact (the five token categories + cache hit, plus tool calls, user prompts,
-assistant turns), a per-skill breakdown for plugin optimization, and a per-session
-log.
+assistant turns), a time ledger per artifact (effective work vs. human wait vs.
+real wall-clock, classified by which side owns each gap between events), a
+per-skill breakdown for plugin optimization, and a per-session log.
 
 It is a generated non-artifact (like `config.yaml`); `/audit` skips it and the
 formatter leaves it alone. Written only when the project already has a `.spec/`
@@ -31,17 +32,19 @@ Also runnable directly for testing:
 import json
 import os
 import sys
+from datetime import datetime
 
 FIELDS = ["input", "cache_read", "cache_creation", "output", "tools", "prompts", "turns"]
+TIME = ["effective_sec", "idle_sec"]  # active work vs. human wait — look-back like tokens
 OVERHEAD = "(overhead)"
 
 
 def acc():
-    return {k: 0 for k in FIELDS}
+    return {k: 0 for k in FIELDS + TIME}
 
 
 def add(into, src):
-    for k in FIELDS:
+    for k in FIELDS + TIME:
         into[k] = into.get(k, 0) + src.get(k, 0)
 
 
@@ -61,6 +64,14 @@ def spec_rel(path):
     return None
 
 
+def parse_ts(iso):
+    """ISO event timestamp -> epoch seconds. Only deltas matter, so tz is moot."""
+    try:
+        return datetime.strptime(iso[:19], "%Y-%m-%dT%H:%M:%S").timestamp()
+    except (ValueError, TypeError):
+        return None
+
+
 # --- incremental transcript folding ----------------------------------------
 
 def fresh_snapshot():
@@ -69,6 +80,7 @@ def fresh_snapshot():
         "last_ts": "",  # full timestamp of the last folded event — staleness signal
         "cursor": 0,
         "active_skill": None,
+        "pending_ask": False,  # last turn ended on an AskUserQuestion → next gap is wait
         "buffer": acc(),  # pending look-back work, shown as provisional overhead
         "artifacts": {},  # rel path -> acc (flushed)
         "skills": {},  # skill -> acc
@@ -82,7 +94,15 @@ def fold(snap, path):
         data = f.read()
     parts = data.split(b"\n")  # parts[-1] is the trailing (incomplete) remainder
     buffer, artifacts, skills = snap["buffer"], snap["artifacts"], snap["skills"]
+    # forward-compat: snapshots written by older versions lack newer fields
+    snap.setdefault("last_ts", "")
+    snap.setdefault("pending_ask", False)
+    for a in [buffer, *artifacts.values(), *skills.values()]:
+        for k in TIME:
+            a.setdefault(k, 0)
     active = snap["active_skill"]
+    prev = parse_ts(snap["last_ts"])  # previous event's time, for gap classification
+    pending_ask = snap.get("pending_ask", False)
     consumed = 0
     for raw in parts[:-1]:
         consumed += len(raw) + 1
@@ -98,10 +118,27 @@ def fold(snap, path):
         snap["last_ts"] = ts or snap["last_ts"]
         etype = o.get("type")
         msg = o.get("message") or {}
+
+        # Time: charge the gap before this event to active work or human wait.
+        # The event type owns the gap: a typed prompt (or an AskUserQuestion
+        # answer) is the human deciding; an assistant turn or a tool result is
+        # the system working.
+        cur = parse_ts(ts)
+        if cur is not None and prev is not None and cur >= prev:
+            if etype == "user" and isinstance(msg.get("content"), str):
+                buffer["idle_sec"] += cur - prev
+            elif etype == "user":
+                buffer["idle_sec" if pending_ask else "effective_sec"] += cur - prev
+            elif etype == "assistant":
+                buffer["effective_sec"] += cur - prev
+        if cur is not None:
+            prev = cur
+
         if etype == "user":
             if isinstance(msg.get("content"), str):
                 buffer["prompts"] += 1
                 active = None
+            pending_ask = False
         elif etype == "assistant":
             buffer["turns"] += 1
             u = msg.get("usage") or {}
@@ -119,6 +156,7 @@ def fold(snap, path):
             buffer["cache_creation"] += turn["cache_creation"]
             buffer["output"] += turn["output"]
             written = []
+            turn_has_ask = False
             for c in msg.get("content") or []:
                 if not isinstance(c, dict) or c.get("type") != "tool_use":
                     continue
@@ -128,6 +166,8 @@ def fold(snap, path):
                 inp = c.get("input") or {}
                 if name == "Skill":
                     active = inp.get("skill")
+                elif name == "AskUserQuestion":
+                    turn_has_ask = True
                 elif name in ("Write", "Edit", "MultiEdit"):
                     rel = spec_rel(inp.get("file_path", "") or "")
                     if rel:
@@ -139,8 +179,10 @@ def fold(snap, path):
                 artifacts.setdefault(written[0], acc())
                 add(artifacts[written[0]], buffer)
                 buffer.update(acc())
+            pending_ask = turn_has_ask
     snap["cursor"] += consumed
     snap["active_skill"] = active
+    snap["pending_ask"] = pending_ask
     return snap
 
 
@@ -151,7 +193,7 @@ def load_state(path):
         return None
     try:
         text = open(path, "r", encoding="utf-8").read()
-        start = text.index("<!-- spec-metrics-state v2")
+        start = text.index("<!-- spec-metrics-state v")  # any version — forward-compatible
         body = text[text.index("\n", start) + 1 : text.index("\n-->", start)]
         state = json.loads(body)
         if isinstance(state.get("sessions"), dict):
@@ -178,6 +220,26 @@ def metric_table(rows):
 def fmt_ts(iso):
     """ISO event timestamp -> 'YYYY-MM-DD HH:MM UTC' (the data's freshness)."""
     return (iso.replace("T", " ")[:16] + " UTC") if iso else "unknown"
+
+
+def fmt_dur(sec):
+    """Seconds -> compact duration: '10h 51m', '2m 04s', '45s'."""
+    sec = int(sec)
+    h, r = divmod(sec, 3600)
+    m, s = divmod(r, 60)
+    if h:
+        return f"{h}h {m:02d}m"
+    if m:
+        return f"{m}m {s:02d}s"
+    return f"{s}s"
+
+
+def time_table(rows):
+    out = ["| Item | Effective | Wait | Real |", "| " + " | ".join(["---"] * 4) + " |"]
+    for label, a in rows:
+        eff, idle = a.get("effective_sec", 0), a.get("idle_sec", 0)
+        out.append(f"| {label} | {fmt_dur(eff)} | {fmt_dur(idle)} | {fmt_dur(eff + idle)} |")
+    return out
 
 
 def render(state):
@@ -221,23 +283,31 @@ def render(state):
     ]
     out += metric_table(items)
 
+    out += ["", "## Time per artifact", "",
+            "Effective = model + tool work; Wait = human thinking or away; Real = "
+            "effective + wait. Same look-back attribution as cost.", ""]
+    out += time_table(items)
+
     if agg_skill:
         sk = sorted(agg_skill.items(), key=lambda kv: total_tokens(kv[1]), reverse=True)
         out += ["", "## Cost per skill", ""]
         out += metric_table(sk)
 
-    out += ["", "## Sessions", "", "| Session | Date | Turns | Total tokens |",
-            "| --- | --- | --- | --- |"]
+    out += ["", "## Sessions", "",
+            "| Session | Date | Turns | Total tokens | Effective | Wait |",
+            "| --- | --- | --- | --- | --- | --- |"]
     for sid, s in sessions.items():
         row = acc()
         for a in s["artifacts"].values():
             add(row, a)
         add(row, s["buffer"])
-        out.append(f"| {sid[:8]} | {s['date']} | {row['turns']:,} | {total_tokens(row):,} |")
+        out.append(f"| {sid[:8]} | {s['date']} | {row['turns']:,} | "
+                   f"{total_tokens(row):,} | {fmt_dur(row['effective_sec'])} | "
+                   f"{fmt_dur(row['idle_sec'])} |")
 
     out += [
         "",
-        "<!-- spec-metrics-state v2 — generated, do not edit by hand",
+        "<!-- spec-metrics-state v3 — generated, do not edit by hand",
         json.dumps(state, ensure_ascii=False),
         "-->",
         "",
@@ -275,7 +345,7 @@ def record(transcript, sid=None, project_path=None):
     if not path or not sid:
         return None  # not a spec project, or unidentifiable session
     state = load_state(path) or {
-        "version": 2,
+        "version": 3,
         "project": os.path.basename(project_path.rstrip(os.sep)) or "root",
         "project_path": project_path,
         "sessions": {},
