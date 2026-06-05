@@ -198,7 +198,7 @@ depends_on: [FEAT-NNN, ...]
 ## Rules (decision tree)
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   A[Input] -->|cond X| B[Output 1]
   A -->|cond Y| C[Output 2]
@@ -207,7 +207,7 @@ flowchart TD
 ## Logic (activity diagram)
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   Start --> Step1 --> Decision{?}
   Decision -->|yes| Step2
@@ -218,7 +218,7 @@ flowchart TD
 ## States (state diagram)
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 stateDiagram-v2
   [*] --> Idle
   Idle --> Working: trigger
@@ -229,7 +229,7 @@ stateDiagram-v2
 ## Flows (sequence diagram)
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 sequenceDiagram
   actor U as User
   participant W as Web

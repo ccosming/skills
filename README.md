@@ -47,7 +47,7 @@ gate — nothing advances until you accept the artifact.
 ### Workflow
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
     Setup["/setup<br/>→ config.yaml"]
     Found["/overview · /guidelines · /personality<br/>→ foundation files"]
@@ -147,7 +147,7 @@ The hooks in `hooks/hooks.json` are all Python under `hooks/`:
 | ---------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `inject.py`      | `SessionStart`                             | Emits the constitution plus, in a bootstrapped project, the live foundation into context — once per session, so skills do not re-read these files each run.                                           |
 | `format_spec.py` | `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim.       |
-| `metrics.py`     | `Stop`, `UserPromptSubmit`, `SessionStart` | Updates the project's live cost-and-time ledger (`.spec/usage.md`). Three triggers so a missed `Stop` — e.g. a turn ending on a pending question — is reconciled by the next prompt or session start. |
+| `metrics.py`     | `Stop`, `UserPromptSubmit`, `PostToolUse`, `SessionStart` | Updates the project's live cost-and-time ledger (`.spec/usage.md`). Four triggers so a missed `Stop` — e.g. a turn ending on a pending question — never strands the ledger: `PostToolUse` keeps it live mid-grilling and bootstraps it in a from-scratch session, the next prompt or session start backstops the rest. |
 
 `.spec/usage.md` is a per-project, accumulating ledger: cost per `.spec/`
 artifact (the five token categories + cache hit, plus tool calls, user prompts,
@@ -168,7 +168,7 @@ title — the code lives in `id` and the filename, never a `title:` field.
 | Artifact         | Path                               | Description                                                                                                                                                   | Skills that use it                                                |
 | ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `setup` (creates), all skills (read via injected foundation)      |
-| **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost-and-time ledger per artifact/skill/session. Written by the metrics hook (`Stop`/`UserPromptSubmit`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
+| **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost-and-time ledger per artifact/skill/session. Written by the metrics hook (`Stop`/`UserPromptSubmit`/`PostToolUse`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
 | **Overview**     | `.spec/overview.md`                | Project north star: mission, users, capabilities, outcomes, scope, constraints, context.                                                                      | `overview` (creates), all downstream skills (read)                |
 | **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `guidelines` (creates), all downstream skills (read)              |
 | **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `personality` (creates), `code` (read)                            |

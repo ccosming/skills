@@ -109,7 +109,7 @@ adrs: [ADR-NNN, ...]
 external systems.>
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User<br/>role"]
   sys["«system» <System><br/>what it does end to end"]
@@ -123,7 +123,7 @@ flowchart TD
 <Container view — major technical blocks and how they communicate.>
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User<br/>role"]
   subgraph sys["«system» <System>"]

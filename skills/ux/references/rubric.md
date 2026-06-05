@@ -144,7 +144,7 @@ surfaces: [<gui | tui | cli | agent | voice>, ...]
 - **Feedback**: <signal> within <time budget>.
 
 ```mermaid
-%%{init: {'theme':'neutral'}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 stateDiagram-v2
   [*] --> Idle
 ```
