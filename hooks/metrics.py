@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
-"""Stop hook: keep a live, per-project usage ledger for the spec workflow.
+"""Usage-ledger hook: keep a live, per-project cost ledger for the spec workflow.
 
-Runs after every assistant turn and folds the new transcript lines into the
-project's `.spec/usage.md`: a cost ledger with one row per `.spec/` artifact (the
-five token categories + cache hit, plus tool calls, user prompts, assistant
-turns), a per-skill breakdown for plugin optimization, and a per-session log.
+Registered on three events so it runs reliably at least once per turn (a single
+`Stop` is not enough — it can be missed on turns that end waiting on an
+`AskUserQuestion`): `Stop` (normal turn end), `UserPromptSubmit` (every typed
+prompt), and `SessionStart` (startup/resume/compact — a catch-up that reconciles
+any turn a missed trigger left unfolded). Each run folds the new transcript lines
+into the project's `.spec/usage.md`: a cost ledger with one row per `.spec/`
+artifact (the five token categories + cache hit, plus tool calls, user prompts,
+assistant turns), a per-skill breakdown for plugin optimization, and a per-session
+log.
 
 It is a generated non-artifact (like `config.yaml`); `/audit` skips it and the
 formatter leaves it alone. Written only when the project already has a `.spec/`
 directory — never created in a non-spec project.
 
 Per-turn cost is kept cheap by INCREMENTAL parsing: each session stores a byte
-cursor and only the new transcript lines are read. Work not yet tied to a
-`.spec/` write is shown provisionally under `(overhead)` so the running total is
-always current; a later write reattributes it (look-back heuristic). Cache-read
+cursor and only the new transcript lines are read. The cursor self-heals — the
+next run folds everything since the stored cursor — and `Updated through` reports
+the timestamp of the last turn folded in, so a stale ledger shows itself instead
+of looking current. Work not yet tied to a `.spec/` write is shown provisionally
+under `(overhead)`; a later write reattributes it (look-back heuristic). Cache-read
 tokens track conversation length more than artifact effort.
 
 Also runnable directly for testing:
@@ -24,7 +31,6 @@ Also runnable directly for testing:
 import json
 import os
 import sys
-from datetime import datetime, timezone
 
 FIELDS = ["input", "cache_read", "cache_creation", "output", "tools", "prompts", "turns"]
 OVERHEAD = "(overhead)"
@@ -60,6 +66,7 @@ def spec_rel(path):
 def fresh_snapshot():
     return {
         "date": "",
+        "last_ts": "",  # full timestamp of the last folded event — staleness signal
         "cursor": 0,
         "active_skill": None,
         "buffer": acc(),  # pending look-back work, shown as provisional overhead
@@ -86,7 +93,9 @@ def fold(snap, path):
             o = json.loads(line)
         except json.JSONDecodeError:
             continue
-        snap["date"] = (o.get("timestamp") or "")[:10] or snap["date"]
+        ts = o.get("timestamp") or ""
+        snap["date"] = ts[:10] or snap["date"]
+        snap["last_ts"] = ts or snap["last_ts"]
         etype = o.get("type")
         msg = o.get("message") or {}
         if etype == "user":
@@ -166,9 +175,14 @@ def metric_table(rows):
     return out
 
 
+def fmt_ts(iso):
+    """ISO event timestamp -> 'YYYY-MM-DD HH:MM UTC' (the data's freshness)."""
+    return (iso.replace("T", " ")[:16] + " UTC") if iso else "unknown"
+
+
 def render(state):
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sessions = state["sessions"]
+    through = max((s.get("last_ts", "") for s in sessions.values()), default="")
 
     agg_art, agg_skill, overhead = {}, {}, acc()
     for s in sessions.values():
@@ -193,12 +207,14 @@ def render(state):
     out = [
         f"# Plugin usage — {state['project']}",
         "",
-        f"Updated: {now} · Sessions: {len(sessions)} · Project: `{state['project_path']}`",
+        f"Updated through: {fmt_ts(through)} · Sessions: {len(sessions)} · "
+        f"Project: `{state['project_path']}`",
         "",
-        "Live ledger, updated each turn. Per-artifact cost is a look-back "
-        "heuristic (turns up to each `.spec/` write charge to that artifact); "
-        "work not yet attributed shows under `(overhead)`. Cache-read scales "
-        "with conversation length.",
+        "Live ledger. `Updated through` is the last turn folded in; if it lags "
+        "wall-clock, a hook fire was missed and the next prompt or session start "
+        "reconciles. Per-artifact cost is a look-back heuristic (turns up to each "
+        "`.spec/` write charge to that artifact); work not yet attributed shows "
+        "under `(overhead)`. Cache-read scales with conversation length.",
         "",
         "## Cost per artifact",
         "",
