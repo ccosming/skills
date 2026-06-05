@@ -14,7 +14,7 @@ skills/
 │   ├── hooks.json           # Hook registrations (SessionStart, UserPromptSubmit, PostToolUse, Stop)
 │   ├── inject.py            # SessionStart: inject constitution + foundation
 │   ├── format_spec.py       # PostToolUse: format .spec/*.md just written
-│   └── metrics.py           # Stop/UserPromptSubmit/SessionStart: live .spec/usage.md cost-and-time ledger
+│   └── metrics.py           # Stop/UserPromptSubmit/PostToolUse/SessionStart: live .spec/usage.md cost-and-time ledger
 ├── references/              # Plugin-wide docs injected/loaded at runtime
 │   ├── constitution.md      # Rules every spec-workflow skill obeys
 │   ├── grilling-engine.md   # Shared dimension-coverage grilling loop

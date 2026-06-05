@@ -34,6 +34,14 @@
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/format_spec.py\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/metrics.py\""
+          }
+        ]
       }
     ],
     "Stop": [

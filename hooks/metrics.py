@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Usage-ledger hook: keep a live, per-project cost ledger for the spec workflow.
 
-Registered on three events so it runs reliably at least once per turn (a single
+Registered on four events so it runs reliably at least once per turn (a single
 `Stop` is not enough — it can be missed on turns that end waiting on an
 `AskUserQuestion`): `Stop` (normal turn end), `UserPromptSubmit` (every typed
-prompt), and `SessionStart` (startup/resume/compact — a catch-up that reconciles
-any turn a missed trigger left unfolded). Each run folds the new transcript lines
+prompt), `PostToolUse` (every tool call — covers a from-scratch session that
+bootstraps `.spec/` mid-run and then grills entirely through `AskUserQuestion`,
+where the only typed prompt predates `.spec/` and no `Stop` fires), and
+`SessionStart` (startup/resume/compact — a catch-up that reconciles any turn a
+missed trigger left unfolded). Each run folds the new transcript lines
 into the project's `.spec/usage.md`: a cost ledger with one row per `.spec/`
 artifact (the five token categories + cache hit, plus tool calls, user prompts,
 assistant turns), a time ledger per artifact (effective work vs. human wait vs.
