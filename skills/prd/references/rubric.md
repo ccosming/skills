@@ -1,0 +1,150 @@
+# PRD rubric
+
+Dimensions, coverage criteria, question seeds, branching cues, and the artifact
+template for `/prd` discovery grilling. Methodology lives in the grilling engine;
+this rubric only supplies content.
+
+The PRD's **Technical decisions** and **Implementation** sections are not grilled
+here — `/prd` derives them from the accepted capability and fills them after this
+loop. The template ships them as placeholders.
+
+## Dimensions
+
+Partial order:
+`problem → {users, outcome}`; `outcome → {scope, acceptance_criteria}`;
+`scope → {hypotheses_risks, acceptance_criteria}`.
+
+| Dimension             | Depends on     | Covered when                                                          |
+| --------------------- | -------------- | -------------------------------------------------------------------- |
+| `problem`             | —              | concrete present-day pain stated, with no solution baked in          |
+| `users`               | problem        | affected roles/personas named, each with its stake                   |
+| `outcome`             | problem        | observable goals stated + at least one metric with baseline + target |
+| `scope`               | outcome        | In / Out boundaries drawn; adjacent capabilities excluded explicitly |
+| `hypotheses_risks`    | scope          | key assumptions surfaced + each material risk paired with mitigation |
+| `acceptance_criteria` | outcome, scope | testable pass/fail conditions enumerated                             |
+
+## Question seeds per dimension
+
+After every open answer, run `/clarify` and confirm material inferences.
+
+### `problem`
+
+| Gap       | Seed                                                                          |
+| --------- | ----------------------------------------------------------------------------- |
+| not asked | "What pain exists today, before any solution? Who feels it and when?"         |
+| vague     | "Describe the last concrete time this hurt — what happened, what did it cost?" |
+
+### `users`
+
+| Gap       | Seed                                                                |
+| --------- | ------------------------------------------------------------------- |
+| not asked | "Who is affected? Name the roles or personas and each one's stake." |
+
+### `outcome`
+
+| Gap       | Seed                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------- |
+| not asked | "How does 'solved' look as an observable outcome? What metric moves, from what to what?" |
+| partial   | "You named the goal; what's the measurable signal — baseline today and target?"          |
+
+### `scope`
+
+| Gap       | Seed                                                                       |
+| --------- | -------------------------------------------------------------------------- |
+| not asked | "What's in scope for this capability, and what's explicitly out for now?"  |
+| partial   | "Which adjacent things might be assumed in that you want to rule out?"     |
+
+### `hypotheses_risks`
+
+| Gap       | Seed                                                                                  |
+| --------- | ------------------------------------------------------------------------------------- |
+| not asked | "What are you assuming holds true? Where could this fail, and how would you catch it?" |
+
+### `acceptance_criteria`
+
+| Gap       | Seed                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------ |
+| not asked | "What testable conditions, once met, would let us call this done?"                         |
+| partial   | "Each criterion — can someone verify it pass/fail without judgment? Tighten the soft ones." |
+
+## Branching cues
+
+| User signal                               | Action                                                                          |
+| ----------------------------------------- | ------------------------------------------------------------------------------- |
+| Proposes a technical solution or tool     | Park it; technical decisions are derived after the capability, not grilled here |
+| Names a domain entity or coins a term     | Align it via `/domain` (delegated); do not redefine it                          |
+| Describes implementation detail of a unit | Defer to the FEAT breakdown; keep the PRD at capability level                   |
+| Conflates two or more capabilities        | Flag for a possible split into separate PRDs before writing                     |
+
+## Template
+
+````markdown
+---
+id: PRD-NNN
+status: draft
+version: 0.1.0
+prs: []
+adrs: []
+feats: []
+---
+
+# <Title>
+
+## Problem
+
+<1–2 paragraphs. Concrete pain, not solution.>
+
+## Users
+
+<List of affected roles/personas.>
+
+## Goals
+
+- <Observable outcome 1>
+- <Observable outcome 2>
+
+## Success metrics
+
+| Metric | Baseline | Target   |
+| ------ | -------- | -------- |
+| <Name> | <Today>  | <Target> |
+
+## Scope
+
+**In**:
+
+- <Item>
+
+**Out**:
+
+- <Item>
+
+## Hypotheses and risks
+
+- **Hypothesis**: <…>
+- **Risk**: <…> · Mitigation: <…>
+
+## Acceptance criteria
+
+- [ ] <Testable condition>
+- [ ] <Testable condition>
+
+## Technical decisions
+
+_Pending technical analysis._
+
+## Implementation
+
+_Pending technical analysis._
+
+## Interaction notes
+
+<Only when a user intervention changed the outcome. One line each, in
+language.artifacts. Omit the whole section if there were none.>
+
+## Changelog
+
+| Timestamp (UTC)  | Version | Description                                                          |
+| ---------------- | ------- | -------------------------------------------------------------------- |
+| YYYY-MM-DD HH:MM | 0.1.0   | Initial creation: <why this capability was raised, what was agreed>. |
+````

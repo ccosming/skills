@@ -38,41 +38,45 @@ context, read `../../references/constitution.md` before proceeding.
 
 ### 1. Discovery grilling
 
-Conduct 2–4 rounds with `AskUserQuestion`. Do not advance with assumptions; each
-question must have pre-analyzed options.
+Run the grilling engine (`../../references/grilling-engine.md`) against
+`references/rubric.md`, applying the technical Product Owner persona. The engine
+covers the PRD dimensions (problem, users, outcome, scope, hypotheses_risks,
+acceptance_criteria), scales depth by materiality, records interaction notes,
+writes the PRD from the rubric template, and runs the confirmation gate over
+those dimensions.
 
-Cover, at minimum:
-
-- **Problem**: what pain exists today. No solution yet.
-- **Users**: who is affected. Concrete roles from the operating model if
-  applicable.
-- **Desired outcome**: how "solved" looks. Observable metric.
-- **Constraints**: time, dependencies, integrations, decisions already made.
-- **Hypotheses and risks**: what you assume and where it can fail.
-
-Stop when you can write a PRD without critical gaps.
+Write to `.spec/prds/PRD-NNN-slug.md` — `NNN` is the next free number from
+pre-flight; `slug` is the English kebab-case of the title. The PRD is born
+`draft`, with **Technical decisions** and **Implementation** left as
+placeholders; §3 derives and fills them. The engine's confirmation gate confirms
+the grilled capability before the technical breakdown is derived — it does not
+cover those two sections.
 
 ### 1.5 Domain alignment (if `domain.md` exists)
 
 **Skip this section entirely** if `.spec/domain.md` does not exist.
 
-After grilling captures all answers, scan the user's responses for candidate domain terms before generating ADRs/FEATs:
+Once the PRD is written, scan it for candidate domain terms before deriving
+ADRs/FEATs:
 
-1. Extract capitalized phrases, frequent nouns, and compound terms from the grilling answers.
-2. For each candidate **not already in `domain.md` `## Terms`**, invoke `/domain` in `delegated` mode via `Task` subagent:
+1. Extract capitalized phrases, frequent nouns, and compound terms from the PRD
+   body.
+2. For each candidate **not already in `domain.md` `## Terms`**, invoke `/domain`
+   in `delegated` mode (per the constitution, _Invoking helpers and /audit_):
 
    ```text
-   Task(subagent_type="general-purpose", description="domain term alignment",
-        prompt="Invoke the domain skill: Skill(skill=\"domain\", args=\"candidate_term: <term>; caller_skill: /prd; caller_context: <one-line about which PRD and what role the term plays>; surrounding_text: <short paraphrase>\"). Return ONLY its YAML output.")
+   Skill(skill="domain", args="candidate_term: <term>; caller_skill: /prd; caller_context: <one-line about which PRD and what role the term plays>; surrounding_text: <short paraphrase>")
    ```
 
 3. Parse the returned YAML:
    - `status: added` → use the `canonical_term` returned (may differ from the original).
    - `status: reused` → replace the candidate with the existing canonical name.
    - `status: rejected` → use the original word freely (not a domain term).
-4. Update the captured grilling content to use the canonical names before proceeding to Technical analysis.
+4. If any canonical name differs from what the PRD already says, edit the draft
+   PRD in place to use the canonical names before Technical analysis.
 
-Run all delegated invocations sequentially (not parallel) so the user is asked one term at a time.
+Run the invocations one term at a time (not parallel) so the user is asked about
+a single term per turn.
 
 ### 2. Technical analysis
 
@@ -86,8 +90,9 @@ Before generating files, identify:
 
 ### 3. Generation
 
-Create files with `status: draft`. Incremental IDs over the last one found.
-Slugs in English kebab-case.
+The PRD already exists (written by the engine in §1). Now derive its breakdown.
+Create the ADRs and FEATs with `status: draft`, incremental IDs over the last one
+found in pre-flight, slugs in English kebab-case.
 
 Cross structure:
 
@@ -100,78 +105,11 @@ PRD-NNN ──┬──► ADR-NNN (decisions)
 
 Links always with markdown `[ID slug](../{type}s/ID-slug.md)`.
 
-#### PRD template
+Then complete the PRD:
 
-```markdown
----
-id: PRD-NNN
-status: draft
-version: 0.1.0
-prs: []
-adrs: [ADR-NNN, ...]
-feats: [FEAT-NNN, ...]
----
-
-# <Title>
-
-## Problem
-
-<1–2 paragraphs. Concrete pain, not solution.>
-
-## Users
-
-<List of affected roles/personas.>
-
-## Goals
-
-- <Observable outcome 1>
-- <Observable outcome 2>
-
-## Success metrics
-
-| Metric   | Baseline | Target     |
-| -------- | -------- | ---------- |
-| <Name>   | <Today>  | <Target>   |
-
-## Scope
-
-**In**:
-
-- <Item>
-
-**Out**:
-
-- <Item>
-
-## Hypotheses and risks
-
-- **Hypothesis**: <…>
-- **Risk**: <…> · Mitigation: <…>
-
-## Acceptance criteria
-
-- [ ] <Testable condition>
-- [ ] <Testable condition>
-
-## Technical decisions
-
-- [ADR-NNN slug](../adrs/ADR-NNN-slug.md) — <one line>
-
-## Implementation
-
-- [FEAT-NNN slug](../feats/FEAT-NNN-slug.md) — <one line>
-
-## Interaction notes
-
-<Only when a user intervention changed the outcome. One line each, in
-language.artifacts. Omit the whole section if there were none.>
-
-## Changelog
-
-| Timestamp (UTC)  | Version | Description                                                                          |
-| ---------------- | ------- | ------------------------------------------------------------------------------------ |
-| YYYY-MM-DD HH:MM | 0.1.0   | Initial creation: <why this capability was raised and what was agreed in grilling>.  |
-```
+- Replace its **Technical decisions** placeholder with one `[ADR-NNN slug](../adrs/ADR-NNN-slug.md) — <one line>` per ADR.
+- Replace its **Implementation** placeholder with one `[FEAT-NNN slug](../feats/FEAT-NNN-slug.md) — <one line>` per FEAT, in dependency order.
+- Set the PRD frontmatter `adrs:` and `feats:` to the created IDs.
 
 #### ADR template (reduced Nygard)
 
@@ -326,9 +264,22 @@ language.artifacts. Omit the whole section if there were none.>
 
 ```
 
-### 4. Orthogonal update
+### 4. Confirm the breakdown
 
-Before closing, re-read `.spec/overview.md`, `.spec/guidelines.md` and `.spec/personality.md`. Update them **only if** what was defined in this session introduces:
+The engine's gate (§1) confirmed the capability. This gate confirms the technical
+breakdown derived from it. Per the constitution (_Confirming artifacts_), the
+derived ADRs and FEATs are artifacts and do not stand until accepted.
+
+Summarize in `language.chat`: PRD title, each ADR (one line), each FEAT with its
+dependency order. Then `AskUserQuestion`: **Accept** (Recommended) | **Adjust**.
+
+On Adjust, ask which part (a decision, a unit, the order), revise §2/§3
+accordingly, re-summarize, and re-confirm. Nothing is promoted to `ready` until
+the user accepts.
+
+### 5. Orthogonal update
+
+After Accept, re-read `.spec/overview.md`, `.spec/guidelines.md` and `.spec/personality.md`. Update them **only if** what was defined in this session introduces:
 
 - New artifact type, convention or status.
 - Design pattern worth standardizing (guidelines).
@@ -337,7 +288,7 @@ Before closing, re-read `.spec/overview.md`, `.spec/guidelines.md` and `.spec/pe
 
 Each update must add a row in the changelog of the modified file explaining the **why**, not the what.
 
-### 5. Closure
+### 6. Closure
 
 1. Change `status` of all generated files from `draft` to `ready`.
 2. Keep `version: 0.1.0` in each file (promotion to `1.0.0` happens upon reaching `done`/`locked`, not at `ready`). If during this session additional writes were made over the same file, apply the corresponding SemVer bumps.
@@ -345,7 +296,7 @@ Each update must add a row in the changelog of the modified file explaining the 
 
 ## Audit
 
-Per the constitution (_Invoking helpers and /audit_). After Closure (§ 5):
+Per the constitution (_Invoking helpers and /audit_). After Closure (§ 6):
 
 - `target_paths`: comma-separated paths of the created PRD plus every
   derived ADR and FEAT.
