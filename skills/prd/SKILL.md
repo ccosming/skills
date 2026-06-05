@@ -198,15 +198,16 @@ depends_on: [FEAT-NNN, ...]
 ## Rules (decision tree)
 
 ```mermaid
-graph TD
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
   A[Input] -->|cond X| B[Output 1]
   A -->|cond Y| C[Output 2]
 ```
-````
 
 ## Logic (activity diagram)
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 flowchart TD
   Start --> Step1 --> Decision{?}
   Decision -->|yes| Step2
@@ -217,6 +218,7 @@ flowchart TD
 ## States (state diagram)
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 stateDiagram-v2
   [*] --> Idle
   Idle --> Working: trigger
@@ -227,6 +229,7 @@ stateDiagram-v2
 ## Flows (sequence diagram)
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 sequenceDiagram
   actor U as User
   participant W as Web
@@ -261,8 +264,7 @@ language.artifacts. Omit the whole section if there were none.>
 | Timestamp (UTC)  | Version | Description                                                                                       |
 | ---------------- | ------- | ------------------------------------------------------------------------------------------------- |
 | YYYY-MM-DD HH:MM | 0.1.0   | Initial creation as part of PRD-NNN breakdown: <order and dependencies agreed during grilling>.   |
-
-```
+````
 
 ### 4. Confirm the breakdown
 

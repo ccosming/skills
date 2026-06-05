@@ -8,14 +8,26 @@ purpose, fit, and syntax.
 Agile principle: draw only the diagram that answers a concrete question. Prefer
 one clear view over exhaustive documentation.
 
+## Rendering
+
+Every diagram is monochrome and minimalist:
+
+- Set the neutral theme as the first line of the block:
+  `%%{init: {'theme':'neutral'}}%%`. Never apply custom fills or `style`/`classDef`
+  colors.
+- Architecture views (the former C4 family) render as `flowchart`, not the C4
+  shapes — C4's fixed styling ignores the neutral theme. The C4 semantics survive
+  as `«person»` / `«system»` / `«external»` / `«container»` / `«component»`
+  stereotype labels and `subgraph` boundaries.
+
 ## Selection
 
 | Question to answer                                 | Diagram       | Mermaid type      |
 | -------------------------------------------------- | ------------- | ----------------- |
-| How does the system sit among users and externals? | C4 Context    | `C4Context`       |
-| What are the major technical building blocks?      | C4 Container  | `C4Container`     |
-| What is inside one container?                      | C4 Component  | `C4Component`     |
-| How do containers collaborate at runtime?          | C4 Dynamic    | `C4Dynamic`       |
+| How does the system sit among users and externals? | System context | `flowchart`      |
+| What are the major technical building blocks?      | Containers    | `flowchart`       |
+| What is inside one container?                      | Components    | `flowchart`       |
+| How do containers collaborate at runtime?          | Runtime flow  | `flowchart`       |
 | What entities exist and how do they relate?        | UML Class     | `classDiagram`    |
 | What can each actor do with the system?            | UML Use case  | `flowchart`       |
 | How do parts exchange messages over time?          | UML Sequence  | `sequenceDiagram` |
@@ -24,74 +36,74 @@ one clear view over exhaustive documentation.
 | How is the system split into software components?  | UML Component | `flowchart`       |
 | What does the user feel across a journey?          | User Journey  | `journey`         |
 
-## C4 family
+## Architecture family (C4 views as flowcharts)
 
 System architecture across abstraction levels. Each level answers a distinct
-question for a distinct audience. Mermaid's C4 support is experimental but
-expressive enough for these views.
+question for a distinct audience. The C4 semantics are kept as stereotype labels
+and `subgraph` boundaries, rendered through `flowchart` so the neutral theme
+applies.
 
-### C4 Context — the widest view: system + users + external systems
+### System context — the widest view: system + users + external systems
 
 ```mermaid
-C4Context
-  title System Context — <system>
-  Person(user, "User", "role")
-  System(sys, "<System>", "what it does end to end")
-  System_Ext(ext, "External System", "what it provides")
-  Rel(user, sys, "uses")
-  Rel(sys, ext, "calls", "HTTPS")
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  user["«person» User<br/>role"]
+  sys["«system» System<br/>what it does end to end"]
+  ext["«external» External System<br/>what it provides"]
+  user -->|uses| sys
+  sys -->|"calls · HTTPS"| ext
 ```
 
-### C4 Container — the major technical blocks (apps, APIs, stores, workers)
+### Containers — the major technical blocks (apps, APIs, stores, workers)
 
 ```mermaid
-C4Container
-  title Containers — <system>
-  Person(user, "User", "role")
-  System_Boundary(b, "<System>") {
-    Container(web, "Web App", "framework", "UI")
-    Container(api, "API", "runtime", "business logic")
-    ContainerQueue(mq, "Message Queue", "broker", "async work")
-    ContainerDb(db, "Database", "engine", "persists X")
-  }
-  Rel(user, web, "uses", "HTTPS")
-  Rel(web, api, "calls", "JSON/HTTPS")
-  Rel(api, db, "reads/writes", "SQL")
-  Rel(api, mq, "publishes", "events")
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  user["«person» User<br/>role"]
+  subgraph sys["«system» System"]
+    web["«container» Web App<br/>framework · UI"]
+    api["«container» API<br/>runtime · business logic"]
+    mq["«queue» Message Queue<br/>broker · async work"]
+    db[("«store» Database<br/>engine · persists X")]
+  end
+  user -->|"uses · HTTPS"| web
+  web -->|"JSON/HTTPS"| api
+  api -->|SQL| db
+  api -->|"publishes events"| mq
 ```
 
-### C4 Component — the internals of one container
+### Components — the internals of one container
 
 ```mermaid
-C4Component
-  title Components — <container>
-  Container_Boundary(api, "API") {
-    Component(ctrl, "Controller", "framework", "handles requests")
-    Component(svc, "Service", "module", "domain logic")
-    Component(repo, "Repository", "module", "data access")
-  }
-  Rel(ctrl, svc, "uses")
-  Rel(svc, repo, "uses")
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  subgraph api["«container» API"]
+    ctrl["«component» Controller<br/>handles requests"]
+    svc["«component» Service<br/>domain logic"]
+    repo["«component» Repository<br/>data access"]
+  end
+  ctrl --> svc --> repo
 ```
 
-### C4 Dynamic — a runtime interaction across containers (numbered steps)
+### Runtime flow — a runtime interaction across containers (numbered steps)
 
 ```mermaid
-C4Dynamic
-  title Dynamic — <flow>
-  Person(user, "User")
-  Container(web, "Web App")
-  Container(api, "API")
-  ContainerDb(db, "Database")
-  Rel(user, web, "1. submits form")
-  Rel(web, api, "2. POST /resource")
-  Rel(api, db, "3. INSERT")
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  user["«person» User"]
+  web["«container» Web App"]
+  api["«container» API"]
+  db[("«store» Database")]
+  user -->|"1 · submits form"| web
+  web -->|"2 · POST /resource"| api
+  api -->|"3 · INSERT"| db
 ```
 
 ## UML family
 
-Structural and behavioral views. Use selectively, where a C4 view does not
-answer the question.
+Structural and behavioral views. Use selectively, where an architecture view does
+not answer the question.
 
 ### Class — entities, attributes, methods, relations (structural)
 
@@ -99,6 +111,7 @@ Defines the vocabulary and responsibilities. Relations: inheritance,
 association, composition, aggregation.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 classDiagram
   class User {
     +String name
@@ -125,6 +138,7 @@ High-level scope agreement. The "what" from the user's perspective, never the
 nodes.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 flowchart LR
   customer([Customer])
   admin([Administrator])
@@ -140,6 +154,7 @@ The temporal dimension of one scenario. Ideal for APIs, protocols, debugging a
 concrete flow.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 sequenceDiagram
   actor C as Client
   participant S as Server
@@ -159,6 +174,7 @@ sequenceDiagram
 Process logic end to end. Surfaces bottlenecks and business rules.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 flowchart TD
   Start([Start]) --> A[Receive order]
   A --> D{In stock?}
@@ -172,6 +188,7 @@ Captures valid states and the events that move between them; prevents invalid
 states. For event-driven logic and state machines.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 stateDiagram-v2
   [*] --> Pending
   Pending --> Paid: confirmPayment()
@@ -184,11 +201,12 @@ stateDiagram-v2
 
 ### Component — software components and their dependencies (structural)
 
-A high-level structural view. At the system level prefer C4 Container, which
-carries richer semantics; reach for this when a plain dependency sketch
+A high-level structural view. At the system level prefer the Containers view,
+which carries richer semantics; reach for this when a plain dependency sketch
 suffices.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 flowchart LR
   web[Web UI] --> api[REST API]
   api --> auth[Auth Service]
@@ -203,6 +221,7 @@ Maps the experience over time with a sentiment score (1–5) per step. Descripti
 context, not behaviorally enforceable; pair it with testable quality criteria.
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 journey
   title Checkout journey
   section Browse

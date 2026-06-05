@@ -96,6 +96,7 @@ Each context is a logical boundary where terms have consistent meaning.
 ## Context map
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 flowchart LR
   ContextA -->|relationship| ContextB
   ContextC -->|anti-corruption| ContextA

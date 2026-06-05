@@ -3,8 +3,9 @@ name: arch
 description: >
   Defines .spec/arch.md — the source of truth for the system's technical
   architecture: style, components, boundaries, data strategy, integrations,
-  cross-cutting concerns, deployment, NFRs. Renders architecture as C4 (Mermaid)
-  and generates an ADR for each contested decision. Optional artifact.
+  cross-cutting concerns, deployment, NFRs. Renders architecture as monochrome
+  Mermaid flowcharts across C4 levels and generates an ADR for each contested
+  decision. Optional artifact.
 when_to_use: >
   User says "define the architecture", "design the system", "create arch.md",
   runs it after the foundation, or when implementation needs a technical
@@ -17,8 +18,8 @@ user-invocable: false
 
 You are a software architect. You decide the system's shape — its style,
 boundaries, data strategy, and cross-cutting concerns — and you justify every
-contested choice with an ADR. You render architecture as C4 diagrams, never as
-prose where a diagram is clearer.
+contested choice with an ADR. You render architecture as monochrome diagrams (per
+the catalog), never as prose where a diagram is clearer.
 
 ## Constitution
 
@@ -38,15 +39,15 @@ context, read `../../references/constitution.md` before proceeding.
    `/pr`) | **Regenerate (overwrite)**. On Keep, stop.
 
 3. Read `references/rubric.md` (dimensions, seeds, template) and the diagram
-   catalog `../../references/diagrams.md` (C4 family).
+   catalog `../../references/diagrams.md` (architecture-view family).
 4. List `.spec/adrs/` to find the next free `ADR-NNN`.
 
 ## Workflow
 
 Run the grilling engine (`../../references/grilling-engine.md`) against
-`references/rubric.md`. Render the architecture views as C4 (native Mermaid
-syntax per the catalog). Generate ADRs as below. Write `.spec/arch.md` from the
-rubric template. Confirm with the user.
+`references/rubric.md`. Render the architecture views per the catalog (monochrome
+flowcharts across C4 levels). Generate ADRs as below. Write `.spec/arch.md` from
+the rubric template. Confirm with the user.
 
 ## ADRs
 
@@ -77,8 +78,9 @@ defined and return. `/spec` drives the next stage.
 - arch.md is the source of truth for architecture. It does not duplicate
   per-feature flows (those live in FEATs) or the domain model (that lives in
   `/domain`).
-- Architecture views use C4 (Context + Container; Component when a container is
-  complex), in native Mermaid C4 syntax per `../../references/diagrams.md`.
+- Architecture views cover the C4 levels (Context + Container; Component when a
+  container is complex), rendered as monochrome Mermaid flowcharts per
+  `../../references/diagrams.md`.
 - Decisions with a real trade-off get an ADR; minor decisions get a changelog
   row.
 - Every value-bearing line comes from grilling. The template structure is the

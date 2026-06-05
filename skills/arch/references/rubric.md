@@ -1,7 +1,7 @@
 # Architecture rubric
 
-Dimensions, coverage criteria, question seeds, and the artifact template. C4
-syntax lives in `../../references/diagrams.md`.
+Dimensions, coverage criteria, question seeds, and the artifact template.
+Architecture-view syntax lives in `../../references/diagrams.md`.
 
 ## Dimensions
 
@@ -11,7 +11,7 @@ Partial order:
 | Dimension       | Depends on | Covered when                                                             |
 | --------------- | ---------- | ------------------------------------------------------------------------ |
 | `style`         | —          | one architecture style chosen + rationale; ADR if the trade-off is real  |
-| `components`    | style      | ≥2 containers named, each with a one-line responsibility (C4 Container)  |
+| `components`    | style      | ≥2 containers named, each with a one-line responsibility                 |
 | `boundaries`    | components | each container-to-container link marked sync or async with its contract  |
 | `data`          | components | storage approach per stateful container (not schemas); CQRS/event noted  |
 | `integrations`  | components | external systems listed, or user confirms none                           |
@@ -105,27 +105,41 @@ adrs: [ADR-NNN, ...]
 
 ## System context
 
-<C4Context — see `../../references/diagrams.md`. System, users, external
-systems.>
+<System-context view — see `../../references/diagrams.md`. System, users,
+external systems.>
 
 ```mermaid
-C4Context
-  title System Context — <system>
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  user["«person» User<br/>role"]
+  sys["«system» <System><br/>what it does end to end"]
+  ext["«external» <External><br/>what it provides"]
+  user -->|uses| sys
+  sys -->|"calls · HTTPS"| ext
 ```
 
 ## Containers
 
-<C4Container — major technical blocks and how they communicate.>
+<Container view — major technical blocks and how they communicate.>
 
 ```mermaid
-C4Container
-  title Containers — <system>
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+  user["«person» User<br/>role"]
+  subgraph sys["«system» <System>"]
+    web["«container» <Web App><br/>framework · UI"]
+    api["«container» <API><br/>runtime · business logic"]
+    db[("«store» <Database><br/>engine · persists X")]
+  end
+  user -->|"uses · HTTPS"| web
+  web -->|"JSON/HTTPS"| api
+  api -->|SQL| db
 ```
 
 ## Components
 
-<Optional. C4Component for any container complex enough to warrant a zoom. Omit
-if no container needs it.>
+<Optional. Component view for any container complex enough to warrant a zoom.
+Omit if no container needs it.>
 
 ## Boundaries & contracts
 
