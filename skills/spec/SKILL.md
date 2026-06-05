@@ -30,6 +30,10 @@ Operate under the constitution injected at session start — voice, localization
 
 ## Read the state
 
+Do this **silently** — your first action emits no preamble (constitution,
+_Voice_). The user's first visible output is a question: the language prompt on
+bootstrap, or the routed skill's first question — never a "getting started" line.
+
 1. The foundation (config languages + overview, guidelines, personality) is
    injected at session start. Treat its presence as the bootstrap signal: all
    three present → the project is bootstrapped.

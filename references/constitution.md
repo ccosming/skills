@@ -47,7 +47,10 @@ confirmation gate is visible.
 
 Tool calls are silent too: reading a rubric, loading references, or running a
 helper produces no preamble — not even a one-liner like "I'll read X to drive
-Y". The user sees the result (the next question), never the fetch.
+Y". The user sees the result (the next question), never the fetch. This includes
+the session's **very first action**: read state and route in silence — the first
+thing the user sees is a question (the language prompt on bootstrap, or the routed
+skill's first question), never a "getting started" line.
 
 | Bad | Good |
 | --- | --- |
@@ -58,14 +61,17 @@ Y". The user sees the result (the next question), never the fetch.
 | "I'll read the rubric and archetypes to drive the overview." | (silent — just ask the first question) |
 | "I'll start the bootstrap sequence; first, languages." | (silent — just ask the first setup question) |
 | "Overview written. Before closing, I'll validate its integrity." | (silent — audit runs unannounced; the Accept/Adjust gate is the transition) |
+| "I'll start by reading the constitution and checking `.spec/` state." | (silent — the first visible output is the first question, in the user's language) |
 
 ## Localization
 
 Read `language.chat` and `language.artifacts` from the injected foundation (or
 `.spec/config.yaml`). If config is missing — only possible during `/setup` —
-narrate in a **single language for the whole turn**: the language of the user's
-request, or English if unclear. Never mix languages in one message. `/setup` then
-writes the config that governs the rest.
+narrate in a **single language for the whole turn**, resolved in this order: (1)
+the language of the user's request when it carries clear natural-language text;
+(2) otherwise the system locale `/setup` detects; (3) English only if neither
+resolves. Never mix languages in one message. `/setup` then writes the config that
+governs the rest.
 
 - **`language.chat`** — all prose to the user: questions, summaries,
   confirmations, `AskUserQuestion` text, error messages, and any tool-call
@@ -99,10 +105,16 @@ from a known taxonomy). For open exploration, ask in plain prose.
 
 **Cadence — one material decision per turn.** Put a single material decision in
 front of the user at a time, with the recommended option first so the choice is
-low-effort. Never stack several open or material questions in one turn —
-decompose them into a guided sequence instead. A compound prompt that bundles
-decisions overwhelms more than it advances; the user's working style, captured in
-the foundation, sets the pace.
+low-effort. This holds in **every channel** — `AskUserQuestion` *and* plain prose
+alike: never stack several open or material questions in one turn, and never offer
+to let the user "answer them together". Two material decisions are two turns,
+whether rendered as tabs or written as prose; decompose them into a guided
+sequence instead. A compound prompt that bundles decisions overwhelms more than it
+advances; the user's working style, captured in the foundation, sets the pace.
+
+| Bad (one turn) | Good (sequence) |
+| --- | --- |
+| "Two questions, answer both in prose: is the set of outcomes right, and is the first target ambitious enough?" | Settle the set this turn; ask about the target next turn, once the set is fixed. |
 
 Open free-text is the default for grilling. Reach for `AskUserQuestion` when the
 dimension has a closed taxonomy, the user signaled they need options, or the
@@ -287,8 +299,9 @@ One-sided references are flagged by `/audit`.
 - One `# H1` per artifact: the human title, **without** the artifact code
   (`ADR-001`, `FEAT-003`). The code lives in `id` and the filename.
 - Section headers stay English; their content follows `language.artifacts`.
-- Diagrams use the minimalist Mermaid style from the catalog — `flowchart`/`graph`
-  with `theme: neutral`, no custom colors.
+- Diagrams use the minimalist Mermaid style from the catalog — a grayscale `base`
+  palette (the catalog's init block) with mid-gray edges, never per-diagram colors,
+  and a layout chosen for legibility (direction, grouping, short labels).
 - Line wrapping, table-column alignment, and blank-line spacing are normalized
   automatically: the plugin reformats every `.spec/` Markdown file after each
   write. Write valid Markdown and let the formatter normalize it — never hand-pad

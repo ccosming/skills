@@ -14,7 +14,9 @@ user-invocable: false
 
 Write `.spec/config.yaml` — the languages every skill reads for localization.
 This is the only skill that runs before localization can resolve; until config
-exists, default to English with neutral register.
+exists, narrate in the pre-config language the constitution resolves
+(_Localization_): the user's request language if clear, else the detected system
+locale, else English — always neutral register.
 
 ## Constitution
 
@@ -35,18 +37,23 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Workflow
 
-### 1. Detect the system language
+### 1. Resolve the language
 
-Run verbatim:
+The system locale is the fallback when the invocation carried no prose. Detect it
+verbatim:
 
 ```bash
 SYS_LANG=$(defaults read -g AppleLanguages 2>/dev/null | grep -m1 -oE '"[a-z]{2,3}' | tr -d '"'); SYS_LANG=${SYS_LANG:-${LANG%%_*}}; SYS_LANG=${SYS_LANG:-en}; case "$SYS_LANG" in es|en) ;; *) SYS_LANG=en ;; esac; echo "$SYS_LANG"
 ```
 
+The **resolved** language is: the user's request language when the invocation
+carried clear natural-language text; otherwise `SYS_LANG`; otherwise `en`. Use it
+for this skill's narration and as the Recommended default below.
+
 ### 2. Ask the user
 
-One `AskUserQuestion` carrying both questions; Recommended = the detected
-`SYS_LANG` for both:
+One `AskUserQuestion` carrying both questions; Recommended = the resolved language
+for both:
 
 - `language.chat`: `en` | `es`
 - `language.artifacts`: `en` | `es`
