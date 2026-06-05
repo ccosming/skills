@@ -57,7 +57,8 @@ If `target_paths` is provided:
 
 Else:
 
-1. `Glob` `.spec/**/*.md` plus `.spec/*.md`.
+1. `Glob` `.spec/**/*.md` plus `.spec/*.md`, excluding `.spec/usage.md` (a
+   generated metrics ledger, not a versioned artifact — like `config.yaml`).
 2. Audit all — comprehensive mode.
 
 ### 2. Run checks

@@ -153,6 +153,9 @@ and `version` — **no `title:`** (the human title is the body `# H1`). It ends
 with a `## Changelog` section; when user interventions shaped it, an
 `## Interaction notes` section sits just above the Changelog.
 
+`.spec/config.yaml` (languages) and `.spec/usage.md` (the generated cost ledger)
+are **not** artifacts: they carry no frontmatter and `/audit` skips them.
+
 ### SemVer
 
 | Event | Version action |
