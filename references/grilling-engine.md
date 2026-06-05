@@ -36,6 +36,8 @@ while not all required dimensions covered:
 
 write the artifact from the template, recording stance-changing interventions
   in its ## Interaction notes (per the constitution)
+run the consistency pass (mandatory — see Consistency); resolve every
+  contradiction with the user before the gate
 run the confirmation gate (mandatory — see Confirmation)
 ```
 
@@ -55,12 +57,21 @@ inference is mandatory; never record a material assumption silently.
 
 ## Branching
 
-When an answer reveals content outside the current dimension:
+When an answer reveals content that belongs to another dimension, **park it and
+move on — do not solve it inline.** Pulling a neighboring dimension's decision
+into the current one is what turns a focused question into an overwhelming
+multi-dimension derivation.
 
-1. Fit it into an existing dimension (park it; revisit when that dimension comes up).
-2. If no dimension fits, ask the user "Where does this live?" and show the
-   rubric's dimension list.
-3. Sections come from the template only. Never add one silently.
+1. Acknowledge it in one line ("noted — we'll set that when we reach
+   constraints") and record it as evidence for that dimension; revisit it when
+   that dimension comes up.
+2. A **constraint** surfaced mid-grilling (budget, hours, deadline, ceiling) is
+   parked for the `constraints` dimension, never reconciled against the current
+   one. A **metric** surfaced mid-grilling is parked for `capabilities` or
+   `outcomes`.
+3. If no dimension fits, ask "Where does this live?" and show the rubric's
+   dimension list.
+4. Sections come from the template only. Never add one silently.
 
 ## Readiness check
 
@@ -94,6 +105,25 @@ Per the constitution (_Invoking helpers and /audit_). For every open answer pass
 If `NEEDS_DISAMBIGUATION` returns, present the spec's `question` via
 `AskUserQuestion` yourself, fold the resolution into the recorded answer, then
 proceed.
+
+## Consistency
+
+After writing and before the gate (per the constitution, _Artifact
+self-consistency_):
+
+1. Run the critic: `Skill(skill="consistency", args="target_path: <path>;
+   caller_skill: <name>")`.
+2. For each contradiction it returns, surface the critic's `question` to the user
+   (one at a time — cadence), resolve it by re-grilling the affected dimension,
+   and rewrite the artifact.
+3. Re-run until it returns `consistent` — or the user explicitly overrides a
+   finding.
+
+**Coupled dimensions** — a target that depends on a constraint (e.g. cadence =
+hours ÷ effort) — are reconciled **here**, once, against the assembled whole, not
+improvised mid-grilling. Capture each dimension as it comes (parking neighbors per
+_Branching_); let the consistency pass surface the tension between them and
+resolve it in one focused exchange.
 
 ## Confirmation
 

@@ -51,10 +51,15 @@ The engine picks one seed based on the current gap. After every open answer, run
 
 | Gap                                          | Seed                                                                                |
 | -------------------------------------------- | ----------------------------------------------------------------------------------- |
-| empty                                        | "What is the software committed to producing (output cadence) AND what quality bars must it meet (perf, UX, accessibility)?" |
+| empty                                        | "What is the software committed to producing, and at what cadence? (Quality bars come next.)" |
 | only `output` rows                           | "Output covered. What quality standards must the system meet to be acceptable?"     |
 | only `quality` rows                          | "Quality covered. What does the system produce and at what cadence?"                |
 | row missing window                           | "[Metric] — over what window? (per week / month / always)"                          |
+
+Capability rows are **commitments** (what it produces, what bars it meets), not
+implementation or instrumentation design. If the user dives into per-stage SLOs,
+auto-instrumentation, or how a target gets measured, capture the commitment and
+defer the mechanism to `/arch` or a FEAT.
 
 ### `outcomes`
 

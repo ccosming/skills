@@ -87,7 +87,15 @@ from a known taxonomy). For open exploration, ask in plain prose.
   label. Mark `(Recommended)` only with a defensible default from prior
   evidence; without it, present options without a recommendation.
 - List only the real choices; Claude Code appends an "Other" option itself.
-- One call can carry multiple independent questions (rendered as tabs).
+- Tabs (multiple questions in one call) are **only** for closed, mutually
+  independent, low-cost choices.
+
+**Cadence — one material decision per turn.** Put a single material decision in
+front of the user at a time, with the recommended option first so the choice is
+low-effort. Never stack several open or material questions in one turn —
+decompose them into a guided sequence instead. A compound prompt that bundles
+decisions overwhelms more than it advances; the user's working style, captured in
+the foundation, sets the pace.
 
 Open free-text is the default for grilling. Reach for `AskUserQuestion` when the
 dimension has a closed taxonomy, the user signaled they need options, or the
@@ -102,11 +110,31 @@ before recording it. On trivial, well-specified points, confirm and move on.
 Applies to every grilling skill, whether or not it uses the shared grilling
 engine.
 
+## Artifact self-consistency
+
+An artifact's sections must be mutually consistent: nothing one section commits to
+may be contradicted, excluded, or made infeasible by another. Coherent prose is
+not the same as consistent sections — writing each section to satisfy its own
+dimension can still assemble a self-contradicting whole, and the author cannot see
+its own contradiction.
+
+So after writing an artifact and **before** the Accept/Adjust gate, the writing
+skill runs the `/consistency` critic on it (forked, fresh-eyes). It returns the
+contradictions it found; the skill **surfaces each to the user and resolves it
+co-creatively** — re-grilling the affected dimension, rewriting, re-checking —
+before presenting the gate. The skill is the feedback loop, not the user. A
+contradiction blocks the gate until resolved, or until the user explicitly
+overrides it.
+
+This complements `/audit`, it does not replace it: `/audit` is structural
+(frontmatter, references, status), `/consistency` is semantic (do the sections
+agree). Both run at closure.
+
 ## Confirming artifacts
 
-No artifact is final until the user accepts it. After writing one, summarize what
-was captured (one line per section or dimension) and ask `Accept` / `Adjust` via
-`AskUserQuestion`. Nothing advances — no next stage, no chaining, no hand-off —
+No artifact is final until the user accepts it. After writing one and clearing the
+self-consistency pass, summarize what was captured (one line per section or
+dimension) and ask `Accept` / `Adjust` via `AskUserQuestion`. Nothing advances — no next stage, no chaining, no hand-off —
 until the user accepts. On `Adjust`, revise the named part, rewrite, and
 re-confirm. This gate is the user's chance to rebut before the artifact stands.
 
@@ -118,9 +146,10 @@ Helper skills are invoked directly, never wrapped in `Task`:
 Skill(skill="<name>", args="<key>: <value>; <key>: <value>")
 ````
 
-`/clarify`, `/research`, `/summarize`, and `/audit` are read-only or single-shot
-and declare `context: fork`: invoking one runs it in an isolated subagent that
-returns its result to the caller without polluting the caller's context.
+`/clarify`, `/research`, `/summarize`, `/audit`, and `/consistency` are read-only
+or single-shot and declare `context: fork`: invoking one runs it in an isolated
+subagent that returns its result to the caller without polluting the caller's
+context.
 `/domain` in delegated mode is invoked the same way but runs **inline** (not
 forked) — it may ask the user to add, reuse, or reject a term, which a forked
 subagent cannot do — and still returns its YAML to the caller.
@@ -135,6 +164,7 @@ subagent cannot do — and still returns its YAML to the caller.
 | `/research` | The skill needs domain expertise it cannot infer from context. |
 | `/summarize` | Consolidate multi-source output (e.g., N `/research` results). |
 | `/audit` | Validate `.spec/` artifacts at closure of any writing workflow. |
+| `/consistency` | Check an artifact's sections for contradictions before the Accept/Adjust gate. |
 | `/domain` | Detect or disambiguate a candidate domain term during grilling. |
 
 After any workflow that creates or modifies files under `.spec/`, invoke
