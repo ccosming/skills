@@ -112,18 +112,22 @@ re-confirm. This gate is the user's chance to rebut before the artifact stands.
 
 ## Invoking helpers and /audit
 
-Helper skills (`/clarify`, `/research`, `/summarize`, `/audit`, `/domain` in
-delegated mode) are read-only or single-shot and declare `context: fork` in their
-frontmatter. Invoking one runs it in an isolated subagent that returns its result
-to the caller without polluting the caller's context. Invoke directly:
+Helper skills are invoked directly, never wrapped in `Task`:
 
 ````text
 Skill(skill="<name>", args="<key>: <value>; <key>: <value>")
 ````
 
+`/clarify`, `/research`, `/summarize`, and `/audit` are read-only or single-shot
+and declare `context: fork`: invoking one runs it in an isolated subagent that
+returns its result to the caller without polluting the caller's context.
+`/domain` in delegated mode is invoked the same way but runs **inline** (not
+forked) — it may ask the user to add, reuse, or reject a term, which a forked
+subagent cannot do — and still returns its YAML to the caller.
+
 - Args are semicolon-separated `key: value` pairs, interpolated into the helper.
 - The helper returns its output verbatim (its own body says so); the caller parses it.
-- Do not wrap helpers in `Task` — `context: fork` provides the isolation.
+- `context: fork` provides the isolation; never add a `Task` wrapper.
 
 | Helper | When |
 | --- | --- |

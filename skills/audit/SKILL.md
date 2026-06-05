@@ -11,6 +11,7 @@ when_to_use: >
   modifies `.spec/` files. Not user-invocable.
 allowed-tools: Read, Glob, Grep, Bash
 user-invocable: false
+context: fork
 ---
 
 # System integrity check
@@ -21,15 +22,16 @@ report. The caller decides what to do with the findings.
 
 ## Invocation
 
-Invoked from other skills via `Task` subagent, never directly by the user.
-Expected callers: `/overview`, `/guidelines`, `/personality`, `/stack`, `/prd`,
-`/code`, `/challenge`, `/pr`, `/domain`.
+Invoked from other skills, never directly by the user. With `context: fork`,
+invoking it runs an isolated subagent that returns its YAML report to the caller
+(per the constitution, _Invoking helpers and /audit_). Expected callers:
+`/overview`, `/guidelines`, `/personality`, `/stack`, `/prd`, `/code`,
+`/challenge`, `/pr`, `/domain`.
 
 Standard caller pattern:
 
 ```text
-Task(subagent_type="general-purpose", description="audit artifacts",
-     prompt="Invoke the audit skill: Skill(skill=\"audit\", args=\"target_paths: <paths>; caller_skill: <name>; caller_intent: <one-line description>\"). Return ONLY its YAML output.")
+Skill(skill="audit", args="target_paths: <paths>; caller_skill: <name>; caller_intent: <one-line description>")
 ```
 
 ## Input

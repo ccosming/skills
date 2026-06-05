@@ -10,6 +10,7 @@ when_to_use: >
   composing content or recording a decision. Not user-invocable.
 allowed-tools: Read
 user-invocable: false
+context: fork
 ---
 
 # Clarify

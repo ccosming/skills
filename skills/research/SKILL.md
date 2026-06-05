@@ -4,13 +4,14 @@ description: >
   Performs focused research on a single question from one perspective.
   Combines WebSearch, WebFetch and local repo grep; returns a structured
   findings block (summary, insights, sources, implications) for the caller
-  to store. Designed to run inside a Task subagent so research context stays
-  isolated.
+  to store. Runs in a forked subagent (context: fork) so research context
+  stays isolated.
 when_to_use: >
   Invoked by other skills that need domain expertise they cannot infer from
   context. Not user-invocable.
 allowed-tools: WebSearch, WebFetch, Read, Grep, Bash
 user-invocable: false
+context: fork
 ---
 
 # Research

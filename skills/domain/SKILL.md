@@ -28,7 +28,7 @@ Detect mode from invocation context:
 | `init`      | `.spec/domain.md` does not exist                        | First time defining the domain                               |
 | `update`    | User adds/edits terms or contexts (default)             | "let's add term X", "rename Y to Z", "add context inventory" |
 | `review`    | Validate term consistency across all `.spec/` artifacts | "review domain", "audit domain language"                     |
-| `delegated` | Invoked by another skill via `Task` for a single term   | `/prd` (or similar) passes a candidate term via args         |
+| `delegated` | Invoked inline by another skill via `Skill()` for one term | `/prd` (or similar) passes a candidate term via args        |
 
 If `.spec/domain.md` does not exist and the mode is not `delegated --create`,
 force `init`.

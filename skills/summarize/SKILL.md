@@ -10,6 +10,7 @@ when_to_use: >
   Not user-invocable.
 allowed-tools: Read
 user-invocable: false
+context: fork
 ---
 
 # Summarize
@@ -43,6 +44,8 @@ never add insights the inputs don't support.
    `dropped`.
 
 ## Output
+
+Return exactly this block as your final message. No preamble, no closing remarks.
 
 ```yaml
 summary: <the consolidated text in the requested format>
