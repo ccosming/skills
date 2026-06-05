@@ -107,24 +107,28 @@ flowchart TD
 **Capability & change**
 
 - `/prd` — define a new capability → PRD + derived ADRs + FEATs
-- `/pr` — change request over an existing PRD (cascade analysis, locked on close)
+- `/pr` — change request over an existing PRD (cascade analysis, locked on
+  close)
 - `/challenge` — review an implemented FEAT → REV with classified findings; runs
   up to 3 remediation cycles with `/code`
 
 **Helpers** (read-only or single-shot; `context: fork` — invoked directly with
 `Skill(...)`, run isolated, return their result; not user-invocable)
 
-- `/audit` — validate `.spec/` artifacts against the invariants; runs at the
-  closure of every skill that writes to `.spec/`
+- `/audit` — validate `.spec/` artifacts against the invariants (structural);
+  runs at the closure of every skill that writes to `.spec/`
+- `/consistency` — semantic critic; reads an assembled artifact cold and reports
+  cross-section contradictions before the confirmation gate (complements
+  `/audit`)
 - `/clarify` — disambiguate the single most load-bearing polysemic term
 - `/research` — single-perspective domain research
 - `/summarize` — multi-source consolidation
 
 **Standalone**
 
-- `/grill` — interview to articulate a fuzzy idea before a PRD → `.spec/grills/`.
-  User-invoked only; nothing else calls it. Reuses `/clarify`, `/research`,
-  `/summarize`.
+- `/grill` — interview to articulate a fuzzy idea before a PRD →
+  `.spec/grills/`. User-invoked only; nothing else calls it. Reuses `/clarify`,
+  `/research`, `/summarize`.
 
 **Authoring & quality** (general utilities, not part of the spec flow)
 
@@ -137,20 +141,22 @@ flowchart TD
 
 ## Hooks
 
-Three hooks ship in `hooks/hooks.json`, all Python under `hooks/`:
+The hooks in `hooks/hooks.json` are all Python under `hooks/`:
 
-| Event | Script | What it does |
-| --- | --- | --- |
-| `SessionStart` | `inject.py` | Emits the constitution plus, in a bootstrapped project, the live foundation into context — once per session, so skills do not re-read these files each run. |
-| `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | `format_spec.py` | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim. |
-| `Stop` | `metrics.py` | Updates the project's live cost ledger (`.spec/usage.md`) after every turn. |
+| Script           | Events                                     | What it does                                                                                                                                                                                          |
+| ---------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inject.py`      | `SessionStart`                             | Emits the constitution plus, in a bootstrapped project, the live foundation into context — once per session, so skills do not re-read these files each run.                                           |
+| `format_spec.py` | `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim.       |
+| `metrics.py`     | `Stop`, `UserPromptSubmit`, `SessionStart` | Updates the project's live cost-and-time ledger (`.spec/usage.md`). Three triggers so a missed `Stop` — e.g. a turn ending on a pending question — is reconciled by the next prompt or session start. |
 
 `.spec/usage.md` is a per-project, accumulating ledger: cost per `.spec/`
 artifact (the five token categories + cache hit, plus tool calls, user prompts,
-assistant turns), a per-skill breakdown, and a per-session log. It is parsed
-incrementally and written only when the project already has a `.spec/` directory.
-Like `config.yaml`, it is a generated non-artifact — `/audit` and the formatter
-skip it.
+assistant turns), a time ledger per artifact (effective work vs. human wait vs.
+real wall-clock), a per-skill breakdown, and a per-session log. It is parsed
+incrementally; `Updated through` reports the last turn folded in, so a stale
+ledger shows itself. Written only when the project already has a `.spec/`
+directory. Like `config.yaml`, it is a generated non-artifact — `/audit` and the
+formatter skip it.
 
 ## Artifacts
 
@@ -159,23 +165,23 @@ artifacts follow `.spec/{type}s/{TYPE}-NNN-{slug}.md` with `id: {TYPE}-NNN` in
 frontmatter; singletons live at `.spec/{name}.md`. The body `# H1` is the human
 title — the code lives in `id` and the filename, never a `title:` field.
 
-| Artifact         | Path                               | Description                                                                                                                            | Skills that use it                                                  |
-| ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                | `setup` (creates), all skills (read via injected foundation)       |
-| **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost ledger per artifact/skill/session. Written by the `Stop` hook, not a skill.                              | `metrics.py` hook (writes)                                         |
-| **Overview**     | `.spec/overview.md`                | Project north star: mission, users, capabilities, outcomes, scope, constraints, context.                                             | `overview` (creates), all downstream skills (read)                 |
-| **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                    | `guidelines` (creates), all downstream skills (read)               |
-| **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                   | `personality` (creates), `code` (read)                             |
-| **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                      | `stack` (writes), `code`/`prd`/`challenge`/`pr` (read)             |
-| **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                 | `domain` (writes), `prd`/`code`/`stack` (read if exists)           |
-| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (monochrome flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.  | `arch` (writes), `stack`/`code`/`pr` (read if exists)              |
-| **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                             | `ux` (writes), `prd`/`code`/`pr` (read if exists)                  |
-| **PRD**          | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope, criteria).                                                                 | `prd` (creates), `code`/`challenge`/`pr` (read)                    |
-| **ADR**          | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with a real trade-off (reduced Nygard format).                                                                     | `prd`/`arch`/`stack` (create), `code`/`pr` (read)                  |
-| **FEAT**         | `.spec/feats/FEAT-NNN-{slug}.md`   | Implementable unit (scope, rules, criteria, plan, dependencies).                                                                      | `prd` (creates), `code` (writes plan/status), `challenge` (reads)  |
-| **REV**          | `.spec/reviews/REV-NNN-{slug}.md`  | Code review with classified findings (blocker/major/minor/nit) and iterations.                                                       | `challenge` (writes), `code` (reads in review mode)                |
-| **PR**           | `.spec/prs/PR-NNN-{slug}.md`       | Immutable change request (`locked`) with cascade analysis.                                                                            | `pr` (writes)                                                      |
-| **GRILL**        | `.spec/grills/GRILL-NNN-{slug}.md` | Standalone interview notes (discovery/technical/full).                                                                                | `grill` (writes)                                                   |
+| Artifact         | Path                               | Description                                                                                                                                                   | Skills that use it                                                |
+| ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `setup` (creates), all skills (read via injected foundation)      |
+| **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost-and-time ledger per artifact/skill/session. Written by the metrics hook (`Stop`/`UserPromptSubmit`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
+| **Overview**     | `.spec/overview.md`                | Project north star: mission, users, capabilities, outcomes, scope, constraints, context.                                                                      | `overview` (creates), all downstream skills (read)                |
+| **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `guidelines` (creates), all downstream skills (read)              |
+| **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `personality` (creates), `code` (read)                            |
+| **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                                              | `stack` (writes), `code`/`prd`/`challenge`/`pr` (read)            |
+| **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                                         | `domain` (writes), `prd`/`code`/`stack` (read if exists)          |
+| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (monochrome flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.                          | `arch` (writes), `stack`/`code`/`pr` (read if exists)             |
+| **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                                                      | `ux` (writes), `prd`/`code`/`pr` (read if exists)                 |
+| **PRD**          | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope, criteria).                                                                                         | `prd` (creates), `code`/`challenge`/`pr` (read)                   |
+| **ADR**          | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with a real trade-off (reduced Nygard format).                                                                                             | `prd`/`arch`/`stack` (create), `code`/`pr` (read)                 |
+| **FEAT**         | `.spec/feats/FEAT-NNN-{slug}.md`   | Implementable unit (scope, rules, criteria, plan, dependencies).                                                                                              | `prd` (creates), `code` (writes plan/status), `challenge` (reads) |
+| **REV**          | `.spec/reviews/REV-NNN-{slug}.md`  | Code review with classified findings (blocker/major/minor/nit) and iterations.                                                                                | `challenge` (writes), `code` (reads in review mode)               |
+| **PR**           | `.spec/prs/PR-NNN-{slug}.md`       | Immutable change request (`locked`) with cascade analysis.                                                                                                    | `pr` (writes)                                                     |
+| **GRILL**        | `.spec/grills/GRILL-NNN-{slug}.md` | Standalone interview notes (discovery/technical/full).                                                                                                        | `grill` (writes)                                                  |
 
 ## Conventions
 
@@ -194,30 +200,34 @@ constitution — projects inherit them by default.
 
 Every artifact carries `version: X.Y.Z`. Born at `0.1.0`; never decreases.
 
-- **MAJOR**: contract break — criterion removed/redefined, ADR replaced, scope inverted.
+- **MAJOR**: contract break — criterion removed/redefined, ADR replaced, scope
+  inverted.
 - **MINOR**: compatible addition — new section, criterion, or linked artifact.
 - **PATCH**: clarification, wording, metadata refresh.
-- **Promotion to `1.0.0`**: first transition to a terminal state (`done`/`locked`).
+- **Promotion to `1.0.0`**: first transition to a terminal state
+  (`done`/`locked`).
 
 ### Confirmation gate
 
-No artifact is final until you accept it. After writing one, the skill summarizes
-what was captured and asks `Accept` / `Adjust`. Nothing advances — no next stage,
-no chaining — until you accept. On `Adjust`, the skill revises the named part and
-re-confirms.
+No artifact is final until you accept it. After writing one, the skill
+summarizes what was captured and asks `Accept` / `Adjust`. Nothing advances — no
+next stage, no chaining — until you accept. On `Adjust`, the skill revises the
+named part and re-confirms.
 
 ### Localization
 
 Skills read `.spec/config.yaml` and apply:
 
-- **`language.chat`** — all user-facing prose (questions, summaries, confirmations).
+- **`language.chat`** — all user-facing prose (questions, summaries,
+  confirmations).
 - **`language.artifacts`** — user-generated content written into artifacts.
 - **Structure stays English** — frontmatter keys, `## Section` headers, table
   headers, status/enum values. Never translated.
-- **Neutral register always** — no regional idioms; Spanish uses `tú`/impersonal,
-  never voseo.
+- **Neutral register always** — no regional idioms; Spanish uses
+  `tú`/impersonal, never voseo.
 
-Supported languages: `en`, `es`. `/setup` recommends the detected system language.
+Supported languages: `en`, `es`. `/setup` recommends the detected system
+language.
 
 ### Markdown & diagrams
 
@@ -230,25 +240,26 @@ Supported languages: `en`, `es`. `/setup` recommends the detected system languag
 
 ### Frontmatter shape
 
-No `title:` field — the human title is the body `# H1`. Required fields per type:
+No `title:` field — the human title is the body `# H1`. Required fields per
+type:
 
-| Type                                                | Required fields                                                |
-| --------------------------------------------------- | -------------------------------------------------------------- |
-| Foundation (overview / guidelines / personality)    | `id`, `status`, `version`, `prs`                               |
-| Domain                                              | `id`, `status`, `version`, `prs`                               |
-| Architecture                                        | `id`, `status`, `version`, `prs`, `adrs`                       |
-| Experience                                          | `id`, `status`, `version`, `prs`, `adrs`, `surfaces`           |
-| Stack                                               | `doc`, `status`, `sync_status`, `version`, `last_verified`, `adrs` |
-| PRD                                                 | `id`, `status`, `version`, `prs`, `adrs`, `feats`              |
-| ADR                                                 | `id`, `status`, `version`, `prs`, `prds`, `feats`              |
-| FEAT                                                | `id`, `status`, `version`, `prs`, `reviews`, `prd`, `adrs`, `depends_on` |
-| REV                                                 | `id`, `status`, `version`, `target`, `iterations`, `verdict`   |
-| PR                                                  | `id`, `status`, `version`, `target`, `affects`                 |
-| GRILL                                               | `id`, `doc`, `status`, `profile`, `topic`, `lenses`, `open_questions` |
+| Type                                             | Required fields                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------ |
+| Foundation (overview / guidelines / personality) | `id`, `status`, `version`, `prs`                                         |
+| Domain                                           | `id`, `status`, `version`, `prs`                                         |
+| Architecture                                     | `id`, `status`, `version`, `prs`, `adrs`                                 |
+| Experience                                       | `id`, `status`, `version`, `prs`, `adrs`, `surfaces`                     |
+| Stack                                            | `doc`, `status`, `sync_status`, `version`, `last_verified`, `adrs`       |
+| PRD                                              | `id`, `status`, `version`, `prs`, `adrs`, `feats`                        |
+| ADR                                              | `id`, `status`, `version`, `prs`, `prds`, `feats`                        |
+| FEAT                                             | `id`, `status`, `version`, `prs`, `reviews`, `prd`, `adrs`, `depends_on` |
+| REV                                              | `id`, `status`, `version`, `target`, `iterations`, `verdict`             |
+| PR                                               | `id`, `status`, `version`, `target`, `affects`                           |
+| GRILL                                            | `id`, `doc`, `status`, `profile`, `topic`, `lenses`, `open_questions`    |
 
 Every artifact ends with a `## Changelog` section (one row per version bump,
-stating the **why**); an `## Interaction notes` section sits just above it when a
-user intervention shaped the artifact.
+stating the **why**); an `## Interaction notes` section sits just above it when
+a user intervention shaped the artifact.
 
 ## Project structure
 
@@ -259,8 +270,9 @@ references/          constitution.md · grilling-engine.md · diagrams.md
 skills/<name>/       One folder per skill: SKILL.md (+ references/, scripts/)
 ```
 
-See [CLAUDE.md](CLAUDE.md) for the maintainer guide (skill authoring conventions,
-frontmatter reference, the description-field formula, anti-patterns).
+See [CLAUDE.md](CLAUDE.md) for the maintainer guide (skill authoring
+conventions, frontmatter reference, the description-field formula,
+anti-patterns).
 
 ## Contributing
 

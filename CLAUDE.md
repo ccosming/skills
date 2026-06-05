@@ -11,10 +11,10 @@ skills/
 │   ├── plugin.json          # Plugin metadata (name, description, version)
 │   └── marketplace.json     # Marketplace listing
 ├── hooks/
-│   ├── hooks.json           # Hook registrations (SessionStart, PostToolUse, Stop)
+│   ├── hooks.json           # Hook registrations (SessionStart, UserPromptSubmit, PostToolUse, Stop)
 │   ├── inject.py            # SessionStart: inject constitution + foundation
 │   ├── format_spec.py       # PostToolUse: format .spec/*.md just written
-│   └── metrics.py           # Stop: update the live .spec/usage.md cost ledger
+│   └── metrics.py           # Stop/UserPromptSubmit/SessionStart: live .spec/usage.md cost-and-time ledger
 ├── references/              # Plugin-wide docs injected/loaded at runtime
 │   ├── constitution.md      # Rules every spec-workflow skill obeys
 │   ├── grilling-engine.md   # Shared dimension-coverage grilling loop
@@ -51,16 +51,16 @@ Body content here.
 
 ## Frontmatter fields reference
 
-| Field                      | Required | Notes                                                                                                                |
-| -------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `name`                     | Yes      | kebab-case only, no spaces or capitals                                                                               |
-| `description`              | Yes      | `[What] + [When] + [Key phrases]`. Level 1 (always in context). ≤1024 chars alone; ≤1536 combined with `when_to_use` |
-| `license`                  | No       | MIT or Apache-2.0 for open-source skills                                                                             |
-| `allowed-tools`            | No       | Space-separated: `Bash Read Edit Grep AskUserQuestion`                                                               |
-| `argument-hint`            | No       | Shown during autocomplete, e.g. `[issue-number]`                                                                     |
-| `arguments`                | No       | Named positional args. User types `/skill foo bar` → `$0`=foo, `$1`=bar                                              |
-| `disable-model-invocation` | No       | `true` prevents auto-invocation. Use for deploys, commits, destructive ops                                           |
-| `user-invocable`           | No       | `false` hides from `/` menu. Use for pure knowledge skills                                                           |
+| Field                      | Required | Notes                                                                                                                                            |
+| -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                     | Yes      | kebab-case only, no spaces or capitals                                                                                                           |
+| `description`              | Yes      | `[What] + [When] + [Key phrases]`. Level 1 (always in context). ≤1024 chars alone; ≤1536 combined with `when_to_use`                             |
+| `license`                  | No       | MIT or Apache-2.0 for open-source skills                                                                                                         |
+| `allowed-tools`            | No       | Space-separated: `Bash Read Edit Grep AskUserQuestion`                                                                                           |
+| `argument-hint`            | No       | Shown during autocomplete, e.g. `[issue-number]`                                                                                                 |
+| `arguments`                | No       | Named positional args. User types `/skill foo bar` → `$0`=foo, `$1`=bar                                                                          |
+| `disable-model-invocation` | No       | `true` prevents auto-invocation. Use for deploys, commits, destructive ops                                                                       |
+| `user-invocable`           | No       | `false` hides from `/` menu. Use for pure knowledge skills                                                                                       |
 | `context`                  | No       | `fork` runs the skill isolated in a subagent and returns its result to the caller. Read-only/single-shot helpers only — never interactive skills |
 
 ## Description field — the most important part
@@ -203,30 +203,29 @@ Before editing any skill body, ask:
 ## Test and Issues
 
 When issues surface during testing of a skill (real user runs, not unit
-verification), **always find the root cause and fix structurally**. Patching
-the skill to behave well only on the example case is forbidden.
+verification), **always find the root cause and fix structurally**. Patching the
+skill to behave well only on the example case is forbidden.
 
 Process:
 
 1. **Reproduce** — verify the issue is real (not user-side, not ESC, not
    environmental). Inspect session JSONL when needed.
 2. **Trace to source** — the bug lives in one of: SKILL.md instruction text,
-   template placeholder shape, invariant rule absence, or cross-skill
-   ambiguity (e.g., shared concept like Localization).
-3. **Fix structurally** — change the source. Add the missing invariant, fix
-   the placeholder shape, centralize the ambiguous rule. Never add
-   example-specific logic.
-4. **Verify** — re-run the test from scratch or design a new test that
-   proves the structural fix holds.
+   template placeholder shape, invariant rule absence, or cross-skill ambiguity
+   (e.g., shared concept like Localization).
+3. **Fix structurally** — change the source. Add the missing invariant, fix the
+   placeholder shape, centralize the ambiguous rule. Never add example-specific
+   logic.
+4. **Verify** — re-run the test from scratch or design a new test that proves
+   the structural fix holds.
 
 Anti-patterns:
 
 - Adding a special case for "when X happens, do Y" instead of generalizing.
 - Hardcoding values found during one test.
-- Patching one skill when the root cause affects N skills (duplication
-  trap).
-- Treating LLM transcription errors as user error — the skill must be
-  robust to the realistic range of LLM behavior.
+- Patching one skill when the root cause affects N skills (duplication trap).
+- Treating LLM transcription errors as user error — the skill must be robust to
+  the realistic range of LLM behavior.
 
 ## Sources
 
