@@ -1,42 +1,53 @@
 # ccosming skills
 
-Personal Claude Code skills by Carlos Cosming.
+Personal Claude Code skills by Carlos Cosming — a spec-driven development system
+that bootstraps, designs, builds, and reviews software from a versioned `.spec/`
+source of truth.
 
 Plugin namespace: `ccosming` → invoke as `/ccosming:<skill-name>`.
 
 ## Installation
 
-_TODO — marketplace install instructions._
+The plugin is published as a Claude Code marketplace plugin from this repo:
 
-## How to use
+```text
+/plugin marketplace add ccosming/skills
+/plugin install ccosming@ccosming
+```
 
-The plugin's skills work together as a system. Below is the natural order for a
-typical project.
+Once installed, a session-start hook injects the plugin constitution (and, in a
+bootstrapped project, the live foundation) so the skills are ready to use.
 
-### Bootstrap
+## How it works
 
-A new project bootstraps in order. `/setup` writes `.spec/config.yaml`; each
-foundation skill then grills toward one artifact and hands off to the next:
+The system has a single source of truth, the `.spec/` directory in the **target
+project** (not in this repo). Every artifact lives there; skills read and write
+it under a shared set of rules (the _constitution_).
 
-- `/setup` → `.spec/config.yaml` — language preferences (`language.chat`,
-  `language.artifacts`)
-- `/overview` → `.spec/overview.md` — project north star (mission, users,
-  capabilities, outcomes, scope, constraints, context)
-- `/guidelines` → `.spec/guidelines.md` — transversal engineering practices
-  (stack-agnostic)
-- `/personality` → `.spec/personality.md` — agent persona that `/code` embodies
+Two entry points (_doors_) drive the work:
 
-Optional design artifacts follow: `/arch` → `.spec/arch.md` (technical
-architecture, C4 + ADRs), `/ux` → `.spec/ux.md` (surface-agnostic experience +
-ADRs), `/domain` → `.spec/domain.md` (ubiquitous language).
+- **`/spec`** — the only door that creates or evolves `.spec/` artifacts. It
+  bootstraps a new project and routes each request (overview, guidelines, stack,
+  domain, arch, ux, PRD, change request…) to the skill that owns it.
+- **`/code`** — implements a `ready` FEAT, running its build⇄review loop
+  internally.
 
-A session-start hook injects the constitution (plugin-wide rules) plus the live
-foundation into context, so skills do not re-read these files each run. If
-`config.yaml` is missing, skills direct you to `/setup`.
+Every other skill is a **delegate**, invoked by a door or by another skill; it
+does its job, reports in its own voice, and returns. Sequencing belongs to the
+door — delegates never tell you to run the next command. (A third door, `/issue`
+for symptom triage, is defined in the constitution but not yet implemented.)
+
+Most artifact skills share a **grilling engine**: a dimension-coverage loop
+driven by a per-skill `references/rubric.md`. It scales depth by materiality
+(challenging contested, irreversible, or high-blast-radius decisions; confirming
+trivial ones), records stance-changing user interventions in an
+`## Interaction notes` section, and ends with a mandatory `Accept` / `Adjust`
+gate — nothing advances until you accept the artifact.
 
 ### Workflow
 
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 flowchart TD
     Setup["/setup<br/>→ config.yaml"]
     Found["/overview · /guidelines · /personality<br/>→ foundation files"]
@@ -44,11 +55,11 @@ flowchart TD
     UX["/ux (optional)<br/>→ ux.md + ADRs"]
     Domain["/domain (optional)<br/>→ domain.md"]
     Stack["/stack<br/>→ stack.md"]
-    Grill["/grill (optional)<br/>→ grill notes"]
+    Grill["/grill (standalone)<br/>→ grill notes"]
     PRD["/prd<br/>→ PRD + ADRs + FEATs"]
     Code["/code<br/>implement FEAT"]
     StackDel["/stack delegated<br/>repo-level changes"]
-    Rev["/rev<br/>→ REV with findings"]
+    Challenge["/challenge<br/>→ REV with findings"]
     PR["/pr<br/>change request"]
 
     Setup --> Found
@@ -63,178 +74,199 @@ flowchart TD
     PRD --> Code
     Code -.->|stack-touching block| StackDel
     StackDel -.-> Code
-    Code --> Rev
-    Rev -.->|iterate up to 3| Code
+    Code --> Challenge
+    Challenge -.->|iterate up to 3| Code
     PRD -.->|change on existing spec| PR
 ```
 
 ### Skill index
 
-**Foundation**
+**Doors**
+
+- `/spec` — single door to `.spec/`; bootstraps and routes to the owning skill
+- `/code` — implement a FEAT (delegates stack-touching blocks to `/stack`,
+  invokes `/challenge` after implementation)
+
+**Foundation** (bootstrap, in order)
 
 - `/setup` — write `config.yaml` (language preferences); first bootstrap step
 - `/overview` — project north star → `overview.md`
 - `/guidelines` — transversal engineering conventions → `guidelines.md`
 - `/personality` — agent persona `/code` embodies → `personality.md`
-- `/arch` — optional: technical architecture (C4) + ADRs → `arch.md`
-- `/ux` — optional: surface-agnostic experience + ADRs → `ux.md`
+
+**Design & structure** (optional artifacts, except stack)
+
 - `/stack` — repository stack, monorepo, devtools, folder structure → `stack.md`
+- `/arch` — technical architecture across C4 levels (monochrome Mermaid
+  flowcharts) + ADRs → `arch.md`
+- `/ux` — surface-agnostic experience (interaction loops + testable qualities) +
+  ADRs → `ux.md`
+- `/domain` — ubiquitous language (terms, bounded contexts, context map) →
+  `domain.md`. Also runs in delegated mode (inline) when `/prd` detects a term.
 
-**Definition**
+**Capability & change**
 
-- `/grill` — articulate fuzzy ideas before committing to a PRD
-- `/domain` — optional: ubiquitous language (terms, bounded contexts, context
-  map). Invoked by `/prd` in delegated mode when a new term is detected during
-  grilling.
-- `/prd` — define a new capability (PRD + ADRs + FEATs)
-- `/pr` — change request on an existing PRD
+- `/prd` — define a new capability → PRD + derived ADRs + FEATs
+- `/pr` — change request over an existing PRD (cascade analysis, locked on close)
+- `/challenge` — review an implemented FEAT → REV with classified findings; runs
+  up to 3 remediation cycles with `/code`
 
-**Implementation**
+**Helpers** (read-only or single-shot; `context: fork` — invoked directly with
+`Skill(...)`, run isolated, return their result; not user-invocable)
 
-- `/code` — implement a FEAT (delegates stack-touching blocks to `/stack`)
-- `/rev` — code review with iteration loop
-
-**Helpers** (invoked inside other skills via Task subagent, not user-invocable)
-
+- `/audit` — validate `.spec/` artifacts against the invariants; runs at the
+  closure of every skill that writes to `.spec/`
+- `/clarify` — disambiguate the single most load-bearing polysemic term
 - `/research` — single-perspective domain research
-- `/clarify` — polysemic-term disambiguation
 - `/summarize` — multi-source consolidation
-- `/audit` — system integrity check, validates `.spec/` artifacts against
-  invariants; runs at closure of every skill that writes to `.spec/`
 
-**Authoring & quality**
+**Standalone**
 
-- `/commit` — Conventional Commits with secrets check
-- `/create-skill` — interactive guide to add a new skill
+- `/grill` — interview to articulate a fuzzy idea before a PRD → `.spec/grills/`.
+  User-invoked only; nothing else calls it. Reuses `/clarify`, `/research`,
+  `/summarize`.
+
+**Authoring & quality** (general utilities, not part of the spec flow)
+
+- `/commit` — Conventional Commits with a secrets check and explicit approval
+- `/merge` — Git merge with strategy selection and approval
+- `/create-skill` — interactive guide to add a new skill to this repo
 - `/prompt-craft` — compression discipline for LLM-targeted markdown
-- `/humanizer` — strip AI-writing tells
+- `/humanizer` — strip AI-writing tells from prose
 - `/coding-rules` — behavioral guidelines for code work
 
-## Available skills
+## Hooks
 
-_See the [Skill index](#skill-index) above._
+Three hooks ship in `hooks/hooks.json`, all Python under `hooks/`:
+
+| Event | Script | What it does |
+| --- | --- | --- |
+| `SessionStart` | `inject.py` | Emits the constitution plus, in a bootstrapped project, the live foundation into context — once per session, so skills do not re-read these files each run. |
+| `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | `format_spec.py` | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim. |
+| `Stop` | `metrics.py` | Updates the project's live cost ledger (`.spec/usage.md`) after every turn. |
+
+`.spec/usage.md` is a per-project, accumulating ledger: cost per `.spec/`
+artifact (the five token categories + cache hit, plus tool calls, user prompts,
+assistant turns), a per-skill breakdown, and a per-session log. It is parsed
+incrementally and written only when the project already has a `.spec/` directory.
+Like `config.yaml`, it is a generated non-artifact — `/audit` and the formatter
+skip it.
 
 ## Artifacts
 
-The skills in this plugin operate over a shared set of artifacts that live in
-the **target project**, not in this repository. Each system artifact follows the
-convention `.spec/{type}s/{TYPE}-NNN-{slug}.md` with an `id: {TYPE}-NNN` field
-in frontmatter and SemVer versioning.
+The skills operate over artifacts that live in the **target project**. Numbered
+artifacts follow `.spec/{type}s/{TYPE}-NNN-{slug}.md` with `id: {TYPE}-NNN` in
+frontmatter; singletons live at `.spec/{name}.md`. The body `# H1` is the human
+title — the code lives in `id` and the filename, never a `title:` field.
 
-| Artifact        | Path                               | Description                                                                                                                             | Skills that use it                                                                             |
-| --------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **Config**      | `.spec/config.yaml`                | Language preferences: `language.chat` and `language.artifacts`. Drives how every skill speaks to the user and writes content.           | `setup` (creates), all skills (read via injected foundation)                                       |
-| **Overview**    | `.spec/overview.md`                | Project north star: mission, users, capabilities (output + quality bars), outcomes (with traceability), scope, constraints, context.    | `overview` (creates), `arch`/`ux`/`stack`/`prd`/`code`/`rev`/`pr` (read)                                      |
-| **Guidelines**  | `.spec/guidelines.md`              | Transversal engineering practices (principles, anti-patterns, quality bar). Stack-agnostic.                                             | `guidelines` (creates), `arch`/`ux`/`stack`/`prd`/`code`/`rev`/`pr` (read)                                      |
-| **Personality** | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                     | `personality` (creates), `arch`/`ux`/`stack`/`prd`/`code`/`rev`/`pr` (read)                                      |
-| **Stack**       | `.spec/stack.md`                   | Living source of truth for languages, monorepo, folder structure, devtools, configs. Tracks `sync_status` against the actual repo.      | `stack` (writes), `code`/`prd`/`rev`/`pr` (read)                                               |
-| **Domain**      | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): definition, terms table, bounded contexts, context map. Skills degrade gracefully when absent. | `domain` (writes), `prd`/`code`/`rev`/`pr`/`stack` (read if exists)                            |
-| **Architecture** | `.spec/arch.md` | **Optional**. Technical architecture: style, components (C4), boundaries, data strategy, integrations, cross-cutting, deployment, NFRs. Generates ADRs. | `arch` (writes), `stack`/`code`/`rev`/`pr` (read if exists) |
-| **Experience** | `.spec/ux.md` | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples; UI as an inner layer. Generates ADRs. | `ux` (writes), `prd`/`code`/`rev`/`pr` (read if exists) |
-| **PRD**         | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope).                                                                             | `prd` (creates), `code`/`rev`/`pr` (read)                                                      |
-| **ADR**         | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with real trade-off (reduced Nygard format).                                                                         | `prd` (creates), `code`/`rev`/`pr` (read)                                                      |
-| **FEAT**        | `.spec/feats/FEAT-NNN-{slug}.md`   | Implementable unit (scope, rules, criteria, plan, dependencies).                                                                        | `prd` (creates), `code` (writes plan/status), `rev` (reads + metadata), `pr` (reads + cascade) |
-| **REV**         | `.spec/reviews/REV-NNN-{slug}.md`  | Code review with classified findings (blocker/major/minor/nit) and iterations.                                                          | `rev` (writes), `code` (reads in review mode)                                                  |
-| **PR**          | `.spec/prs/PR-NNN-{slug}.md`       | Immutable change request (`locked`) with cascade analysis.                                                                              | `pr` (writes)                                                                                  |
-| **GRILL**       | `.spec/grills/GRILL-NNN-{slug}.md` | Structured interview notes (discovery/technical/full) with integrated verdict.                                                          | `grill` (writes)                                                                               |
-
-**Categories**:
-
-- **Config** (1): `config.yaml` — language preferences (chat, artifacts). Drives
-  localization in every skill. Mandatory.
-- **Orthogonal context** (3): `overview.md`, `guidelines.md`, `personality.md` —
-  read-only, define the project's "how". Without these, skills stop in
-  pre-flight.
-- **Foundation** (1): `stack.md` — single living source of truth for languages,
-  monorepo, devtools, configs. Mutated only by `/stack`; carries a `sync_status`
-  field against the actual repo.
-- **Domain** (1, optional): `domain.md` — ubiquitous language (DDD). Defines
-  terms, bounded contexts, and their relationships. Mutated by `/domain`. Other
-  skills read it when present and operate without it when absent.
-- **Design** (2, optional): `arch.md` (technical architecture, C4) and
-  `ux.md` (surface-agnostic experience). Each generates ADRs; downstream
-  skills read them when present.
-- **System artifacts** (6 types): PRD, ADR, FEAT, REV, PR, GRILL — versioned
-  with SemVer and status, flow between skills following the cycle
-  `/stack → /prd → /code → /rev → /pr` (with `/grill` and `/pr` as side
-  entries).
+| Artifact         | Path                               | Description                                                                                                                            | Skills that use it                                                  |
+| ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                | `setup` (creates), all skills (read via injected foundation)       |
+| **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost ledger per artifact/skill/session. Written by the `Stop` hook, not a skill.                              | `metrics.py` hook (writes)                                         |
+| **Overview**     | `.spec/overview.md`                | Project north star: mission, users, capabilities, outcomes, scope, constraints, context.                                             | `overview` (creates), all downstream skills (read)                 |
+| **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                    | `guidelines` (creates), all downstream skills (read)               |
+| **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                   | `personality` (creates), `code` (read)                             |
+| **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                      | `stack` (writes), `code`/`prd`/`challenge`/`pr` (read)             |
+| **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                 | `domain` (writes), `prd`/`code`/`stack` (read if exists)           |
+| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (monochrome flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.  | `arch` (writes), `stack`/`code`/`pr` (read if exists)              |
+| **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                             | `ux` (writes), `prd`/`code`/`pr` (read if exists)                  |
+| **PRD**          | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope, criteria).                                                                 | `prd` (creates), `code`/`challenge`/`pr` (read)                    |
+| **ADR**          | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with a real trade-off (reduced Nygard format).                                                                     | `prd`/`arch`/`stack` (create), `code`/`pr` (read)                  |
+| **FEAT**         | `.spec/feats/FEAT-NNN-{slug}.md`   | Implementable unit (scope, rules, criteria, plan, dependencies).                                                                      | `prd` (creates), `code` (writes plan/status), `challenge` (reads)  |
+| **REV**          | `.spec/reviews/REV-NNN-{slug}.md`  | Code review with classified findings (blocker/major/minor/nit) and iterations.                                                       | `challenge` (writes), `code` (reads in review mode)                |
+| **PR**           | `.spec/prs/PR-NNN-{slug}.md`       | Immutable change request (`locked`) with cascade analysis.                                                                            | `pr` (writes)                                                      |
+| **GRILL**        | `.spec/grills/GRILL-NNN-{slug}.md` | Standalone interview notes (discovery/technical/full).                                                                                | `grill` (writes)                                                   |
 
 ## Conventions
 
 Plugin-wide rules every skill enforces and `/audit` validates. They are the
-contract of the system — projects inherit them by default; document deviations
-in `overview.md` only when customizing.
+constitution — projects inherit them by default.
 
 ### Status flow
 
 - `draft` → `ready`: artifact complete and ready for the next consumer.
-- `ready` → `in-progress`: skill picked it up (FEAT during `/code`, REV during
-  iteration loop).
+- `ready` → `in-progress`: a skill picked it up (FEAT during `/code`).
 - `in-progress` → `done`: terminal success.
 - `in-progress` → `locked`: terminal immutable (PR only).
 - any state → `deprecated`: superseded by a newer artifact, kept for history.
 
 ### Versioning (SemVer)
 
-Every artifact carries `version: X.Y.Z` in frontmatter. Bump rules:
+Every artifact carries `version: X.Y.Z`. Born at `0.1.0`; never decreases.
 
-- **MAJOR**: contract break — criterion removed/redefined, ADR replaced, scope
-  inverted.
-- **MINOR**: compatible addition — new section, new criterion, new linked
-  artifact.
+- **MAJOR**: contract break — criterion removed/redefined, ADR replaced, scope inverted.
+- **MINOR**: compatible addition — new section, criterion, or linked artifact.
 - **PATCH**: clarification, wording, metadata refresh.
-- **Promotion to `1.0.0`**: first transition to terminal state
-  (`done`/`locked`). Handled by the owning skill.
+- **Promotion to `1.0.0`**: first transition to a terminal state (`done`/`locked`).
 
-Born at `0.1.0`. Never decreases, even if status drops.
+### Confirmation gate
+
+No artifact is final until you accept it. After writing one, the skill summarizes
+what was captured and asks `Accept` / `Adjust`. Nothing advances — no next stage,
+no chaining — until you accept. On `Adjust`, the skill revises the named part and
+re-confirms.
 
 ### Localization
 
-Every skill (except read-only helpers like `/audit`, `/clarify`, `/research`,
-`/summarize`) reads `.spec/config.yaml` in pre-flight and applies:
+Skills read `.spec/config.yaml` and apply:
 
-- **`language.chat`** — language for user-facing prose: `AskUserQuestion` text,
-  summaries, confirmations.
-- **`language.artifacts`** — language for user-generated content written into
-  artifacts (descriptions, changelog row bodies).
-- **Structure stays English regardless**: frontmatter keys, `## Section`
-  headers, table column headers, status values (`draft`/`ready`/...).
-- **Always neutral register**: no regional idioms. Spanish uses `tú` or
-  impersonal forms, never voseo (`vos`/`querés`/`podés`/`sos`). English stays
-  standard, no slang.
+- **`language.chat`** — all user-facing prose (questions, summaries, confirmations).
+- **`language.artifacts`** — user-generated content written into artifacts.
+- **Structure stays English** — frontmatter keys, `## Section` headers, table
+  headers, status/enum values. Never translated.
+- **Neutral register always** — no regional idioms; Spanish uses `tú`/impersonal,
+  never voseo.
 
-Supported languages: `en`, `es`. `/setup` recommends the user's system language
-(detected via macOS `defaults read -g AppleLanguages` with `$LANG` fallback) as
-default for both fields.
+Supported languages: `en`, `es`. `/setup` recommends the detected system language.
+
+### Markdown & diagrams
+
+- One `# H1` per artifact: the human title, **without** the artifact code.
+- Diagrams use the minimalist Mermaid style from `references/diagrams.md` —
+  `flowchart`/`graph` with `theme: neutral`, no custom colors. Architecture
+  views render the C4 levels as stereotype-labeled flowcharts.
+- Line wrapping, table alignment, and blank-line spacing are the formatter's job
+  (the `PostToolUse` hook) — write valid Markdown and let it normalize.
 
 ### Frontmatter shape
 
-All artifacts share a common frontmatter shell. Required fields per type:
+No `title:` field — the human title is the body `# H1`. Required fields per type:
 
-| Type                                                     | Required fields                                                                   |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Orthogonal context (overview / guidelines / personality) | `id`, `status`, `version`, `prs`                                                  |
-| Stack                                                    | `id`, `status`, `version`, `sync_status`, `last_verified`, `adrs`, `prs`          |
-| PRD                                                      | `id`, `title`, `status`, `version`, `prs`, `adrs`, `feats`                        |
-| ADR                                                      | `id`, `title`, `status`, `version`, `prds`, `feats`, `prs`                        |
-| FEAT                                                     | `id`, `title`, `status`, `version`, `prd`, `adrs`, `depends_on`, `reviews`, `prs` |
-| REV                                                      | `id`, `title`, `status`, `version`, `target`, `iterations`, `verdict`             |
-| PR                                                       | `id`, `title`, `status`, `version`, `target`, `affects`                           |
-| GRILL                                                    | `id`, `doc`, `status`, `profile`, `topic`, `lenses`, `open_questions`             |
-| Architecture                                             | `id`, `title`, `status`, `version`, `adrs`, `prs`                                 |
-| Experience                                               | `id`, `title`, `status`, `version`, `surfaces`, `adrs`, `prs`                     |
+| Type                                                | Required fields                                                |
+| --------------------------------------------------- | -------------------------------------------------------------- |
+| Foundation (overview / guidelines / personality)    | `id`, `status`, `version`, `prs`                               |
+| Domain                                              | `id`, `status`, `version`, `prs`                               |
+| Architecture                                        | `id`, `status`, `version`, `prs`, `adrs`                       |
+| Experience                                          | `id`, `status`, `version`, `prs`, `adrs`, `surfaces`           |
+| Stack                                               | `doc`, `status`, `sync_status`, `version`, `last_verified`, `adrs` |
+| PRD                                                 | `id`, `status`, `version`, `prs`, `adrs`, `feats`              |
+| ADR                                                 | `id`, `status`, `version`, `prs`, `prds`, `feats`              |
+| FEAT                                                | `id`, `status`, `version`, `prs`, `reviews`, `prd`, `adrs`, `depends_on` |
+| REV                                                 | `id`, `status`, `version`, `target`, `iterations`, `verdict`   |
+| PR                                                  | `id`, `status`, `version`, `target`, `affects`                 |
+| GRILL                                               | `id`, `doc`, `status`, `profile`, `topic`, `lenses`, `open_questions` |
 
-Every artifact (except GRILL during the loop) has a `## Changelog` section at
-the bottom — every version bump produces a row with timestamp, version, and the
-**why**.
+Every artifact ends with a `## Changelog` section (one row per version bump,
+stating the **why**); an `## Interaction notes` section sits just above it when a
+user intervention shaped the artifact.
 
 ## Project structure
 
-_TODO — see [CLAUDE.md](CLAUDE.md) for the maintainer guide._
+```text
+.claude-plugin/      Plugin + marketplace manifests
+hooks/               Session/format/metrics hooks (Python) + hooks.json
+references/          constitution.md · grilling-engine.md · diagrams.md
+skills/<name>/       One folder per skill: SKILL.md (+ references/, scripts/)
+```
+
+See [CLAUDE.md](CLAUDE.md) for the maintainer guide (skill authoring conventions,
+frontmatter reference, the description-field formula, anti-patterns).
 
 ## Contributing
 
-_TODO._
+Use `/create-skill` to scaffold a new skill, then follow the checklists in
+[CLAUDE.md](CLAUDE.md). Commits go through `/commit` (Conventional Commits,
+secrets check, explicit approval).
 
 ## License
 

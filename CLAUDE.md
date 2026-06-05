@@ -10,10 +10,21 @@ skills/
 ├── .claude-plugin/
 │   ├── plugin.json          # Plugin metadata (name, description, version)
 │   └── marketplace.json     # Marketplace listing
+├── hooks/
+│   ├── hooks.json           # Hook registrations (SessionStart, PostToolUse, Stop)
+│   ├── inject.py            # SessionStart: inject constitution + foundation
+│   ├── format_spec.py       # PostToolUse: format .spec/*.md just written
+│   └── metrics.py           # Stop: update the live .spec/usage.md cost ledger
+├── references/              # Plugin-wide docs injected/loaded at runtime
+│   ├── constitution.md      # Rules every spec-workflow skill obeys
+│   ├── grilling-engine.md   # Shared dimension-coverage grilling loop
+│   └── diagrams.md          # Mermaid diagram catalog (monochrome, neutral)
+├── CLAUDE.md                # This maintainer guide
+├── README.md                # User-facing plugin overview
 └── skills/
     └── <skill-name>/        # kebab-case folder = command name
         ├── SKILL.md         # Required. Main instructions + YAML frontmatter
-        ├── references/      # Optional. Detailed docs loaded on demand
+        ├── references/      # Optional. Detailed docs loaded on demand (e.g. rubric.md)
         ├── scripts/         # Optional. Executable helpers (Python, Bash, etc.)
         └── assets/          # Optional. Templates, icons used in output
 ```
@@ -31,6 +42,7 @@ argument-hint: '[arg]' # Optional. Shows in autocomplete
 arguments: [arg1, arg2] # Optional. Named vars: $arg1, $arg2 in body
 disable-model-invocation: true # Optional. User-only (side-effect workflows)
 user-invocable: false # Optional. Claude-only (background knowledge)
+context: fork # Optional. Run isolated in a forked subagent; returns result to caller
 ---
 # Skill Title
 
@@ -49,6 +61,7 @@ Body content here.
 | `arguments`                | No       | Named positional args. User types `/skill foo bar` → `$0`=foo, `$1`=bar                                              |
 | `disable-model-invocation` | No       | `true` prevents auto-invocation. Use for deploys, commits, destructive ops                                           |
 | `user-invocable`           | No       | `false` hides from `/` menu. Use for pure knowledge skills                                                           |
+| `context`                  | No       | `fork` runs the skill isolated in a subagent and returns its result to the caller. Read-only/single-shot helpers only — never interactive skills |
 
 ## Description field — the most important part
 
