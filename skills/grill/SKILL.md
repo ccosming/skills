@@ -6,7 +6,7 @@ description: >
   scope), `technical` (architecture, stack, schemas), or `full` (both).
   Captures every turn into `.spec/grills/GRILL-NNN-{slug}.md`. Detects
   in-progress notes and offers to resume.
-allowed-tools: Read Write Edit Bash AskUserQuestion Glob Grep Task
+allowed-tools: Read Write Edit Bash AskUserQuestion Glob Grep
 disable-model-invocation: true
 argument-hint: '[topic]'
 when_to_use: >
@@ -75,43 +75,40 @@ Apply to every turn. These shape voice and depth, not just the rules below:
   `sequenceDiagram` for interactions between actors or components. Never
   hand-draw a flow with ASCII boxes/arrows.
 
-## Calling other skills — always via Task subagents
+## Calling other skills
 
-**The Skill tool does not return control.** When you invoke `Skill(...)`
-directly, the model adopts that skill and ends the turn after producing its
-output — it does **not** resume this workflow. So every helper skill the grill
-needs a result from is invoked inside a **`Task` subagent**, which runs the
-skill in isolation and returns its output to you as a tool result. When the Task
-returns, you are back in this workflow and continue.
+`/clarify`, `/research`, and `/summarize` are forked helpers (`context: fork` in
+their frontmatter, per the constitution). Invoke one **directly** with
+`Skill(...)`: it runs in an isolated subagent and returns its result to you, then
+you continue this workflow. Do **not** wrap them in `Task` — a forked helper
+inside a `Task` subagent is a nested fork and fails. Each helper already returns
+only its YAML (its own body says so), so just pass the args.
 
-Emit the literal `Task(...)` call (these are tool calls, not suggestions):
+Emit the literal `Skill(...)` call (these are tool calls, not suggestions):
 
 - **Clarify** — analysis-only; returns a spec, then **you** present the
   question:
 
   ```
-  Task(subagent_type="general-purpose", description="clarify term",
-       prompt="Invoke the clarify skill: Skill(skill=\"clarify\", args=\"user_input: <reply>; domain_context: <...>; prior_resolutions: <n>; written_sections: <n>\"). Return ONLY its YAML output (status: NO_POLYSEMY, or a NEEDS_DISAMBIGUATION spec). Do not ask the user anything.")
+  Skill(skill="clarify", args="user_input: <reply>; domain_context: <...>; prior_resolutions: <n>; written_sections: <n>")
   ```
 
 - **Summarize**:
 
   ```
-  Task(subagent_type="general-purpose", description="summarize research",
-       prompt="Invoke the summarize skill: Skill(skill=\"summarize\", args=\"texts: <blocks>; focus: <...>; max_length: <...>; format: bullets\"). Return ONLY its YAML output.")
+  Skill(skill="summarize", args="texts: <blocks>; focus: <...>; max_length: <...>; format: bullets")
   ```
 
-- **Research** — one Task per perspective, up to 3 in parallel in a single
-  message:
+- **Research** — one call per perspective; issue them in the same message when
+  you need several:
 
   ```
-  Task(subagent_type="general-purpose", description="research <perspective>",
-       prompt="Invoke the research skill: Skill(skill=\"research\", args=\"question: <...>; perspective: <...>\"). Return ONLY its YAML output.")
+  Skill(skill="research", args="question: <...>; perspective: <...>")
   ```
 
-After a Task returns, continue the workflow yourself: present the clarify
+After a helper returns, continue the workflow yourself: present the clarify
 question, write the summary into the notes file, etc. If you describe a call but
-do not emit the `Task(...)`, you have failed the step.
+do not emit the `Skill(...)`, you have failed the step.
 
 ## Profiles
 
@@ -145,13 +142,13 @@ sitting.
 
 | Phase                         | When           | Form                                                                                                                                                                                                                     |
 | ----------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **A — Free-text exploratory** | Q1 and Q2 only | Open question, no AskUserQuestion, no options. Read the user's prose, then run clarify via `Task` (see `## Calling other skills`). If it returns a disambiguation spec, present that question yourself before recording. |
+| **A — Free-text exploratory** | Q1 and Q2 only | Open question, no AskUserQuestion, no options. Read the user's prose, then run clarify via `Skill` (see `## Calling other skills`). If it returns a disambiguation spec, present that question yourself before recording. |
 | **B — Recommended options**   | Q3 onward      | 1-3 lines of framing + recommended answer with reasoning + `AskUserQuestion` with 2-4 options. Recommended option labeled `(Recommended)`, first in the list.                                                            |
 
 Hard limits: at most 2 free-text questions in a row. After Q2 the grill must
 switch to phase B regardless of context confidence.
 
-In phase B, run clarify via `Task` only when a reply or counter-question
+In phase B, run clarify via `Skill` only when a reply or counter-question
 introduces a load-bearing ambiguous term. Otherwise skip — phase B picks already
 disambiguate.
 
@@ -175,7 +172,7 @@ Guard these every write — structure rot is the most common failure:
 ## Constitution
 
 Operate under the constitution injected at session start — voice, localization,
-`AskUserQuestion`, and helper invocation via `Task`. If it is not in context,
+`AskUserQuestion`, and helper invocation via `Skill`. If it is not in context,
 read `../../references/constitution.md` before proceeding.
 
 ## Pre-flights
@@ -247,14 +244,14 @@ continue.
    - Domain niche the model has weak coverage on (specific industry practices,
      narrow standards).
    - User explicitly asked for "research" or "investigate" in the topic.
-4. **If research is needed** for 1-N perspectives, emit up to 3 `Task(...)`
-   calls in a single message (parallel). Use the template from
-   `## Calling other skills`. One call per perspective.
-5. **Consolidate**. Run summarize via `Task` (see `## Calling other skills`)
+4. **If research is needed** for 1-N perspectives, issue up to 3
+   `Skill(skill="research", ...)` calls — one per perspective — in a single
+   message. Use the template from `## Calling other skills`.
+5. **Consolidate**. Run summarize via `Skill` (see `## Calling other skills`)
    with `texts:` the research outputs,
    `focus: domain expertise relevant to <topic>, organized by lens`,
    `max_length: 10 bullets + 1 short paragraph per lens`, `format: bullets`.
-   When the Task returns, hold its output.
+   When it returns, hold its output.
 6. **Hold the result in memory**. It goes into the notes file in Step 4.
 
 If no research is needed and you can ground the lenses from intrinsic knowledge
@@ -361,9 +358,9 @@ Each iteration:
    - **`full`**: no guardrail — both layers are in scope.
 
 4. **Get the answer**.
-   - **Phase A**: read the user's prose, then run clarify via `Task` (template
+   - **Phase A**: read the user's prose, then run clarify via `Skill` (template
      in `## Calling other skills`, passing `user_input`, `domain_context`,
-     `prior_resolutions`, `written_sections`). When the Task returns you are
+     `prior_resolutions`, `written_sections`). When it returns you are
      back here:
      - `status: NO_POLYSEMY` → proceed to record.
      - `status: NEEDS_DISAMBIGUATION` → present the returned `question` to the
@@ -371,10 +368,10 @@ Each iteration:
        `mode: options`; a plain question when `mode: free-text`. When the user
        answers, fold the resolution into the recorded Answer, then record.
 
-     This clarify Task is mandatory in phase A. Clarify never asks the user —
+     This clarify call is mandatory in phase A. Clarify never asks the user —
      you do.
 
-   - **Phase B**: run clarify via `Task` only when a load-bearing ambiguous term
+   - **Phase B**: run clarify via `Skill` only when a load-bearing ambiguous term
      appears, and present its `question` the same way. Otherwise skip.
    - If the user picks "Other" with a counter-question, answer it first, then
      re-pose if still open.
@@ -449,15 +446,15 @@ decision Y, write a follow-up doc, close). Do not auto-execute the next step.
 
 ## Skill orchestration cheatsheet
 
-All three run inside a `Task` subagent (the Skill tool does not return control —
-see `## Calling other skills`). Each subagent invokes the skill and returns its
-YAML; you then continue.
+All three are forked helpers (`context: fork`) invoked directly with `Skill(...)`;
+each returns its YAML and you continue (see `## Calling other skills`). Never wrap
+them in `Task`.
 
-| Skill       | Invoked when                                                                 | Call                                                                                                |
-| ----------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `research`  | Step 3, when a perspective needs external knowledge                          | `Task(...)` invoking `Skill(skill="research", ...)` — up to 3 in one message                        |
-| `summarize` | Step 3, to consolidate research (or intrinsic notes)                         | `Task(...)` invoking `Skill(skill="summarize", ...)`                                                |
-| `clarify`   | Step 5: mandatory every phase-A turn; phase-B only on load-bearing ambiguity | `Task(...)` invoking `Skill(skill="clarify", ...)` → returns a spec; **you** present the `question` |
+| Skill       | Invoked when                                                                 | Call                                                                            |
+| ----------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `research`  | Step 3, when a perspective needs external knowledge                          | `Skill(skill="research", ...)` — one per perspective, issued together           |
+| `summarize` | Step 3, to consolidate research (or intrinsic notes)                         | `Skill(skill="summarize", ...)`                                                  |
+| `clarify`   | Step 5: mandatory every phase-A turn; phase-B only on load-bearing ambiguity | `Skill(skill="clarify", ...)` → returns a spec; **you** present the `question`  |
 
 All three return structured outputs the grill writes into the notes file. None
 of them write to files directly.
