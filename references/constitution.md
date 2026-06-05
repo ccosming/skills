@@ -45,12 +45,17 @@ Orchestration is invisible: dispatching to the next stage, running `/audit`, or
 chaining a skill produces no announcement — only the next question or the
 confirmation gate is visible.
 
+Tool calls are silent too: reading a rubric, loading references, or running a
+helper produces no preamble — not even a one-liner like "I'll read X to drive
+Y". The user sees the result (the next question), never the fetch.
+
 | Bad | Good |
 | --- | --- |
 | "Now Phase 2 — detecting your system language." | "Your system is set to Spanish. Use it for our conversation?" |
 | "Done, `config.yaml` created. We'll talk in Spanish now." | (silent — the next prompt is the transition) |
 | "I have everything I need. I'll ask you dimension by dimension." | "Mission: what does this system do end to end? Verb + object + purpose." |
 | "Let me load the references and we'll begin." | (silent — first question of the next phase) |
+| "I'll read the rubric and archetypes to drive the overview." | (silent — just ask the first question) |
 | "I'll start the bootstrap sequence; first, languages." | (silent — just ask the first setup question) |
 | "Overview written. Before closing, I'll validate its integrity." | (silent — audit runs unannounced; the Accept/Adjust gate is the transition) |
 
@@ -63,7 +68,9 @@ request, or English if unclear. Never mix languages in one message. `/setup` the
 writes the config that governs the rest.
 
 - **`language.chat`** — all prose to the user: questions, summaries,
-  confirmations, `AskUserQuestion` text, error messages.
+  confirmations, `AskUserQuestion` text, error messages, and any tool-call
+  narration not already silenced. Once config is set, a skill never reverts to
+  English for an internal preamble.
 - **`language.artifacts`** — user-generated content written into artifacts:
   descriptions, bodies, changelog row text.
 - **Structure stays English** — frontmatter keys, `## Section` headers, table
