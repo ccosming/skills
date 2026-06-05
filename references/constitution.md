@@ -245,10 +245,10 @@ One-sided references are flagged by `/audit`.
 - Section headers stay English; their content follows `language.artifacts`.
 - Diagrams use the minimalist Mermaid style from the catalog — `flowchart`/`graph`
   with `theme: neutral`, no custom colors.
-- Line wrapping, table-column alignment, and blank-line spacing are the project
-  formatter's job (`/setup` provisions `.markdownlint.json` + `.prettierrc`).
-  Write valid Markdown and let the formatter normalize it — never hand-pad table
-  cells or count columns.
+- Line wrapping, table-column alignment, and blank-line spacing are normalized
+  automatically: the plugin reformats every `.spec/` Markdown file after each
+  write. Write valid Markdown and let the formatter normalize it — never hand-pad
+  table cells or count columns.
 
 ### Interaction notes
 
