@@ -100,8 +100,10 @@ from a known taxonomy). For open exploration, ask in plain prose.
   label. Mark `(Recommended)` only with a defensible default from prior
   evidence; without it, present options without a recommendation.
 - List only the real choices; Claude Code appends an "Other" option itself.
-- Tabs (multiple questions in one call) are **only** for closed, mutually
-  independent, low-cost choices.
+- Tabs (multiple questions in one call) are **only** for the tightly-coupled
+  sub-parts of a **single** decision the user settles together (e.g. chat +
+  artifact language are two facets of one language choice) — **never** for
+  independent material dimensions, which are separate turns, one question each.
 
 **Cadence — one material decision per turn.** Put a single material decision in
 front of the user at a time, with the recommended option first so the choice is
@@ -115,10 +117,27 @@ advances; the user's working style, captured in the foundation, sets the pace.
 | Bad (one turn) | Good (sequence) |
 | --- | --- |
 | "Two questions, answer both in prose: is the set of outcomes right, and is the first target ambitious enough?" | Settle the set this turn; ask about the target next turn, once the set is fixed. |
+| One `AskUserQuestion` with four cards — cadence, quality bar, what keeps it light, hard constraints. | Four material dimensions → four turns, one card each, each probed before the next. |
 
-Open free-text is the default for grilling. Reach for `AskUserQuestion` when the
-dimension has a closed taxonomy, the user signaled they need options, or the
-decision is binary/single-pick with stable alternatives.
+**Lead with a proposal, not a blank.** When you can recommend a default — from the
+skill's expertise or `/research` — put it to the user to confirm or adjust, not as
+an open question they answer from scratch. Render it as `AskUserQuestion`
+(recommended option first) when it is a pick from a closed set, or as prose when it
+is open. Reserve an optionless, open question for genuinely divergent framing the
+user must author; as grilling converges and evidence accrues, lean further into
+recommended proposals — the user steers, they do not author from scratch.
+
+**Gate the proposal with `AskUserQuestion`, not prose.** However rich the proposal
+— a mission, a set of standards, a target — its confirmation is a closed decision:
+present it as a **single** `AskUserQuestion` (**Accept** _(Recommended)_ /
+**Adjust**, plus any concrete adjustment options) — one question, not tabs. The
+proposal is content (prose above); the confirmation is the selector — the user
+approves in one click, picks an adjustment, or types via Other. Never close a
+proposal with an open prose "confirm or adjust?"; that makes the user type what a
+click should settle. Keep the question **short but self-contained**: it names what
+is being decided and the gist of the proposal (e.g. the three items by name) so the
+user can answer without re-reading the prose — the full table and rationale stay
+above, never restated in the selector.
 
 ## Grilling depth
 
@@ -126,6 +145,9 @@ Grill in proportion to the stakes, not uniformly. On a contested, irreversible,
 or high-blast-radius decision — or when an answer is vague or contradicts earlier
 evidence — present alternatives, challenge, and confirm every material inference
 before recording it. On trivial, well-specified points, confirm and move on.
+Depth is a floor, not an option: advancing a material dimension on the user's
+first answer — no follow-up, no confirmed inference — is a coverage failure. The
+self-consistency pass catches contradictions, never this shallowness.
 Applies to every grilling skill, whether or not it uses the shared grilling
 engine.
 
