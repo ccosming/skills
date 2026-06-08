@@ -286,7 +286,7 @@ After Accept, re-read `.spec/overview.md`, `.spec/guidelines.md` and `.spec/pers
 - New artifact type, convention or status.
 - Design pattern worth standardizing (guidelines).
 - New skill/criterion for the coder agent (personality).
-- Major capability visible in the overview.
+- Major capability worth surfacing as a pillar in the overview.
 
 Each update must add a row in the changelog of the modified file explaining the **why**, not the what.
 

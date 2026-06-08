@@ -55,9 +55,9 @@ template — sections differ by artifact type.
 
 1. **Dependency-vs-exclusion** — a section depends on, requires, or commits to
    something that another section **excludes, forbids, or scopes out**. (Example:
-   a capability "pieces published" or an outcome "reach/inbound" needs a
-   publication surface, but *Out of scope* excludes that surface.)
-2. **Unsupported outcome** — an outcome/goal lists an enabling capability that
+   a pillar's output "pieces published" or a lagging metric "reach/inbound"
+   needs a publication surface, but *Out of scope* excludes that surface.)
+2. **Unsupported outcome** — an outcome/goal lists an enabling pillar that
    **does not exist** in the artifact, or whose substrate is excluded. Every
    stated outcome must trace to something the artifact actually commits to.
 3. **Infeasible target** — a constraint (budget, hours, deadline, ceiling)
@@ -104,10 +104,10 @@ summary:
 findings:
   - kind: dependency-vs-exclusion
     severity: error
-    sections: [Capabilities, Outcomes, Out of scope]
+    sections: [Product pillars, Success metrics, Out of scope]
     contradiction: >
-      Capabilities commits to "pieces published" and Outcomes to reach/inbound,
-      but Out of scope excludes the publication site those depend on.
+      Product pillars commit to "pieces published" and Success metrics to
+      reach/inbound, but Out of scope excludes the publication site those need.
     question: >
       The published-content surface is excluded yet required to measure output
       and reach — is it a decoupled subsystem of this project, or a separate

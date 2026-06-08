@@ -4,19 +4,19 @@ Dimensions, coverage criteria, question seeds, and the artifact template.
 
 ## Dimensions
 
-Partial order: `mission → roles → archetype → capabilities → outcomes →
+Partial order: `mission → roles → archetype → pillars → success-metrics →
 {scope, constraints, context}` (last three interleave freely).
 
-| Dimension      | Depends on        | Covered when                                                                          |
-| -------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| `mission`      | —                 | active verb + object + end-to-end purpose present                                     |
-| `roles`        | mission           | ≥1 primary role named (specific, not "users")                                         |
-| `archetype`    | mission + roles   | user picked from inferred top-3 or chose Other                                        |
-| `capabilities` | archetype         | ≥1 `output` row AND ≥1 `quality` row, each with target + window                       |
-| `outcomes`     | capabilities      | each outcome row lists ≥1 capability metric in `enabled_by`                           |
-| `scope`        | archetype         | user answered "none" OR ≥1 explicit exclusion                                         |
-| `constraints`  | archetype         | user picked "No hard constraints" OR provided specifics for each picked option        |
-| `context`      | archetype         | ≥1 archetype probe answered OR user explicitly said "no more"                         |
+| Dimension         | Depends on      | Covered when                                                                               |
+| ----------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| `mission`         | —               | active verb + object + end-to-end purpose present                                          |
+| `roles`           | mission         | ≥1 primary role named (specific, not "users")                                              |
+| `archetype`       | mission + roles | user picked from inferred top-3 or chose Other                                              |
+| `pillars`         | archetype       | ≥1 named pillar (verb + object); qualitative, no metrics                                    |
+| `success-metrics` | pillars         | ≥1 signal, ≥1 of them leading (traction/product); each tagged, directional, pillar-linked  |
+| `scope`           | archetype       | user answered "none" OR ≥1 explicit exclusion                                              |
+| `constraints`     | archetype       | user picked "No hard constraints" OR provided specifics for each picked option             |
+| `context`         | archetype       | ≥1 archetype probe answered OR user explicitly said "no more"                              |
 
 ## Question seeds per dimension
 
@@ -47,27 +47,27 @@ The engine picks one seed based on the current gap. After every open answer, run
 | ----------- | ------------------------------------------------------------------------------------------ |
 | not asked   | AskUserQuestion with top-3 inferred + Other (see `archetypes.md` § Presentation)           |
 
-### `capabilities`
+### `pillars`
 
 | Gap                                          | Seed                                                                                |
 | -------------------------------------------- | ----------------------------------------------------------------------------------- |
-| empty                                        | "What is the software committed to producing, and at what cadence? (Quality bars come next.)" |
-| only `output` rows                           | "Output covered. What quality standards must the system meet to be acceptable?"     |
-| only `quality` rows                          | "Quality covered. What does the system produce and at what cadence?"                |
-| row missing window                           | "[Metric] — over what window? (per week / month / always)"                          |
+| empty                                        | "What does this product DO — name its core capabilities? Each as a verb + object, one line. (Numbers come later, in the PRD.)" |
+| a pillar reads as a mechanism                | "That's a mechanism — name the end-to-end capability it serves."                    |
+| set looks incomplete                         | "Is that the full set of what the product does, or is a capability still unnamed?"   |
 
-Capability rows are **commitments** (what it produces, what bars it meets), not
-implementation or instrumentation design. If the user dives into per-stage SLOs,
-auto-instrumentation, or how a target gets measured, capture the commitment and
-defer the mechanism to `/arch` or a FEAT.
+Pillars are **named qualitative capabilities** (what the product does), not
+metrics or implementation. If the user gives a number, a per-stage SLO, or a
+mechanism, capture the capability here and defer the metric to `success-metrics`
+(directional) and the precise target/mechanism to the PRD or `/arch`.
 
-### `outcomes`
+### `success-metrics`
 
 | Gap                                          | Seed                                                                                |
 | -------------------------------------------- | ----------------------------------------------------------------------------------- |
-| empty                                        | "What outcomes do you expect from operating this software? Indirect goals — business, audience, adoption. For each, which capability enables it?" |
-| outcome without `enabled_by`                 | "[Outcome] — which capability in your table enables this? If none, either add the capability or move this to a note acknowledging external dependency." |
-| outcome without `external_factors`           | "[Outcome] depends partly on factors outside the software. List them."              |
+| empty                                        | "What signals show each pillar is working? For each: traction (the pillar gets used), product (leading — user behavior/quality), or business (lagging — adoption/audience/revenue)? Give a direction and a rough horizon — the precise target goes in the PRD." |
+| signal without a pillar                      | "[Signal] — which pillar measures it? Name it exactly as listed (one or more)."                                          |
+| signal stated as a hard target               | "[Signal] at [number] — at overview level keep it directional (increase/reduce) with a rough horizon; the exact baseline→target and window belong in the PRD." |
+| only lagging signals                         | "Those are lagging — they confirm after the fact. What leading signal (early user behavior) tracks [pillar]?" |
 
 ### `scope`
 
@@ -101,7 +101,7 @@ When the user's answer reveals content outside the current dimension:
 | Mentions architectural component (frontend, service) | Park as context candidate; revisit at context phase                     |
 | Mentions a past project as comparison                | Use as positioning signal for archetype inference                       |
 | Mentions a constraint while answering other dim      | Pre-fill `constraints` evidence; revisit at constraints phase           |
-| Mentions a metric while answering other dim          | Pre-fill `capabilities` or `outcomes`; revisit at that phase            |
+| Mentions a metric while answering other dim          | Pre-fill `success-metrics`; revisit at that phase                       |
 
 If content fits no dimension, ask: "Where does this live?" Show the dimension
 list. Never invent a section.
@@ -131,24 +131,27 @@ Skip "served" if only the operator exists.>
 
 **[Role]** (primary | served): [how they engage with the system].
 
-## Capabilities
+## Product pillars
 
-<≥1 `output` row AND ≥1 `quality` row.>
+<The qualitative capabilities the product commits to — its north stars. Each a
+named capability (verb + object), one line; the source of truth a PRD later
+elaborates into requirements and precise metrics. No numbers here.>
 
-| Type    | Metric              | Baseline | Target          | Window    |
-| ------- | ------------------- | -------- | --------------- | --------- |
-| output  | [what is produced]  | [today]  | [target volume] | [cadence] |
-| quality | [standard]          | [today]  | [target value]  | [scope]   |
+- **[Pillar]**: [what it does, end-to-end, in one line].
 
-## Outcomes
+## Success metrics
 
-<Each row lists ≥1 capability metric in `Enabled by`. If no capability
-supports an outcome, either add the capability or move the outcome to a note
-acknowledging external dependency.>
+<The handful of directional signals that show the product works. Each tagged by
+altitude — traction (the pillar gets used), product (leading: user
+behavior/quality), business (lagging: adoption/audience/revenue) — with a
+direction and a rough horizon, linked to the pillar(s) it measures by their exact name — verbatim from Product
+pillars, never a paraphrase or merged label. Precise
+baseline → target and measurement window live in the PRD, not here. Omit the
+section only if no measurable signal exists yet.>
 
-| Metric    | Baseline | Target   | Window   | Enabled by             | External factors          |
-| --------- | -------- | -------- | -------- | ---------------------- | ------------------------- |
-| [outcome] | [today]  | [target] | [window] | [capability metric(s)] | [non-software factors]    |
+| Signal       | Altitude                        | Direction                       | Horizon         | Pillar        |
+| ------------ | ------------------------------- | ------------------------------- | --------------- | ------------- |
+| [what moves] | traction \| product \| business | increase \| reduce \| establish | [rough horizon] | [pillar name] |
 
 ## Out of scope
 

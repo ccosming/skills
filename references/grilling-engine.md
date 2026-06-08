@@ -98,8 +98,8 @@ then keep grilling the current one to its depth floor.
    that dimension comes up.
 2. A **constraint** surfaced mid-grilling (budget, hours, deadline, ceiling) is
    parked for the `constraints` dimension, never reconciled against the current
-   one. A **metric** surfaced mid-grilling is parked for `capabilities` or
-   `outcomes`.
+   one. A **metric** surfaced mid-grilling is parked for `success-metrics` (or
+   named as a `pillar` if it is actually a capability).
 3. If no dimension fits, ask "Where does this live?" and show the rubric's
    dimension list.
 4. Sections come from the template only. Never add one silently.
