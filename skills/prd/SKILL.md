@@ -26,7 +26,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight (mandatory before any output)
 
-1. Foundation (overview, guidelines, personality) is injected at session start —
+1. Foundation (charter, guidelines, personality) is injected at session start —
    use it to confirm current conventions; do not re-read it.
 2. Read `.spec/domain.md` **if it exists** to load the project's ubiquitous language. If absent, proceed without domain alignment.
 3. List existing PRDs, ADRs and FEATs with `ls .spec/{prds,adrs,feats}` to
@@ -281,12 +281,12 @@ the user accepts.
 
 ### 5. Orthogonal update
 
-After Accept, re-read `.spec/overview.md`, `.spec/guidelines.md` and `.spec/personality.md`. Update them **only if** what was defined in this session introduces:
+After Accept, re-read `.spec/charter.md`, `.spec/guidelines.md` and `.spec/personality.md`. Update them **only if** what was defined in this session introduces:
 
 - New artifact type, convention or status.
 - Design pattern worth standardizing (guidelines).
 - New skill/criterion for the coder agent (personality).
-- Major capability worth surfacing as a pillar in the overview.
+- Major capability worth surfacing as a functional requirement in the charter.
 
 Each update must add a row in the changelog of the modified file explaining the **why**, not the what.
 

@@ -3,7 +3,7 @@ name: personality
 description: >
   Defines .spec/personality.md — the persona the /code agent embodies when
   implementing: seniority, decision style, communication, optimization
-  priority. Calibrated against the overview and guidelines.
+  priority. Calibrated against the charter and guidelines.
 when_to_use: >
   User says "set the personality", "profile the agent", "how should the coder
   behave", runs it after /guidelines, or when personality.md is missing.

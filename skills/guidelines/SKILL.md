@@ -6,7 +6,7 @@ description: >
   Stack-agnostic; tooling lives in stack.md.
 when_to_use: >
   User says "set the guidelines", "engineering conventions", "how we build",
-  runs it after /overview, or when guidelines.md is missing.
+  runs it after /charter, or when guidelines.md is missing.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
 user-invocable: false
 ---

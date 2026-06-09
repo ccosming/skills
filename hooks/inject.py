@@ -28,7 +28,7 @@ def main():
 
     out = [read(CONSTITUTION), ""]
 
-    foundation = ["config.yaml", "overview.md", "guidelines.md", "personality.md"]
+    foundation = ["config.yaml", "charter.md", "guidelines.md", "personality.md"]
     if all(os.path.isfile(os.path.join(SPEC, f)) for f in foundation):
         out += [
             "## This project",
@@ -41,7 +41,7 @@ def main():
             "```",
             "",
         ]
-        for fname in ["overview.md", "guidelines.md", "personality.md"]:
+        for fname in ["charter.md", "guidelines.md", "personality.md"]:
             out += [f"### {fname}", "", read(os.path.join(SPEC, fname)), ""]
         out += ["### Optional artifacts present", ""]
         for a in ["domain", "arch", "ux", "stack"]:

@@ -40,7 +40,7 @@ conventions instead of `language.artifacts`.
 
 ## Pre-flight (mandatory)
 
-1. **Foundation** (overview, guidelines, personality) is injected at session
+1. **Foundation** (charter, guidelines, personality) is injected at session
    start — do not re-read. Additionally read:
    - `.spec/stack.md` (if missing, stop and direct the user to `/spec`)
    - `.spec/domain.md` (optional — if exists, use its terms when generating code

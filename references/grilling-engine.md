@@ -1,6 +1,6 @@
 # Grilling engine
 
-A dimension-coverage loop used by the rubric-driven skills — `/overview`,
+A dimension-coverage loop used by the rubric-driven skills — `/charter`,
 `/guidelines`, `/personality`, `/arch`, `/ux` — each of which ships a
 `references/rubric.md`. Other grilling skills (`/prd`, `/domain`, `/stack`,
 `/pr`) run bespoke workflows and do not consume this engine; they still obey the
@@ -73,7 +73,7 @@ Per the constitution (_Grilling depth_), operationalized here:
 | --- | --- |
 | Contested (several viable approaches), irreversible, high blast-radius (architecture, data, contracts) | Full: present 2–3 framings; have the user react; record the trade-off |
 | Vague, short, underspecified | Probe until concrete |
-| Contradicts prior evidence (overview constraints, an earlier dimension) | Challenge it openly before recording |
+| Contradicts prior evidence (charter constraints, an earlier dimension) | Challenge it openly before recording |
 | Trivial, clear, well-specified, low-impact | Confirm the inference and move on |
 
 **Floor — every material dimension, before advancing:** apply the skill's probes,
@@ -99,7 +99,7 @@ then keep grilling the current one to its depth floor.
 2. A **constraint** surfaced mid-grilling (budget, hours, deadline, ceiling) is
    parked for the `constraints` dimension, never reconciled against the current
    one. A **metric** surfaced mid-grilling is parked for `success-metrics` (or
-   named as a `pillar` if it is actually a capability).
+   named as a `functional requirement` if it is actually a capability).
 3. If no dimension fits, ask "Where does this live?" and show the rubric's
    dimension list.
 4. Sections come from the template only. Never add one silently.

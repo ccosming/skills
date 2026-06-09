@@ -27,7 +27,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight
 
-1. Foundation is injected at session start — do not re-read `overview.md`. Read
+1. Foundation is injected at session start — do not re-read `charter.md`. Read
    `.spec/domain.md` if it exists (use ubiquitous language when editing
    artifacts).
 2. Ask the user for the target PRD (or the root ADR/FEAT if the change
@@ -64,7 +64,7 @@ Build the impact graph by reading:
 - ADRs in the PRD's `adrs:`.
 - FEATs in the PRD's `feats:`.
 - For each FEAT, its `adrs:` and `depends_on:` (second level).
-- If it affects conventions, the orthogonals (`overview.md`, `guidelines.md`,
+- If it affects conventions, the orthogonals (`charter.md`, `guidelines.md`,
   `personality.md`).
 
 For each node in the graph, evaluate concretely:
@@ -162,7 +162,7 @@ affects:
   prds: [PRD-NNN, ...]
   adrs: [ADR-NNN, ...]
   feats: [FEAT-NNN, ...]
-  orthogonal: [overview, guidelines, personality]
+  orthogonal: [charter, guidelines, personality]
 ---
 
 # <Summary>

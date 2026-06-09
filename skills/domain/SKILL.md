@@ -45,7 +45,7 @@ in; never translate them.
 
 ## Pre-flight (mandatory)
 
-1. **Foundation** (overview, guidelines, personality) is injected at session
+1. **Foundation** (charter, guidelines, personality) is injected at session
    start — do not re-read.
 
 2. **Check `.spec/domain.md`**:
@@ -56,7 +56,7 @@ in; never translate them.
 
 ### 1. Scan for candidate terms
 
-`Glob` `.spec/overview.md`, `.spec/prds/*.md`, `.spec/feats/*.md`. Extract
+`Glob` `.spec/charter.md`, `.spec/prds/*.md`, `.spec/feats/*.md`. Extract
 candidates — nouns repeated 3+ times, capitalized non-keyword phrases, compound
 terms and acronyms — and list each with its reference counts. These pre-fill the
 `terms` dimension.

@@ -2,13 +2,13 @@
 name: spec
 description: >
   The single door to the .spec/ source of truth. Bootstraps a new project and
-  routes every request about a specification artifact (overview, guidelines,
+  routes every request about a specification artifact (charter, guidelines,
   personality, stack, domain, arch, ux, PRD/FEAT) to the skill that owns it, or
   to a change proposal for an existing PRD. Infers the target from the request
   and the current .spec/ state; asks when the target is ambiguous.
 when_to_use: >
   User says "start the spec", "set up the project", "bootstrap", "let's spec",
-  "define/design the <overview | architecture | experience | domain | stack>",
+  "define/design the <charter | architecture | experience | domain | stack>",
   "write a PRD", "add a feature", "change/update <an artifact>", or any request
   to create or evolve something under .spec/. The only artifact door — /code
   implements ready FEATs, /issue triages problems.
@@ -34,13 +34,13 @@ Do this **silently** — your first action emits no preamble (constitution,
 _Voice_). The user's first visible output is a question: the language prompt on
 bootstrap, or the routed skill's first question — never a "getting started" line.
 
-1. The foundation (config languages + overview, guidelines, personality) is
+1. The foundation (config languages + charter, guidelines, personality) is
    injected at session start. Treat its presence as the bootstrap signal: all
    three present → the project is bootstrapped.
 2. List what else exists — do not assume:
 
    ```bash
-   ls .spec/config.yaml .spec/{overview,guidelines,personality,stack,domain,arch,ux}.md 2>/dev/null; ls .spec/prds .spec/feats 2>/dev/null
+   ls .spec/config.yaml .spec/{charter,guidelines,personality,stack,domain,arch,ux}.md 2>/dev/null; ls .spec/prds .spec/feats 2>/dev/null
    ```
 
 ## Infer the target
@@ -51,7 +51,7 @@ create fresh or modify.
 | The user is about… | Target | Owning skill |
 | --- | --- | --- |
 | starting the project, languages | bootstrap | sequence below |
-| what the system does, vision, scope | overview | `/overview` |
+| what the system does, vision, scope | charter | `/charter` |
 | engineering conventions, standards | guidelines | `/guidelines` |
 | the implementer agent's persona | personality | `/personality` |
 | tooling, framework, deps, structure | stack | `/stack` |
@@ -67,13 +67,13 @@ target: `Skill(skill="pr", args="target: PRD-NNN")`.
 ## Dependencies
 
 Before dispatching, verify the target's prerequisites. "Foundation" =
-config + overview + guidelines + personality.
+config + charter + guidelines + personality.
 
 | Target | Requires — block, route there first | Recommends — note, don't block |
 | --- | --- | --- |
-| overview | config | — |
-| guidelines | config + overview | — |
-| personality | config + overview + guidelines | — |
+| charter | config | — |
+| guidelines | config + charter | — |
+| personality | config + charter + guidelines | — |
 | domain | foundation | — |
 | arch | foundation | — |
 | ux | foundation | — |
@@ -108,7 +108,7 @@ Drive it **silently** — no "next stage" announcement, no naming the sequence; 
 next stage's first question is the transition.
 
 1. `Skill(skill="setup")` — languages → `.spec/config.yaml`.
-2. `Skill(skill="overview")` — what the system is.
+2. `Skill(skill="charter")` — what the system is.
 3. `Skill(skill="guidelines")` — engineering conventions.
 4. `Skill(skill="personality")` — the implementer agent's persona.
 5. Foundation complete. Surface the optional next stages and let the user pick or

@@ -5,7 +5,7 @@ session; apply without being re-read. On conflict with any skill body, this
 document wins; a workflow that violates any rule below produces an invalid result.
 
 When `.spec/` holds a bootstrapped project, its foundation (languages +
-`overview.md` + `guidelines.md` + `personality.md`) is injected directly after
+`charter.md` + `guidelines.md` + `personality.md`) is injected directly after
 this document — see _Trusting the injected foundation_.
 
 ## Entry points and delegation
@@ -201,7 +201,7 @@ rule — live in `references/artifact-model.md`. Read it when creating or editin
 ## Trusting the injected foundation
 
 The project foundation injected at session start is the source of truth for this
-turn. Re-read a foundation file (`overview.md`, `guidelines.md`, `personality.md`)
+turn. Re-read a foundation file (`charter.md`, `guidelines.md`, `personality.md`)
 only if you modified it this session, or a prior skill reported modifying it. A
 skill that owns a foundation file always reads it fresh before editing.
 

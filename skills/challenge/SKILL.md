@@ -28,7 +28,7 @@ verdict values stay English.
 
 ## Pre-flight (mandatory)
 
-1. **Foundation** (overview, guidelines, personality) is injected at session
+1. **Foundation** (charter, guidelines, personality) is injected at session
    start — do not re-read. Read:
    - `.spec/domain.md` (optional — if exists, evaluate term consistency in code
      and artifacts)

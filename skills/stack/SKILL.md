@@ -43,7 +43,7 @@ context, read `../../references/constitution.md` before proceeding.
 
 ## Pre-flight (mandatory)
 
-1. **Foundation** (overview, guidelines, personality) is injected at session
+1. **Foundation** (charter, guidelines, personality) is injected at session
    start — do not re-read. Read:
    - `.spec/domain.md` (optional — if exists, use domain terms when naming
      packages, modules, contexts)

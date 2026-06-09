@@ -27,7 +27,7 @@ it under a shared set of rules (the _constitution_).
 Two entry points (_doors_) drive the work:
 
 - **`/spec`** — the only door that creates or evolves `.spec/` artifacts. It
-  bootstraps a new project and routes each request (overview, guidelines, stack,
+  bootstraps a new project and routes each request (charter, guidelines, stack,
   domain, arch, ux, PRD, change request…) to the skill that owns it.
 - **`/code`** — implements a `ready` FEAT, running its build⇄review loop
   internally.
@@ -50,7 +50,7 @@ gate — nothing advances until you accept the artifact.
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
     Setup["/setup<br/>→ config.yaml"]
-    Found["/overview · /guidelines · /personality<br/>→ foundation files"]
+    Found["/charter · /guidelines · /personality<br/>→ foundation files"]
     Arch["/arch (optional)<br/>→ arch.md + ADRs"]
     UX["/ux (optional)<br/>→ ux.md + ADRs"]
     Domain["/domain (optional)<br/>→ domain.md"]
@@ -90,7 +90,7 @@ flowchart TD
 **Foundation** (bootstrap, in order)
 
 - `/setup` — write `config.yaml` (language preferences); first bootstrap step
-- `/overview` — project north star → `overview.md`
+- `/charter` — project source of truth → `charter.md`
 - `/guidelines` — transversal engineering conventions → `guidelines.md`
 - `/personality` — agent persona `/code` embodies → `personality.md`
 
@@ -169,7 +169,7 @@ title — the code lives in `id` and the filename, never a `title:` field.
 | ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `setup` (creates), all skills (read via injected foundation)      |
 | **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost-and-time ledger per artifact/skill/session. Written by the metrics hook (`Stop`/`UserPromptSubmit`/`PostToolUse`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
-| **Overview**     | `.spec/overview.md`                | Project north star: mission, users, product pillars, success metrics, scope, constraints, context.                                                                      | `overview` (creates), all downstream skills (read)                |
+| **Charter**      | `.spec/charter.md`                 | Project source of truth: problem, solution, domain, users, functional & non-functional requirements, success metrics, scope, constraints.                               | `charter` (creates), all downstream skills (read)                 |
 | **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `guidelines` (creates), all downstream skills (read)              |
 | **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `personality` (creates), `code` (read)                            |
 | **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                                              | `stack` (writes), `code`/`prd`/`challenge`/`pr` (read)            |
@@ -245,7 +245,7 @@ type:
 
 | Type                                             | Required fields                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------------------ |
-| Foundation (overview / guidelines / personality) | `id`, `status`, `version`, `prs`                                         |
+| Foundation (charter / guidelines / personality)  | `id`, `status`, `version`, `prs`                                         |
 | Domain                                           | `id`, `status`, `version`, `prs`                                         |
 | Architecture                                     | `id`, `status`, `version`, `prs`, `adrs`                                 |
 | Experience                                       | `id`, `status`, `version`, `prs`, `adrs`, `surfaces`                     |

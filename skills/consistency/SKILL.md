@@ -41,8 +41,8 @@ Skill(skill="consistency", args="target_path: <path>; caller_skill: <name>")
 Args parsed as semicolon-separated `key: value` pairs:
 
 - **`target_path`** _(required)_: the artifact just written (e.g.,
-  `.spec/overview.md`).
-- **`caller_skill`** _(required)_: name of the invoking skill (e.g., `/overview`).
+  `.spec/charter.md`).
+- **`caller_skill`** _(required)_: name of the invoking skill (e.g., `/charter`).
 
 Read `target_path` in full. If a contradiction hinges on a foundation file that
 is referenced by the artifact, you may read that file too — but the focus is the
@@ -55,9 +55,9 @@ template — sections differ by artifact type.
 
 1. **Dependency-vs-exclusion** — a section depends on, requires, or commits to
    something that another section **excludes, forbids, or scopes out**. (Example:
-   a pillar's output "pieces published" or a lagging metric "reach/inbound"
+   a capability's output "pieces published" or a lagging metric "reach/inbound"
    needs a publication surface, but *Out of scope* excludes that surface.)
-2. **Unsupported outcome** — an outcome/goal lists an enabling pillar that
+2. **Unsupported outcome** — an outcome/goal lists an enabling capability that
    **does not exist** in the artifact, or whose substrate is excluded. Every
    stated outcome must trace to something the artifact actually commits to.
 3. **Infeasible target** — a constraint (budget, hours, deadline, ceiling)
@@ -98,21 +98,21 @@ caller_note: <optional one-line summary>
 ```yaml
 status: contradictions_found
 summary:
-  artifact: .spec/overview.md
+  artifact: .spec/charter.md
   errors: 1
   warnings: 0
 findings:
   - kind: dependency-vs-exclusion
     severity: error
-    sections: [Product pillars, Success metrics, Out of scope]
+    sections: [Functional requirements, Success metrics, Out of scope]
     contradiction: >
-      Product pillars commit to "pieces published" and Success metrics to
+      Functional requirements commit to "pieces published" and Success metrics to
       reach/inbound, but Out of scope excludes the publication site those need.
     question: >
       The published-content surface is excluded yet required to measure output
       and reach — is it a decoupled subsystem of this project, or a separate
       effort? If part of the project, it cannot be out of scope.
-caller_note: One scope contradiction blocks a coherent overview.
+caller_note: One scope contradiction blocks a coherent charter.
 ```
 
 ## Invariant rules

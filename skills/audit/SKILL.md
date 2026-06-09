@@ -6,7 +6,7 @@ description: >
   file-naming, orphans, and domain consistency. Returns a structured YAML
   findings report. Read-only.
 when_to_use: >
-  Invoked by other skills (/overview, /guidelines, /personality, /stack, /prd,
+  Invoked by other skills (/charter, /guidelines, /personality, /stack, /prd,
   /code, /challenge, /pr, /domain) at the closure of any workflow that creates or
   modifies `.spec/` files. Not user-invocable.
 allowed-tools: Read, Glob, Grep, Bash
@@ -25,7 +25,7 @@ report. The caller decides what to do with the findings.
 Invoked from other skills, never directly by the user. With `context: fork`,
 invoking it runs an isolated subagent that returns its YAML report to the caller
 (per the constitution, _Invoking helpers and /audit_). Expected callers:
-`/overview`, `/guidelines`, `/personality`, `/stack`, `/prd`, `/code`,
+`/charter`, `/guidelines`, `/personality`, `/stack`, `/prd`, `/code`,
 `/challenge`, `/pr`, `/domain`.
 
 Standard caller pattern:
@@ -150,7 +150,7 @@ caller_note: <optional one-line summary for the caller>
 | R401 | error    | Filename matches `{TYPE}-NNN-{slug}.md` for numbered artifacts.               |
 | R402 | error    | `id` field matches `{TYPE}-NNN` from the filename.                            |
 | R403 | error    | Slug uses kebab-case (lowercase, hyphens only).                               |
-| R404 | error    | Singleton artifacts live at the documented paths (`.spec/overview.md`, etc.). |
+| R404 | error    | Singleton artifacts live at the documented paths (`.spec/charter.md`, etc.). |
 
 ### Orphans and staleness (R5xx)
 

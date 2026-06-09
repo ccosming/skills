@@ -30,7 +30,7 @@ context, read `../../references/constitution.md` before proceeding.
 ## Pre-flight
 
 1. If config.yaml is missing, stop and direct the user to `/spec`.
-2. From the injected `overview.md` archetype (and `stack.md` if present), infer
+2. From the injected `charter.md` archetype (and `stack.md` if present), infer
    the surfaces likely in scope.
 3. Check the artifact:
 

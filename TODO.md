@@ -134,7 +134,7 @@ with a pointer so the rule keeps its teeth.
 
 **Risk / watch.**
 - **Foundation interaction (scoping limit).** In a *bootstrapped* project,
-  `inject.py` also appends `overview.md` + `guidelines.md` + `personality.md`, so
+  `inject.py` also appends `charter.md` + `guidelines.md` + `personality.md`, so
   the **combined** output will likely still exceed 10K and persist. This item only
   guarantees the *constitution's* budget — keeping bootstrapped sessions inline is
   a **separate concern** (foundation injection strategy). Flag it, do not solve it
