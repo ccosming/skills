@@ -33,8 +33,8 @@ batch job).
 - `prior_resolutions_list` (optional) — `{term, resolution}` pairs already
   settled; skip these.
 - `written_sections` (optional) — count of non-empty sections in the caller's
-  artifact; used to recommend mode. -freetype-load-flags =
-  hinting,autohint,light[27;5;106~ `artifact_path` (optional) — path to read for
+  artifact; used to recommend mode.
+- `artifact_path` (optional) — path to read for
   skip-list checking only. **Never write to it.**
 
 ## Skip-list

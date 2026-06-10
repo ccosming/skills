@@ -30,7 +30,7 @@ feedback  → what the system signals, and within what time budget
 
 A GUI click, a CLI command, a voice turn, and an agent tool-call are the same
 loop. Stateful interactions add a statechart (`stateDiagram-v2`, see
-`../../references/diagrams.md`): states, events, transitions, guards.
+`../../../../references/diagrams.md`): states, events, transitions, guards.
 
 ## 3. The verifiable triple — qualities as engineering, not vibes
 

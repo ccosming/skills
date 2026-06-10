@@ -158,20 +158,7 @@ group.
 | R602 | warning  | Term appears in multiple bounded contexts without being declared as External (from) in the consuming context. |
 | R603 | info     | Term defined in `domain.md` but not referenced by any artifact (orphan term — candidate for removal).         |
 
-## Examples
-
-### Clean report
-
-```yaml
-status: clean
-summary:
-  files_audited: 12
-  errors: 0
-  warnings: 0
-  info: 0
-findings: []
-caller_note: All 12 artifacts pass invariants after the /spec authoring gate.
-```
+## Example
 
 ### Issues found
 

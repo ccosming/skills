@@ -161,37 +161,18 @@ constraints).
 
 ## Consistency
 
-After writing and before the gate (per the constitution, _Artifact
-self-consistency_):
+Critique and the gate are the orchestrator's steps (workflow.md 7–8); the engine
+only feeds them. What is yours here:
 
-1. Run the critic: `Skill(skill="consistency", args="target_path: <path>;
-   caller_skill: <name>")`.
-2. For each contradiction it returns, surface the critic's `question` to the user
-   (one at a time — cadence), resolve it by re-grilling the affected dimension,
-   and rewrite the artifact.
-3. Re-run until it returns `consistent` — or the user explicitly overrides a
-   finding.
+- **Coupled dimensions** — a target that depends on a constraint (e.g. cadence =
+  hours ÷ effort) — are reconciled against the assembled whole, once, not
+  improvised mid-grilling. Park neighbors per _Branching_; when the orchestrator's
+  consistency pass surfaces the tension, resolve it by re-grilling the affected
+  dimensions in one focused exchange.
+- This pass catches **contradictions**, never **omissions** — depth is guaranteed
+  during the loop (see _Depth_), never deferred to it.
 
-**Coupled dimensions** — a target that depends on a constraint (e.g. cadence =
-hours ÷ effort) — are reconciled **here**, once, against the assembled whole, not
-improvised mid-grilling. Capture each dimension as it comes (parking neighbors per
-_Branching_); let the consistency pass surface the tension between them and
-resolve it in one focused exchange.
+## On Adjust
 
-This pass catches **contradictions** between assembled dimensions — never
-**omissions** or thin coverage within one. It is not a safety net for shallow
-grilling: depth is guaranteed during the loop (see _Depth_), not deferred here.
-
-## Confirmation
-
-The mandatory gate (per the constitution, _Confirming artifacts_). Nothing
-advances — no return to `/spec`, no chaining, no next stage — until the user
-accepts.
-
-After writing the artifact (and after `/audit` passes):
-
-1. Summarize: one bullet per dimension — value or "omitted".
-2. `AskUserQuestion`: **Accept** (Recommended) | **Adjust**.
-
-On Adjust, ask which dimension, re-run the loop narrowed to that dimension only,
-re-write, and re-confirm.
+When the gate returns **Adjust**, ask which dimension, re-run the loop narrowed to
+that one only, and rewrite — then hand back to the gate.
