@@ -42,7 +42,7 @@ Args parsed as semicolon-separated `key: value` pairs:
 
 - **`target_path`** _(required)_: the artifact just written (e.g.,
   `.spec/charter.md`).
-- **`caller_skill`** _(required)_: name of the invoking skill (e.g., `/charter`).
+- **`caller_skill`** _(required)_: name of the invoking skill (e.g., `/spec`).
 
 Read `target_path` in full. If a contradiction hinges on a foundation file that
 is referenced by the artifact, you may read that file too — but the focus is the

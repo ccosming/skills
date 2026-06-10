@@ -6,9 +6,9 @@ description: >
   file-naming, orphans, and domain consistency. Returns a structured YAML
   findings report. Read-only.
 when_to_use: >
-  Invoked by other skills (/charter, /guidelines, /personality, /stack, /prd,
-  /code, /challenge, /pr, /domain) at the closure of any workflow that creates or
-  modifies `.spec/` files. Not user-invocable.
+  Invoked by /spec at each authoring gate, and by /code and /challenge at the
+  closure of any workflow that creates or modifies `.spec/` files. Not
+  user-invocable.
 allowed-tools: Read, Glob, Grep, Bash
 user-invocable: false
 context: fork
@@ -25,8 +25,7 @@ report. The caller decides what to do with the findings.
 Invoked from other skills, never directly by the user. With `context: fork`,
 invoking it runs an isolated subagent that returns its YAML report to the caller
 (per the constitution, _Invoking helpers and /audit_). Expected callers:
-`/charter`, `/guidelines`, `/personality`, `/stack`, `/prd`, `/code`,
-`/challenge`, `/pr`, `/domain`.
+`/spec` (at each authoring gate), `/code`, and `/challenge`.
 
 Standard caller pattern:
 
@@ -40,7 +39,7 @@ Args parsed as semicolon-separated `key: value` pairs:
 
 - **`target_paths`** _(optional)_: comma-separated paths to focus on. If empty,
   audits all `.spec/**/*.md` plus `.spec/*.md`.
-- **`caller_skill`** _(required)_: name of the invoking skill (e.g., `/prd`).
+- **`caller_skill`** _(required)_: name of the invoking skill (e.g., `/spec`).
 - **`caller_intent`** _(required)_: one-line description of what just happened
   (e.g., "created PRD-007 with 2 ADRs and 3 FEATs").
 
@@ -131,7 +130,7 @@ caller_note: <optional one-line summary for the caller>
 | R201 | error    | PR's status is `locked` once created (PRs never re-enter draft).                        |
 | R202 | warning  | FEAT in `done` has a populated `## Implementation plan` section.                        |
 | R203 | warning  | REV in `done` has `verdict` ∈ {`approve`, `request-changes`, `reject`} (not `pending`). |
-| R204 | warning  | Stack's `sync_status: drifted` → repo and stack.md disagree; needs `/stack` sync-check. |
+| R204 | warning  | Stack's `sync_status: drifted` → repo and stack.md disagree; needs a stack sync-check. |
 
 ### Changelog (R3xx)
 
@@ -184,7 +183,7 @@ summary:
   warnings: 0
   info: 0
 findings: []
-caller_note: All 12 artifacts pass invariants after /prd Phase 5.
+caller_note: All 12 artifacts pass invariants after the /spec authoring gate.
 ```
 
 ### Issues found
@@ -207,7 +206,7 @@ findings:
     file: .spec/stack.md
     message: sync_status is `drifted`; repo state diverges from declared stack.
     suggestion:
-      Run /stack in sync-check mode and resolve before /code execution.
+      Run a stack sync-check and resolve before /code execution.
   - severity: warning
     rule: R501
     file: .spec/adrs/ADR-003-supply-chain.md

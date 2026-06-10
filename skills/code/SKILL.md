@@ -103,11 +103,11 @@ Block N — <title>
 Order: schema/types → pure logic → integration → UI → integration tests → docs.
 
 **Block ownership**: mark `Owner: stack` for any block whose scope touches
-stack-managed surface (see `/stack` → Stack-managed surface): `package.json`,
-`tsconfig.json`, monorepo configs, lockfiles, CI workflows, devtools configs,
-top-level folder skeleton. All other blocks are `Owner: code`. Stack-owned
-blocks are **delegated** to `/stack` during execution; do not implement them
-directly.
+stack-managed surface (see `workflow.md` → _Procedural orchestration → Stack_):
+`package.json`, `tsconfig.json`, monorepo configs, lockfiles, CI workflows,
+devtools configs, top-level folder skeleton. All other blocks are `Owner: code`.
+Stack-owned blocks are **delegated** to `/spec` (stack mode) during execution; do
+not implement them directly.
 
 ### 3. Gate cadence choice
 
@@ -149,10 +149,10 @@ planned"_.
 
 For each block:
 
-1. **If `Owner: stack`** → invoke `/stack` via `Task` in `delegated` mode,
-   passing the block spec (title, scope, output, gate, originating `FEAT-NNN`).
-   Wait for its structured summary. Skip the steps below for this block;
-   continue to the next.
+1. **If `Owner: stack`** → invoke `/spec` via `Task` (stack delegated mode — see
+   `workflow.md` → _Procedural orchestration → Stack_), passing the block spec
+   (title, scope, output, gate, originating `FEAT-NNN`). Wait for its structured
+   summary. Skip the steps below for this block; continue to the next.
 2. Implement following `guidelines.md` and `personality.md`.
 3. Write tests where the guidelines indicate (pure logic → TDD; UI → optional).
 4. Execute the block gate (`pnpm test`, `pnpm typecheck`, `pnpm lint`).
@@ -249,11 +249,12 @@ Per the constitution (_Invoking helpers and /audit_). After Closure of either
   FEAT.
 - **Do not skip the gate** of a block for speed.
 - **Do not modify `.spec/` files** during `/code`. If you detect inconsistency,
-  **stop** and suggest `/pr`. The only permitted exception over the FEAT are:
+  **stop** and suggest a change via `/spec`. The only permitted exception over the
+  FEAT are:
   adding Implementation plan, updating status, version bump and changelog row.
-- **Do not modify stack-managed files** (see `/stack` → Stack-managed surface).
-  Delegate any block that touches them to `/stack` via `Task` in `delegated`
-  mode. `/code` writes product code only.
+- **Do not modify stack-managed files** (see `workflow.md` → _Procedural
+  orchestration → Stack_). Delegate any block that touches them to `/spec` via
+  `Task` (stack mode). `/code` writes product code only.
 - **Do not mix features**: a `/code` touches one FEAT. If the need to touch
   another arises, stop and report.
 - **Do not touch tests without touching code** (except new coverage) nor vice

@@ -235,8 +235,8 @@ Per the constitution (_Invoking helpers and /audit_). After Closure (§ 5):
 ## Invariant rules
 
 - **Do not modify the FEAT, PRD or ADRs** during `/challenge` (except FEAT metadata:
-  `reviews:`, PATCH bump and changelog row). For content changes in spec, open
-  `/pr`.
+  `reviews:`, PATCH bump and changelog row). For content changes in spec, open a
+  change via `/spec`.
 - **The REV is not modifiable** once closed (status `done`). If you reopen
   review, generate `REV-NNN+1`.
 - **Findings with `file:line`** whenever possible. Without location, it is not

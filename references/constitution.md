@@ -160,12 +160,9 @@ Helper skills are invoked directly, never wrapped in `Task`:
 
 `/clarify`, `/research`, `/summarize`, `/audit`, `/consistency` declare
 `context: fork`: invoking one runs it in an isolated subagent that returns its
-result without polluting the caller's context — never add a `Task` wrapper.
-`/domain` in delegated mode is invoked the same way but runs **inline** (not
-forked) — it may ask the user to add, reuse, or reject a term, which a forked
-subagent cannot do — and still returns its YAML. Args are semicolon-separated
-`key: value` pairs interpolated into the helper; it returns its output verbatim,
-the caller parses it.
+result without polluting the caller's context — never add a `Task` wrapper. Args
+are semicolon-separated `key: value` pairs interpolated into the helper; it
+returns its output verbatim, the caller parses it.
 
 | Helper | When |
 | --- | --- |
@@ -174,7 +171,6 @@ the caller parses it.
 | `/summarize` | Consolidate multi-source output (e.g., N `/research` results). |
 | `/audit` | Validate `.spec/` artifacts at closure of any writing workflow. |
 | `/consistency` | Check an artifact's sections for contradictions before the Accept/Adjust gate. |
-| `/domain` | Detect or disambiguate a candidate domain term during grilling. |
 
 After any workflow that creates or modifies files under `.spec/`, invoke `/audit`
 with `target_paths` (comma-separated list of every file touched), `caller_skill`,

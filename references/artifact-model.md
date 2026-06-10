@@ -53,10 +53,10 @@ version each artifact independently per its own impact.
 | `locked` | `deprecated` only (if superseded) |
 | `deprecated` | (terminal) |
 
-PR artifacts skip `draft`/`ready` — they are born `locked`. `/pr` is the only
-skill that locks an artifact. `deprecated` artifacts stay in the repo for
-history; never delete them. Reverting `done` → `ready` requires a changelog
-justification (typically a `/pr` cascade).
+PR artifacts skip `draft`/`ready` — they are born `locked`. The change flow (the
+`change` rubric) is the only thing that locks an artifact. `deprecated` artifacts
+stay in the repo for history; never delete them. Reverting `done` → `ready`
+requires a changelog justification (typically a change cascade).
 
 ### Changelog
 
