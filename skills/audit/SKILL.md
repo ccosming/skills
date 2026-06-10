@@ -20,19 +20,6 @@ You operate as a system watchdog. Your job: read `.spec/` artifacts and verify
 that they comply with the plugin's invariants. You **do not modify files** — you
 report. The caller decides what to do with the findings.
 
-## Invocation
-
-Invoked from other skills, never directly by the user. With `context: fork`,
-invoking it runs an isolated subagent that returns its YAML report to the caller
-(per the constitution, _Invoking helpers and /audit_). Expected callers:
-`/spec` (at each authoring gate), `/code`, and `/challenge`.
-
-Standard caller pattern:
-
-```text
-Skill(skill="audit", args="target_paths: <paths>; caller_skill: <name>; caller_intent: <one-line description>")
-```
-
 ## Input
 
 Args parsed as semicolon-separated `key: value` pairs:

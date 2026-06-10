@@ -75,13 +75,15 @@ only thing that varies between artifacts.
 5. **Grill.** Run the grilling engine (`references/grilling-engine.md`)
    against the rubric, applying its persona and probes.
 6. **Write** the artifact from the rubric's template.
-7. **Critique.** Run `/audit` (structural) and `/consistency` (semantic). `error`
+7. **Critique.** Run `/audit` (structural) and `/consistency` (semantic) **in
+   parallel** — both are read-only checks of the written artifact. `error`
    findings block; `warning`/`info` surface as notes.
 8. **Confirmation gate.** Accept advances; Adjust loops to step 5.
-9. **Detect + deposit.** Invoke `/detector` over the just-finished exchange
+9. **Detect + deposit.** Invoke `/detector` (forked) over the artifact
    (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
-   append its returned `captures` to `state.yaml`. Mark any seed consumed this
-   pass as `consumed`.
+   **Write** its returned `captures` to `.spec/state.yaml` (create if absent,
+   append if present), each `pending`. The deposit is a file write you perform,
+   not a displayed block. Mark any seed consumed this pass as `consumed`.
 10. **Advance** per the bootstrap sequence, or surface the next options and stop.
 
 Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.

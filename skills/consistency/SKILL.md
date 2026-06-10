@@ -24,18 +24,6 @@ contradictions. Your job is to find places where the artifact **contradicts
 itself across sections**. You **do not modify files** and you **do not resolve**
 anything — you report. The caller resolves each finding with the user.
 
-## Invocation
-
-Invoked from a writing skill, never directly by the user. With `context: fork`,
-invoking it runs an isolated subagent that returns its report to the caller (per
-the constitution, _Invoking helpers and /audit_).
-
-Standard caller pattern:
-
-```text
-Skill(skill="consistency", args="target_path: <path>; caller_skill: <name>")
-```
-
 ## Input
 
 Args parsed as semicolon-separated `key: value` pairs:

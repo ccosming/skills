@@ -85,10 +85,13 @@ triggers are defined in workflow.md. Run this around every authoring dispatch:
 1. **Inject seeds (before dispatch).** Read `state.yaml` for `pending` captures
    `for:` the target and surface them to the authoring as starting hypotheses —
    the grilling engine consumes them as defaults to confirm, not blanks to ask.
-2. **Detect + deposit (after the gate).** Once the artifact is accepted, scan the
-   just-finished exchange against workflow.md's _Cross-artifact triggers_. Append
-   each cross-artifact signal to `state.yaml` as a `pending` entry (`for`, `from`,
-   `kind`, `seed`). Mark any seed consumed this pass as `consumed`.
+2. **Detect + deposit (after the gate).** Once the artifact is accepted, invoke
+   `/detector` (forked) over the artifact; it returns the cross-artifact
+   `captures`. **You then Write them to `.spec/state.yaml` yourself** (create the
+   file if absent, append entries if it exists), each as a `pending` entry (`for`,
+   `from`, `kind`, `seed`, `status`). The deposit is a file you write — never end
+   the turn with the captures only displayed. Mark any seed consumed this pass as
+   `consumed`.
 3. **Authority.** The artifact always wins; `state.yaml` is a courier, never a
    source of truth. Drop any entry that would contradict an accepted artifact.
 

@@ -11,23 +11,16 @@ when_to_use: >
   signals against the workflow's triggers. Not user-invocable.
 allowed-tools: Read, Glob, Grep
 user-invocable: false
+context: fork
 ---
 
 # Cross-artifact detector
 
-You read **one just-finished authoring exchange** — the artifact written and the
-material that surfaced producing it — and you report where that material **belongs
-to a different artifact**. You do **not** modify files and you do **not** act on
-anything; you report. `/spec` deposits what you return into `.spec/state.yaml` and
-resolves it later through the owning rubric.
-
-## Invocation
-
-Invoked from `/spec`, never directly by the user. Standard caller pattern:
-
-```text
-Skill(skill="detector", args="source_artifact: <path>; from: <artifact name>")
-```
+You read **one just-finished artifact** — forked and isolated, like `/audit` and
+`/consistency` — and report where its material **belongs to a different
+artifact**. You do **not** modify files and you do **not** act on anything; you
+report. `/spec` deposits what you return into `.spec/state.yaml` and resolves it
+later through the owning rubric.
 
 ## Input
 
@@ -38,19 +31,28 @@ Args parsed as semicolon-separated `key: value` pairs:
 - **`from`** _(required)_: the artifact name that produced the material (e.g.
   `charter`).
 
-Read `source_artifact`, and read `skills/spec/references/workflow.md`
-(_Cross-artifact triggers_, _Impact graph_) for the trigger criteria.
+Read `source_artifact` in full. The targets and what each owns are listed in
+_What to detect_ below — no other file needed.
 
 ## What to detect
 
-Two kinds, both against the workflow triggers:
+The cross-artifact targets and what each owns:
 
-1. **Capture** — material in the exchange that is a starting hypothesis for a
-   **different** artifact (e.g. rich domain detail while authoring the charter →
-   `for: domain`; a tooling mention → `for: stack`).
-2. **Impact** — a committed change that makes an existing artifact potentially
-   stale per the impact graph (e.g. a PRD introduces a new ubiquitous term →
-   `for: domain`).
+- **domain** — ubiquitous terms, subdomains, bounded contexts
+- **stack** — tooling, dependencies, infra/hosting, budget constraints
+- **arch** — components, boundaries, decoupling, data and security strategy
+- **ux** — experience qualities, surfaces, interaction
+- **guidelines** — engineering conventions, simplicity/maintainability bars
+- **personality** — the persona the `/code` agent embodies (NOT the author's own
+  brand or writing voice — that is content the artifact owns, not the implementer)
+
+Two kinds of signal:
+
+1. **Capture** — material in the artifact that is a starting hypothesis for a
+   different target (e.g. domain detail in the charter → `for: domain`; an infra
+   constraint → `for: stack`).
+2. **Impact** — a committed change that makes an existing artifact stale (e.g. a
+   PRD introduces a new ubiquitous term → `for: domain`).
 
 Report only material that genuinely belongs **elsewhere**. Do not report content
 that the source artifact rightly owns. When unsure, include it as `pending` with a
