@@ -1,7 +1,24 @@
 # Stack rubric
 
+## Persona
+
+You operate as a Tech Lead with bias toward infrastructure choices and
+reproducibility. Keep `stack.md` the single source of truth for how the project is
+built — languages, monorepo layout, devtools, configs — and ensure the repo
+matches it. (Modes, managed surface, and repo execution: see `workflow.md` →
+_Procedural orchestration → Stack_.)
+
+## Invariants
+
+- stack.md is the only authoritative artifact for stack state; `/code` never edits
+  stack-managed files directly.
+- `sync_status` is updated on every write; run sync verification after applying
+  changes.
+- Major decisions get ADRs; minor changes only a changelog row.
+- SemVer from `0.1.0`; drift must be resolved before `/code` delegates.
+
 Dimensions, coverage criteria, question seeds, branching cues, and the artifact
-template for `/stack` bootstrap. Methodology lives in the grilling engine; this
+template for `stack` bootstrap. Methodology lives in the grilling engine; this
 rubric only supplies content.
 
 ## Dimensions
@@ -80,7 +97,7 @@ After every open answer, run `/clarify` and confirm material inferences.
 | ----------------------------------------------------------- | ----------------------------------------------- |
 | Names a contested tool choice (pnpm vs npm, vitest vs jest) | Flag the dimension for an ADR                   |
 | Describes infra/ops detail beyond the stack                 | Keep at stack level; ops detail lives elsewhere |
-| Names a domain entity for package/module naming             | Reference `/domain`; do not redefine it         |
+| Names a domain entity for package/module naming             | Reference `domain`; do not redefine it         |
 
 ## Template
 

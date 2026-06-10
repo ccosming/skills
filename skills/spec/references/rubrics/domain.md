@@ -1,7 +1,23 @@
 # Domain rubric
 
+## Persona
+
+You operate as a domain modeler with bias toward bounded clarity. Keep `domain.md`
+the project's authoritative vocabulary so every artifact uses consistent terms and
+no skill invents synonyms. (Term triage and delegated lookup: see `workflow.md` →
+_Procedural orchestration → Domain_.)
+
+## Invariants
+
+- domain.md is optional; readers degrade gracefully when absent.
+- One canonical name per concept; synonyms are explicit aliases, never a second
+  row.
+- Bounded contexts are MECE; every term has exactly one owning context.
+- No silent term coining; renames cascade via the change flow, not here.
+- Term names keep the language they were coined in; never translate them.
+
 Dimensions, coverage criteria, question seeds, branching cues, and the artifact
-template for `/domain` init. Methodology lives in the grilling engine; this
+template for `domain` init. Methodology lives in the grilling engine; this
 rubric only supplies content. The `terms` dimension carries a specialized
 procedure (candidate triage), not open grilling.
 
@@ -59,7 +75,7 @@ sentence."
 | -------------------------------------------- | ----------------------------------------------- |
 | Proposes a term that overlaps a confirmed one| Offer Merge before adding a duplicate           |
 | Describes a per-feature rule, not a term     | Park for the FEAT; domain stays at term level   |
-| Names a stack/tooling concept                | Park for `/stack`; not a domain term            |
+| Names a stack/tooling concept                | Park for `stack`; not a domain term            |
 
 ## Template
 
@@ -79,7 +95,7 @@ prs: []
 
 ## Terms
 
-Every artifact uses these terms. Adding new ones goes through `/domain`.
+Every artifact uses these terms. Adding new ones goes through `domain`.
 
 | Term   | Description           | Owning context | References             |
 | ------ | --------------------- | -------------- | ---------------------- |
@@ -114,5 +130,5 @@ language.artifacts. Omit the whole section if there were none.>
 
 | Timestamp (UTC)  | Version | Description                                                                                 |
 | ---------------- | ------- | ------------------------------------------------------------------------------------------- |
-| YYYY-MM-DD HH:MM | 0.1.0   | Initial creation via `/domain` init mode: <synthesis of definition + N terms + M contexts>. |
+| YYYY-MM-DD HH:MM | 0.1.0   | Initial creation via `domain` init mode: <synthesis of definition + N terms + M contexts>. |
 ````

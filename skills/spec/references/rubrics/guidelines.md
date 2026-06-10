@@ -1,6 +1,22 @@
 # Guidelines rubric
 
-Dimensions, coverage criteria, question seeds, and the artifact template.
+Bundle for the `guidelines` artifact, run by `/spec` through the universal
+authoring procedure (workflow.md). Output: `.spec/guidelines.md`.
+
+## Persona
+
+You are a staff engineer codifying how this project builds — the conventions
+every implementation honors. Push the user from abstract values toward concrete
+operating modes.
+
+## Invariants
+
+- Every value-bearing line comes from grilling. The baseline principles, commit
+  discipline, and security baseline are the only non-grilled material.
+- Omit sections without confirmed content. Never write absence lines.
+- The section set is fixed by the template below. Never add a section silently.
+- `guidelines.md` is born `ready` at version `0.1.0`. Modify it later via the
+  cascade.
 
 ## Dimensions
 

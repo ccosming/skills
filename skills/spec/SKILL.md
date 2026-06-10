@@ -1,26 +1,32 @@
 ---
 name: spec
 description: >
-  The single door to the .spec/ source of truth. Bootstraps a new project and
-  routes every request about a specification artifact (charter, guidelines,
-  personality, stack, domain, arch, ux, PRD/FEAT) to the skill that owns it, or
-  to a change proposal for an existing PRD. Infers the target from the request
-  and the current .spec/ state; asks when the target is ambiguous.
+  The single door to the .spec/ source of truth. Reads the flow program
+  (references/workflow.md) and executes it: bootstraps a new project, resolves
+  every request about a specification artifact (charter, guidelines, personality,
+  stack, domain, arch, ux, PRD/FEAT/ADR) to the artifact that owns it, and
+  sequences the build. Infers the target from the request and the current .spec/
+  state; asks when the target is ambiguous.
 when_to_use: >
   User says "start the spec", "set up the project", "bootstrap", "let's spec",
   "define/design the <charter | architecture | experience | domain | stack>",
   "write a PRD", "add a feature", "change/update <an artifact>", or any request
   to create or evolve something under .spec/. The only artifact door — /code
-  implements ready FEATs, /issue triages problems.
-allowed-tools: Read, Glob, Grep, Bash, Skill, AskUserQuestion
+  implements ready FEATs.
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Skill, AskUserQuestion
 ---
 
-# Spec router
+# Spec orchestrator
 
-You route the user to the skill that owns the artifact they want to create or
-evolve. You never write `.spec/` files yourself — you dispatch. Each owning skill
-handles its own create-vs-modify decision; your job is to pick the right one, in
-the right order, and to ask when the target is unclear.
+You are the engine of the .spec flow. The flow rules — the artifact registry,
+dependencies, bootstrap sequence, gates, impact graph, and triggers — live in
+`references/workflow.md`. You **read that program and execute it**; you never
+improvise a flow rule or duplicate one here. You never write `.spec/` files by
+hand: you run each authoring artifact through the universal procedure workflow.md
+defines (or dispatch to its owning skill where its rubric is not yet in place),
+and you dispatch the operations that are their own skill (`/code`, the critics).
+A change to an existing PRD runs as the cascade — the `change` rubric, not a
+separate skill.
 
 ## Constitution
 
@@ -28,110 +34,81 @@ Operate under the constitution injected at session start — voice, localization
 `AskUserQuestion`, and the door/delegation model. If it is not in context, read
 `../../references/constitution.md` before proceeding.
 
-## Read the state
+## Read the program and the state
 
 Do this **silently** — your first action emits no preamble (constitution,
-_Voice_). The user's first visible output is a question: the language prompt on
-bootstrap, or the routed skill's first question — never a "getting started" line.
+_Voice_). The user's first visible output is a question, never a "getting
+started" line.
 
-1. The foundation (config languages + charter, guidelines, personality) is
-   injected at session start. Treat its presence as the bootstrap signal: all
-   three present → the project is bootstrapped.
-2. List what else exists — do not assume:
+1. Read `references/workflow.md` — it defines the registry, dependencies,
+   sequence, gates, and triggers. Everything below executes it.
+2. **Cold start:** if `.spec/state.yaml` exists, read it — tell the user where
+   they left off (`in_flight`, pending items) and propose `next_suggested`.
+3. The foundation (config + charter + guidelines + personality) is injected at
+   session start; its presence is the bootstrap signal. List what else exists —
+   do not assume:
 
    ```bash
-   ls .spec/config.yaml .spec/{charter,guidelines,personality,stack,domain,arch,ux}.md 2>/dev/null; ls .spec/prds .spec/feats 2>/dev/null
+   ls .spec/config.yaml .spec/{charter,guidelines,personality,stack,domain,arch,ux}.md 2>/dev/null; ls .spec/prds .spec/feats .spec/adrs 2>/dev/null
    ```
 
-## Infer the target
+## Resolve and run
 
-Map the request to one target. The owning skill, not you, decides whether to
-create fresh or modify.
+1. Map the request to one target using workflow.md's _Artifact registry_. When
+   the target is unclear, **disambiguate** (below) — do not guess.
+2. Check the target's prerequisites in workflow.md's _Dependencies_:
+   - A hard prerequisite missing → route to the first gap (resume the bootstrap
+     sequence there), tell the user why, then return to the original target.
+   - Only a recommendation unmet → surface it once; the user decides.
+3. Run the target:
+   - An authoring artifact → if `references/rubrics/<target>.md` exists, run the
+     universal procedure (workflow.md) against it; otherwise dispatch with
+     `Skill(skill="<owning>")`.
+   - A change to an existing PRD/FEAT → run the cascade: the `change` rubric via
+     the universal procedure, then the impact graph (workflow.md, _Evolution flow_).
+   - Implementation of a ready FEAT → `Skill(skill="code")`.
 
-| The user is about… | Target | Owning skill |
-| --- | --- | --- |
-| starting the project, languages | bootstrap | sequence below |
-| what the system does, vision, scope | charter | `/charter` |
-| engineering conventions, standards | guidelines | `/guidelines` |
-| the implementer agent's persona | personality | `/personality` |
-| tooling, framework, deps, structure | stack | `/stack` |
-| ubiquitous language, glossary, entities | domain | `/domain` |
-| components, boundaries, technical architecture | arch | `/arch` |
-| experience, UX/UI, interactions, flows | ux | `/ux` |
-| a new product capability / requirement | PRD/FEAT | `/prd` |
-| changing an existing PRD or its FEATs | PR cascade | `/pr` |
+## Bootstrap
 
-Invoke the chosen skill with `Skill(skill="<name>")`. For a PRD change, pass the
-target: `Skill(skill="pr", args="target: PRD-NNN")`.
+When the project is not bootstrapped and the user wants to start, execute the
+**bootstrap sequence** defined in workflow.md, gating between stages: continue
+only after the user **accepts** the current artifact. Drive it **silently** — no
+"next stage" announcement, no naming the sequence; the next stage's first
+question is the transition. Skip any stage whose file already exists; resume at
+the first gap.
 
-## Dependencies
+## Reactivity (the buffer)
 
-Before dispatching, verify the target's prerequisites. "Foundation" =
-config + charter + guidelines + personality.
+Cross-artifact material flows through `.spec/state.yaml` — its contract and the
+triggers are defined in workflow.md. Run this around every authoring dispatch:
 
-| Target | Requires — block, route there first | Recommends — note, don't block |
-| --- | --- | --- |
-| charter | config | — |
-| guidelines | config + charter | — |
-| personality | config + charter + guidelines | — |
-| domain | foundation | — |
-| arch | foundation | — |
-| ux | foundation | — |
-| stack | foundation | arch — define the architecture before its tooling |
-| PRD (new) | foundation | domain, arch, ux — so derived FEATs inherit them |
-| PR (change) | the target PRD exists and is not `in-progress` | — |
+1. **Inject seeds (before dispatch).** Read `state.yaml` for `pending` captures
+   `for:` the target and surface them to the authoring as starting hypotheses —
+   the grilling engine consumes them as defaults to confirm, not blanks to ask.
+2. **Detect + deposit (after the gate).** Once the artifact is accepted, scan the
+   just-finished exchange against workflow.md's _Cross-artifact triggers_. Append
+   each cross-artifact signal to `state.yaml` as a `pending` entry (`for`, `from`,
+   `kind`, `seed`). Mark any seed consumed this pass as `consumed`.
+3. **Authority.** The artifact always wins; `state.yaml` is a courier, never a
+   source of truth. Drop any entry that would contradict an accepted artifact.
 
-A missing hard prerequisite routes to that prerequisite first — resume the
-bootstrap sequence at the gap, then return to the original target. A missing
-recommendation is surfaced once; the user decides whether to take it first.
-
-## Route
-
-1. Target is "bootstrap" (or an unscoped "start the project") → run the bootstrap
-   sequence below.
-2. Otherwise check the target's row in _Dependencies_:
-   - A hard prerequisite is missing → route to the first missing prerequisite,
-     resuming the bootstrap sequence at the gap. Tell the user why.
-   - Only a recommendation is unmet → surface it once as a non-blocking note; let
-     the user proceed or take it first.
-3. Target ready:
-   - New or regenerated artifact → `Skill(skill="<owning>")`.
-   - Change to an existing PRD/FEAT → `Skill(skill="pr", args="target: <ID>")`.
-   - Ambiguous target → disambiguate (below) before dispatching.
-
-## Bootstrap sequence
-
-You own this order. Run it when the project is not bootstrapped and the user
-wants to start. Invoke each stage with `Skill(...)`. Continue to the next stage
-only after the user **accepts** the current artifact (the confirmation gate).
-Drive it **silently** — no "next stage" announcement, no naming the sequence; the
-next stage's first question is the transition.
-
-1. `Skill(skill="setup")` — languages → `.spec/config.yaml`.
-2. `Skill(skill="charter")` — what the system is.
-3. `Skill(skill="guidelines")` — engineering conventions.
-4. `Skill(skill="personality")` — the implementer agent's persona.
-5. Foundation complete. Surface the optional next stages and let the user pick or
-   stop: `/stack` (tooling), `/domain` (ubiquitous language), `/arch`
-   (architecture), `/ux` (experience), `/prd` (first capability). Route the pick
-   through this same router.
-
-If `config.yaml` already exists, skip step 1. If a later foundation file already
-exists, skip its step. Resume the sequence at the first missing stage.
+Create `.spec/state.yaml` on first deposit. Keep it to what `ls` cannot tell you —
+`in_flight`, `next_suggested`, and the pending `captures`.
 
 ## Disambiguate
 
-When the target is unclear, this is the escape hatch — ask instead of guessing.
-`AskUserQuestion` with the candidate artifacts as options (label = artifact,
-description = one line of what it owns). Route the answer back through _Infer the
-target_.
+When the target is unclear, ask instead of guessing. `AskUserQuestion` with the
+candidate artifacts as options (label = artifact, description = one line of what
+it owns, per the registry). Route the answer back through _Resolve and run_.
 
 ## Invariant rules
 
-- You never create or edit `.spec/` files. You route; the owning skill writes.
-- One request routes to one owning skill. If a request spans several artifacts,
-  dispatch the first and let its completion return here for the next.
-- Never invoke a downstream skill on an unbootstrapped project. Bootstrap first.
-- Modifying an existing PRD (and its FEAT cascade) goes to `/pr`. Modifying any
-  other artifact goes to its owning skill, which offers keep-or-regenerate.
+- The flow rules live in `references/workflow.md`. You execute them; you never
+  duplicate or improvise them here.
+- You never author a `.spec/` *artifact* by hand — the universal procedure (or
+  the owning skill) writes those. You **do** maintain `.spec/state.yaml`, the
+  runtime memory.
+- One request resolves to one target. If a request spans several, run the first
+  and let its completion return here for the next.
+- Never run a downstream target on an unbootstrapped project. Bootstrap first.
 - When you cannot infer the target with confidence, disambiguate — do not guess.

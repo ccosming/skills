@@ -1,5 +1,25 @@
 # Experience rubric
 
+## Persona
+
+You are an experience designer. You define what the software must feel like to
+use — the interaction loops and the qualities it commits to — independent of how
+any surface renders them. The visual UI is one layer inside the experience. You
+justify contested decisions with an ADR (per `references/diagrams.md` for flows),
+and write every quality as a criterion an implementer can verify.
+
+## Invariants
+
+- Surface-agnostic core: interactions and qualities never name a widget; only the
+  UI layer references a surface.
+- Every experience quality is a TRIGGER → OBSERVABLE → THRESHOLD triple; one
+  without an observable and threshold is rejected.
+- Layers activate by `surfaces` (agent layer only with an `agent` surface; UI
+  layer only with `gui`/`tui`).
+- References the domain model and per-feature flows; does not duplicate them.
+- Contested decisions get an ADR; born `ready` at `0.1.0`. Optional — skip
+  headless/library projects.
+
 Dimensions, coverage criteria, question seeds, and the artifact template.
 Methodology and pattern detail live in `patterns.md`; diagram syntax in
 `../../references/diagrams.md`.
@@ -103,10 +123,10 @@ After every open answer, run `/clarify` and surface inferences for confirmation.
 
 | User signal                                   | Action                                                       |
 | --------------------------------------------- | ------------------------------------------------------------ |
-| Names a concrete framework/tool               | Park for `/stack`; ux decides experience, not tooling        |
+| Names a concrete framework/tool               | Park for `stack`; ux decides experience, not tooling        |
 | Describes a per-feature flow in detail        | Park for the FEAT; ux stays at system level                  |
 | Reveals a contested experience decision       | Flag the dimension for an ADR                                |
-| Names a domain entity                         | Reference `/domain`; do not redefine it here                 |
+| Names a domain entity                         | Reference `domain`; do not redefine it here                 |
 
 ## Template
 

@@ -1,13 +1,9 @@
 # Grilling engine
 
-A dimension-coverage loop used by the rubric-driven skills — `/charter`,
-`/guidelines`, `/personality`, `/arch`, `/ux` — each of which ships a
-`references/rubric.md`. Other grilling skills (`/prd`, `/domain`, `/stack`,
-`/pr`) run bespoke workflows and do not consume this engine; they still obey the
-constitution's grilling principles. The calling skill passes a rubric
-(`references/rubric.md`) that defines the dimensions, coverage criteria, question
-seeds, branching cues, and the artifact template. This engine consumes them; it
-never invents sections.
+A dimension-coverage loop run by `/spec` (the universal authoring procedure in
+`workflow.md`) against a **rubric bundle** (`rubrics/<artifact>.md`: persona +
+dimensions + coverage criteria + question seeds + branching cues + template).
+This engine consumes the bundle; it never invents sections.
 
 ## Stance — lead, don't interrogate
 
@@ -26,6 +22,16 @@ build and why) — never substitute it. Open, optionless prose is only for genui
 divergent framing the user must author; everything craftable is led, not asked
 blank.
 
+## Seeds
+
+The orchestrator may surface **seeds** — starting hypotheses for a dimension,
+captured earlier in the project (e.g., domain detail that came up while authoring
+the charter). Treat a seed exactly like the skill's own craft proposal: a
+recommended default to confirm or steer, never a settled fact and never a blank
+handed back. When a dimension has a seed, lead its proposal with it; with no seed,
+proceed from the skill's own expertise. A seed the user rejects is dropped, not
+re-proposed.
+
 ## Loop
 
 ```text
@@ -38,7 +44,8 @@ while not all required dimensions covered:
   gap       = identify the gap from the dimension's coverage criteria
   seed      = pick the seed for (next_dim, gap) from the rubric
   proposal  = the skill's expert default for this gap (persona craft; /research
-              when its own knowledge is thin) — for any craftable gap
+              when its own knowledge is thin; or the orchestrator's seed for this
+              dimension, if one was surfaced) — for any craftable gap
   ask       = lead with the proposal (prose, recommendation-first), then gate it
               with a single AskUserQuestion — Accept / Adjust (+ options) — so the
               user approves in one click or steers. Proposal is content; the
@@ -117,7 +124,7 @@ At 3, pause and ask:
 ```text
 "I detected: [signals from the last 3 turns]. Three paths:
   (a) Break and resume later when it is clearer  [Recommended if vocabulary is unstable]
-  (b) Continue and document the gaps for /pr to resolve
+  (b) Continue and document the gaps for the change flow to resolve
   (c) Scope down — this may belong in /grill first"
 ```
 

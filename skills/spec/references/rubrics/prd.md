@@ -1,11 +1,27 @@
 # PRD rubric
 
+## Persona
+
+You operate as a technical Product Owner with experience in AI agent systems,
+harness and software architecture. Turn a fuzzy intent into a coherent set of
+PRD + ADRs + FEATs ready to implement. (The fan-out to FEATs/ADRs and domain
+alignment: see `workflow.md` → _Fan-out_ and _Procedural orchestration → Domain_.)
+
+## Invariants
+
+- Never renumber an existing ID; never touch `locked` or `in-progress` files.
+- Each write adds a changelog row with the **why**; SemVer per change.
+- If the capability conflicts with an existing PRD, stop and suggest the change
+  flow.
+- If grilling reveals the user does not yet know what they want, stop and return a
+  more scoped problem for them to decide.
+
 Dimensions, coverage criteria, question seeds, branching cues, and the artifact
-template for `/prd` discovery grilling. Methodology lives in the grilling engine;
+template for `prd` discovery grilling. Methodology lives in the grilling engine;
 this rubric only supplies content.
 
 The PRD's **Technical decisions** and **Implementation** sections are not grilled
-here — `/prd` derives them from the accepted capability and fills them after this
+here — `prd` derives them from the accepted capability and fills them after this
 loop. The template ships them as placeholders.
 
 ## Dimensions
@@ -72,7 +88,7 @@ After every open answer, run `/clarify` and confirm material inferences.
 | User signal                               | Action                                                                          |
 | ----------------------------------------- | ------------------------------------------------------------------------------- |
 | Proposes a technical solution or tool     | Park it; technical decisions are derived after the capability, not grilled here |
-| Names a domain entity or coins a term     | Align it via `/domain` (delegated); do not redefine it                          |
+| Names a domain entity or coins a term     | Align it via `domain` (delegated); do not redefine it                          |
 | Describes implementation detail of a unit | Defer to the FEAT breakdown; keep the PRD at capability level                   |
 | Conflates two or more capabilities        | Flag for a possible split into separate PRDs before writing                     |
 

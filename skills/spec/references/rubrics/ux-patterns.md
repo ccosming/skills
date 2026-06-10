@@ -1,6 +1,6 @@
 # Experience patterns
 
-The methodology `/ux` applies when grilling toward `ux.md`. Load on demand. The
+The methodology `ux` applies when grilling toward `ux.md`. Load on demand. The
 goal is a source of truth for experience that humans and coding agents both
 consume — surface-agnostic at its core, testable at its edges.
 

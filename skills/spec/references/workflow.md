@@ -1,0 +1,272 @@
+# Workflow
+
+This file is the **single source of the .spec flow rules** — the order artifacts
+are built in, what each depends on, what changes ripple into what, and when one
+artifact's material is parked for another. It does **not** hold the craft of
+authoring any artifact (that is the rubric) nor the voice rules (the
+constitution). It is the *program*; `/spec` is the *engine* that runs it.
+
+The model has three parts:
+
+- **Engine** — `/spec` reads this file and `state.yaml`, then acts.
+- **Program** — this file: the flow rules, versioned, in one place.
+- **Memory** — `.spec/state.yaml`: the per-project runtime state.
+
+Authoring artifacts are driven by a **rubric bundle**, not by bespoke
+per-artifact logic — each (`skills/spec/references/rubrics/<name>.md`: persona +
+dimensions + seeds + template + invariants) is run by `/spec` through the
+*universal authoring procedure* below. Where an artifact's rubric is not yet in
+place, `/spec` dispatches to its owning skill instead — same artifact, same
+gates. The operations that are always their own skill are those that are not
+"author one artifact from one rubric": `/code` (writes source), and the read-only
+critics (`/audit`, `/consistency`, `/detector`).
+
+## Artifact registry
+
+The nodes of the flow.
+
+| Artifact    | Authored by                  | Rubric          | Tier        | Versioned |
+| ----------- | ---------------------------- | --------------- | ----------- | --------- |
+| config      | `/spec` (inline, bootstrap 1)| —               | static      | no        |
+| charter     | `/spec` + rubric             | `charter.md`    | anchor      | yes       |
+| guidelines  | `/spec` + rubric             | `guidelines.md` | calibration | yes       |
+| personality | `/spec` + rubric             | `personality.md`| calibration | yes       |
+| stack       | `/spec` + rubric             | `stack.md`      | accretive   | yes       |
+| domain      | `/spec` + rubric             | `domain.md`     | accretive   | yes       |
+| arch        | `/spec` + rubric             | `arch.md`       | accretive   | yes       |
+| ux          | `/spec` + rubric             | `ux.md`         | accretive   | yes       |
+| PRD         | `/spec` + rubric             | `prd.md`        | driver      | yes       |
+| FEAT        | `/spec` + rubric (fan-out)   | `feat.md`       | driver      | yes       |
+| ADR         | `/spec` + rubric (fan-out)   | `adr.md`        | record      | yes       |
+
+`/code` consumes the registry and writes source; it never authors a `.spec`
+artifact.
+
+## Reactivity tiers
+
+How an artifact evolves after it is born:
+
+- **static** — set once, effectively never changes (config).
+- **anchor** — the most stable. Changes rarely and deliberately. Its constraints
+  and NFRs bound every other artifact (charter).
+- **calibration** — born early, then *recalibrated* when a dependency lands
+  (guidelines recalibrates when stack is defined; personality is the least
+  reactive — it tracks the charter).
+- **accretive** — grows as drivers reveal detail (stack, domain, arch, ux).
+- **driver** — created on demand per capability; the *source* of bottom-up
+  impacts on the accretive tier (PRD, FEAT).
+- **record** — a decision log entry, immutable once written; superseded, never
+  edited (ADR).
+
+## The universal authoring procedure
+
+`/spec` runs this identical loop for any rubric-backed artifact. The rubric is the
+only thing that varies between artifacts.
+
+1. **Resolve + gate prerequisites.** Map the request to one target. Check its row
+   in _Dependencies_. A missing hard prerequisite routes there first, then returns.
+2. **Existence + mode.** If the artifact is absent → `create`. If present →
+   `AskUserQuestion`: **Keep current** (Recommended — change via the cascade) |
+   **Regenerate**. An accretive artifact reached by an impact (below) enters
+   `update` instead of prompting.
+3. **Load the rubric bundle** for the target from `skills/spec/references/rubrics/`.
+4. **Inject seeds.** Read `state.yaml` for `pending` captures `for:` this artifact
+   and pass them to the engine as starting hypotheses to confirm or steer.
+5. **Grill.** Run the grilling engine (`references/grilling-engine.md`)
+   against the rubric, applying its persona and probes.
+6. **Write** the artifact from the rubric's template.
+7. **Critique.** Run `/audit` (structural) and `/consistency` (semantic). `error`
+   findings block; `warning`/`info` surface as notes.
+8. **Confirmation gate.** Accept advances; Adjust loops to step 5.
+9. **Detect + deposit.** Invoke `/detector` over the just-finished exchange
+   (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
+   append its returned `captures` to `state.yaml`. Mark any seed consumed this
+   pass as `consumed`.
+10. **Advance** per the bootstrap sequence, or surface the next options and stop.
+
+Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.
+
+## Definition flow (top-down)
+
+### Bootstrap sequence
+
+`/spec` owns this order. Advance only after the user **accepts** the current
+artifact. Drive it silently — the next stage's first question is the transition.
+
+1. **config** — capture languages → `config.yaml`.
+2. **charter** — what the system is.
+3. **guidelines** — engineering conventions.
+4. **personality** — the implementer's persona.
+5. Foundation complete. Offer the optional stages and let the user pick or stop:
+   stack, domain, arch, ux, then PRD.
+
+Skip any stage whose file already exists; resume at the first gap.
+
+### Dependencies
+
+Foundation = config + charter + guidelines + personality.
+
+| Target      | Requires (block, route there first)        | Recommends (note, don't block) |
+| ----------- | ------------------------------------------- | ------------------------------ |
+| charter     | config                                      | —                              |
+| guidelines  | config + charter                            | —                              |
+| personality | config + charter + guidelines               | —                              |
+| domain      | foundation                                  | —                              |
+| arch        | foundation                                  | —                              |
+| ux          | foundation                                  | —                              |
+| stack       | foundation                                  | arch                           |
+| PRD         | foundation                                  | domain, arch, ux               |
+| cascade     | target PRD exists and is not `in-progress`  | —                              |
+
+A missing hard prerequisite routes there first; a missing recommendation is
+surfaced once and the user decides.
+
+### Gates
+
+A **gate** is a pause where the engine waits for the user — one after every
+artifact (post-critique). Accept advances; Adjust loops. Between bootstrap
+stages, never announce the transition.
+
+## Fan-out (PRD → FEATs + ADRs)
+
+A PRD is not a bespoke procedure — it is the universal loop plus orchestration:
+
+1. Author the **PRD** via the universal loop. Its template yields a
+   **decomposition**: the FEATs to spawn and the contested decisions that warrant
+   ADRs.
+2. For each listed FEAT → author via the universal loop with the `feat` rubric,
+   passing the PRD and sibling FEATs as context.
+3. For each contested decision → author via the universal loop with the `adr`
+   rubric. A decision without a genuine alternative gets a changelog row, not an
+   ADR.
+
+The PRD's `derives-from:` links each FEAT/ADR back to the originating capability.
+
+## Evolution flow (bottom-up) — the cascade
+
+The accretive artifacts are nourished as drivers reveal detail, and existing
+artifacts are revised through the **cascade**. Both run on the **impact graph**.
+The rule is **detect and propose, never auto-execute**: the engine writes
+`pending` impacts to `state.yaml`; each update runs through the universal loop's
+gate.
+
+### Impact graph
+
+When the **source** is accepted or changed, the **impacted** artifacts may be
+stale and a re-validation is proposed.
+
+| Source change                  | Impacted                                   | Effect                                  |
+| ------------------------------ | ------------------------------------------ | --------------------------------------- |
+| charter constraints / NFRs     | domain, arch, stack, ux, guidelines, pers. | re-validate against the new bounds      |
+| stack defined / changed        | guidelines                                 | recalibrate language/tooling conventions|
+| arch changed                   | stack, ux                                  | re-validate tooling and renderability   |
+| PRD/FEAT — new domain term     | domain                                     | add bounded context / term              |
+| PRD/FEAT — boundary decision   | arch (+ ADR)                               | add component / decision                |
+| PRD/FEAT — new dependency      | stack (+ ADR)                              | add dependency                          |
+| PRD/FEAT — user-facing surface | ux                                         | add flow / interaction                  |
+
+### Cascade procedure (change to an existing PRD)
+
+1. Grill the change with the `change` rubric: what changes, why now, assumed cost.
+2. Traverse the impact graph from the target. For each impacted artifact, propose:
+   reopen `done` FEATs, supersede affected ADRs (records are immutable — write a
+   new one), update accretive artifacts in `update` mode.
+3. Record a `PR-NNN` capturing the change and its cascade.
+
+A `locked` artifact is immutable; an `in-progress` PRD blocks the cascade until it
+settles.
+
+## Cross-artifact triggers
+
+Two trigger types both deposit `pending` entries in `state.yaml`. They differ by
+*when* they fire:
+
+- **Capture (conversational bleed)** — mid-grill, the user gives material that
+  belongs to another artifact. Park it; keep grilling the current one.
+- **Impact (committed ripple)** — an accepted change makes another artifact
+  potentially stale (the impact graph above).
+
+| During         | Signal surfaced                  | Capture for | Direction  |
+| -------------- | -------------------------------- | ----------- | ---------- |
+| charter        | rich domain detail               | domain      | top-down   |
+| charter        | technical convention preference  | guidelines  | top-down   |
+| charter        | tone / voice preference          | personality | top-down   |
+| charter        | tooling / tech mention           | stack       | top-down   |
+| charter        | experience / flow mention        | ux          | top-down   |
+| PRD, cascade   | new ubiquitous term              | domain      | bottom-up  |
+| PRD, cascade   | component / boundary decision    | arch        | bottom-up  |
+| PRD, cascade   | new dependency / tech            | stack       | bottom-up  |
+| PRD, cascade   | user-facing surface              | ux          | bottom-up  |
+
+## state.yaml — runtime memory
+
+`state.yaml` holds **only what the filesystem cannot tell you**. Which artifacts
+exist is derived from `ls`; never duplicate that here.
+
+### Shape
+
+```yaml
+in_flight: charter            # the artifact being authored, or null
+next_suggested: domain        # what /spec proposes at the next gate
+captures:                     # cross-artifact pending items (both directions)
+  - for: domain               # target artifact
+    from: charter             # source of the signal
+    kind: capture             # capture | impact
+    seed: "Two-sided marketplace; subdomains hinted: matching (core), payments (generic)."
+    status: pending           # pending | consumed | dropped
+```
+
+### Lifecycle
+
+Every entry is `pending → consumed | dropped`. The moment an artifact bakes a seed
+in, mark it `consumed`. If the user declines it, mark `dropped`. A `pending` entry
+never expires silently.
+
+### Authority
+
+The artifact always wins. `state.yaml` is a courier between artifacts, never a
+source of truth. If an entry would contradict an accepted artifact, it is already
+stale — drop it.
+
+### Cold start
+
+At session start `/spec` reads `state.yaml`, tells the user where they left off
+(`in_flight`, pending items), and proposes `next_suggested`. The user does not
+have to remember which artifact is missing.
+
+## Procedural orchestration
+
+Beyond authoring, `/spec` runs these per-artifact procedures, folded in from the
+former skills.
+
+### Stack
+
+- **Modes:** `bootstrap` (first time) · `update` (add/bump/restructure) ·
+  `sync-check` (drift between stack.md and the repo) · `delegated` (a `/code`
+  block touches stack-managed surface).
+- **Managed surface** — `/code` delegates any change to these, never edits them
+  directly: `package.json`, lockfiles, `tsconfig`, linter/formatter/test configs,
+  framework/build/CI configs, the top-level folder skeleton, editor/repo config.
+  **Not** stack territory: feature code, its tests, FEAT-specific migrations.
+- After any write: bump SemVer, run sync verification, set `sync_status` +
+  `last_verified`. A contested tool choice → an ADR via fan-out.
+
+### Domain
+
+- **Term triage** (the `terms` dimension): scan `charter.md`, PRDs, and FEATs for
+  candidates (repeated nouns, capitalized phrases, compounds) and pre-fill.
+- **Delegated lookup:** while authoring a PRD, a candidate term is checked against
+  `domain.md` (exact / near / none) and the user decides add | reuse | reject —
+  one term per turn. This is the bottom-up `new ubiquitous term → domain` trigger,
+  resolved inline.
+- Term names keep the language they were coined in. Renames flag references; the
+  rewrite across artifacts is the cascade's job, not domain's.
+
+## Extending the workflow
+
+To add an artifact, gate, or trigger: add its row to the registry, its edges to
+the dependency table and impact graph, and any trigger rows — here, in one file.
+A new rubric-backed artifact also needs its bundle under
+`skills/spec/references/rubrics/`; that craft is not centralizable. An operation
+that is *not* "author one artifact from one rubric" (a new fan-out or cascade
+shape) is the only thing that warrants its own skill.

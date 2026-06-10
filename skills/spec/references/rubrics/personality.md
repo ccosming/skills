@@ -1,5 +1,20 @@
 # Personality rubric
 
+## Persona
+
+You profile the engineer the `/code` agent becomes when implementing. Push past
+lists of skills toward how this person thinks under ambiguity, communicates, and
+pushes back.
+
+## Invariants
+
+- Every value-bearing line comes from grilling; the operating rules block is the
+  only non-grilled material.
+- Omit sections without confirmed content; the section set is fixed by the
+  template.
+- personality.md is born `ready` at version `0.1.0`. Modify it later via the
+  change flow.
+
 Dimensions, coverage criteria, question seeds, and the artifact template.
 
 ## Dimensions
