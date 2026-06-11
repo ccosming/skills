@@ -95,7 +95,8 @@ Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.
 `/spec` owns this order. Advance only after the user **accepts** the current
 artifact. Drive it silently — the next stage's first question is the transition.
 
-1. **config** — capture languages → `config.yaml`.
+1. **config** — capture languages → `config.yaml` (see _Procedural orchestration →
+   Config_).
 2. **charter** — what the system is.
 3. **guidelines** — engineering conventions.
 4. **personality** — the implementer's persona.
@@ -240,6 +241,37 @@ have to remember which artifact is missing.
 
 Beyond authoring, `/spec` runs these per-artifact procedures, folded in from the
 former skills.
+
+### Config
+
+The first bootstrap step — written by `/spec` inline, no rubric (config is a plain
+file, not a versioned artifact: no frontmatter, no changelog, no `/audit`).
+
+1. **Pre-flight.** `ls .spec/config.yaml`. If it exists → `AskUserQuestion`: **Keep
+   current** (Recommended) | **Regenerate**; on Keep, report the languages and
+   stop. Create `.spec/` if absent (`mkdir -p .spec`).
+2. **Resolve the language.** The resolved language is the user's request language
+   when the invocation carried clear prose; otherwise the detected system locale;
+   otherwise `en`. Detect the locale verbatim:
+
+   ```bash
+   SYS_LANG=$(defaults read -g AppleLanguages 2>/dev/null | grep -m1 -oE '"[a-z]{2,3}' | tr -d '"'); SYS_LANG=${SYS_LANG:-${LANG%%_*}}; SYS_LANG=${SYS_LANG:-en}; case "$SYS_LANG" in es|en) ;; *) SYS_LANG=en ;; esac; echo "$SYS_LANG"
+   ```
+
+3. **Ask once.** A single `AskUserQuestion` carrying both `language.chat` (`en` |
+   `es`) and `language.artifacts` (`en` | `es`); Recommended = the resolved
+   language for both.
+4. **Write** `.spec/config.yaml`:
+
+   ```yaml
+   # Project configuration. Edit directly or re-run /spec to regenerate.
+   language:
+     chat: <en | es>
+     artifacts: <en | es>
+   ```
+
+Only `en` and `es` are supported; anything else falls back to `en`. To change
+languages later, edit config.yaml directly or re-run `/spec`.
 
 ### Stack
 

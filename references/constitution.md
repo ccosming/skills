@@ -53,12 +53,12 @@ question), never a "getting started" line.
 ## Localization
 
 Read `language.chat` and `language.artifacts` from the injected foundation (or
-`.spec/config.yaml`). If config is missing — only possible during `/setup` —
-narrate in a **single language for the whole turn**, resolved in order: (1) the
-language of the user's request when it carries clear natural-language text; (2)
-otherwise the system locale `/setup` detects; (3) English only if neither
-resolves. Never mix languages in one message. `/setup` then writes the config
-that governs the rest.
+`.spec/config.yaml`). If config is missing — only possible during the config
+bootstrap step — narrate in a **single language for the whole turn**, resolved in
+order: (1) the language of the user's request when it carries clear
+natural-language text; (2) otherwise the system locale `/spec` detects; (3)
+English only if neither resolves. Never mix languages in one message. `/spec` then
+writes the config that governs the rest.
 
 - **`language.chat`** — all prose to the user: questions, summaries,
   confirmations, `AskUserQuestion` labels and descriptions, error messages, and any
