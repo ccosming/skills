@@ -31,8 +31,6 @@ No strict order.
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and surface inferences for confirmation.
-
 ### `persona`
 
 | Gap                                          | Seed                                                                                |

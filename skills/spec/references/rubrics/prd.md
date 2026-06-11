@@ -41,8 +41,6 @@ Partial order:
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and confirm material inferences.
-
 ### `problem`
 
 | Gap       | Seed                                                                          |

@@ -34,9 +34,6 @@ Partial order: `definition → terms → bounded_contexts → context_map`.
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and confirm material inferences. Domain
-term names stay in the language they were coined in — never translate them.
-
 ### `definition`
 
 | Gap       | Seed                                                                |

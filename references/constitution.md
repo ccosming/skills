@@ -166,7 +166,7 @@ returns its output verbatim, the caller parses it.
 
 | Helper | When |
 | --- | --- |
-| `/clarify` | An open user answer needs disambiguation before being recorded. |
+| `/clarify` | User-supplied material (the seed or an answer) carries a load-bearing term before a proposal or record commits to one reading of it. |
 | `/research` | The skill needs domain expertise it cannot infer from context. |
 | `/summarize` | Consolidate multi-source output (e.g., N `/research` results). |
 | `/audit` | Validate `.spec/` artifacts at closure of any writing workflow. |

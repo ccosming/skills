@@ -68,8 +68,8 @@ user's pitch usually states what they want to build before naming the pain.
 
 ## Question seeds per dimension
 
-The engine picks one seed based on the current gap. After every open answer, run
-`/clarify` and apply the probes from the skill body.
+The engine picks one seed based on the current gap; apply the probes from the
+skill body.
 
 ### `solution`
 

@@ -32,8 +32,6 @@ No strict order — all stack-agnostic identity.
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and surface inferences for confirmation.
-
 ### `principles`
 
 | Gap                                          | Seed                                                                                |

@@ -43,8 +43,6 @@ Partial order: `surfaces → principles → mental_model → interactions → qu
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and surface inferences for confirmation.
-
 ### `surfaces`
 
 | Gap                              | Seed                                                                                |

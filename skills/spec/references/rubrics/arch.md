@@ -37,8 +37,6 @@ Partial order:
 
 ## Question seeds per dimension
 
-After every open answer, run `/clarify` and surface inferences for confirmation.
-
 ### `style`
 
 | Gap                             | Seed                                                                                                   |

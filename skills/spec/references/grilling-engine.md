@@ -43,6 +43,14 @@ while not all required dimensions covered:
   next_dim  = available with lowest coverage
   gap       = identify the gap from the dimension's coverage criteria
   seed      = pick the seed for (next_dim, gap) from the rubric
+
+  # Disambiguate before interpreting. If the gap rests on a load-bearing term the
+  # user supplied (the initial seed or a prior answer) that carries competing
+  # readings, run /clarify on that term FIRST (per the constitution). Ground the
+  # proposal on the resolved reading, or expose the rival readings as the options.
+  # Never wait for an "open answer": a polysemous seed term ("pipeline", "system")
+  # is resolved before the proposal rests on one meaning.
+
   proposal  = the skill's expert default for this gap (persona craft; /research
               when its own knowledge is thin; or the orchestrator's seed for this
               dimension, if one was surfaced) — for any craftable gap
@@ -53,8 +61,8 @@ while not all required dimensions covered:
               rationale). Optionless prose only for divergent framing (Stance)
   answer    = ask the user
 
-  if open answer:
-    run /clarify (per the constitution)
+  if the answer is open text (a free reply or an AskUserQuestion "Other"):
+    run /clarify on it (per the constitution)
     apply the calling skill's probes (if it defines any)
     set depth from materiality (see Depth)
     if material: present 2-3 framings, or challenge a weak/contradictory answer
@@ -133,16 +141,20 @@ uncovered dimensions in the changelog row. On (c), stop and recommend `/grill`.
 
 ## /clarify invocation
 
-Per the constitution (_Invoking helpers and /audit_). For every open answer pass:
+Per the constitution (_Invoking helpers and /audit_). Run /clarify on any
+user-supplied material you are about to interpret — the initial seed, an open
+answer, a free-text adjustment — **before** a proposal or recorded fact commits to
+one reading of it. Never wait for an "open answer": a load-bearing term in the
+seed is disambiguated before the anchor is built on it. Pass:
 
-- `user_input`: the user's reply.
+- `user_input`: the term or reply being interpreted.
 - `domain_context`: `<artifact> grilling, dimension <name>`.
 - `prior_resolutions`: count of disambiguations already resolved this session.
 - `written_sections`: count of sections already written.
 
 If `NEEDS_DISAMBIGUATION` returns, present the spec's `question` via
-`AskUserQuestion` yourself, fold the resolution into the recorded answer, then
-proceed.
+`AskUserQuestion` yourself, fold the resolution into the proposal or recorded
+answer, then proceed.
 
 ## /research invocation
 
