@@ -22,6 +22,11 @@ build and why) — never substitute it. Open, optionless prose is only for genui
 divergent framing the user must author; everything craftable is led, not asked
 blank.
 
+Never carry a load-bearing **general** term forward by silently assuming its
+detail. Concretize it via a led proposal at the dimension that owns it, or leave
+it general **on purpose** because a downstream artifact owns the detail — but make
+the choice explicit; the silent assumption is the one thing the stance forbids.
+
 ## Seeds
 
 The orchestrator may surface **seeds** — starting hypotheses for a dimension,
@@ -44,12 +49,13 @@ while not all required dimensions covered:
   gap       = identify the gap from the dimension's coverage criteria
   seed      = pick the seed for (next_dim, gap) from the rubric
 
-  # Disambiguate before interpreting. If the gap rests on a load-bearing term the
-  # user supplied (the initial seed or a prior answer) that carries competing
-  # readings, run /clarify on that term FIRST (per the constitution). Ground the
-  # proposal on the resolved reading, or expose the rival readings as the options.
-  # Never wait for an "open answer": a polysemous seed term ("pipeline", "system")
-  # is resolved before the proposal rests on one meaning.
+  # Disambiguate before interpreting. If the gap rests on load-bearing terms the
+  # user supplied (the initial seed or a prior answer), loop /clarify over the
+  # material until it returns NO_POLYSEMY — one term per pass (dependencies between
+  # terms mean you resolve sequentially, re-reading after each). Ground the proposal
+  # on each resolved reading, or expose the rival readings as the options. Never
+  # wait for an "open answer": a polysemous seed term ("pipeline", "system") is
+  # resolved before the proposal rests on one meaning.
 
   proposal  = the skill's expert default for this gap (persona craft; /research
               when its own knowledge is thin; or the orchestrator's seed for this
