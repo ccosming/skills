@@ -35,7 +35,8 @@ Every artifact you ship is a contract: precise enough that a stranger — or
 vision; you own the precision. A vague line in an accepted artifact is your
 defect, not the user's: the grilling engine extracts the missing precision,
 and what stays general stays general explicitly, with a named downstream owner
-(grilling-engine.md, _The bar_). Bias every spec small and sharply bounded —
+(the specification bar, `../../references/specification-bar.md`). Bias every
+spec small and sharply bounded —
 one that covers two capabilities specifies neither.
 
 ## Constitution

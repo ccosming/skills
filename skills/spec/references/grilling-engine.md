@@ -31,37 +31,11 @@ blank.
 
 ## The bar — when a line is specified
 
-Every fact recorded as evidence and every value-bearing line written into an
-artifact passes four tests:
-
-1. **Decidable** — a stranger could check it pass/fail without asking the
-   author. "Search feels fast" fails; "results render in ≤200 ms at p95"
-   passes.
-2. **Bounded** — its scope is stated: which role, surface, subdomain, or case
-   it covers — and what it excludes.
-3. **Quantified or deferred** — every claim of degree carries a number, unit,
-   or named scale; the only legal way to stay general is an **explicit
-   deferral naming the downstream owner** ("directional here; threshold owned
-   by the PRD"). A silent assumption is never recorded.
-4. **Named** — actors and objects use the project's terms ("the editor
-   publishes a draft"), never placeholders ("the system handles users
-   properly").
-
-A line that fails a test is re-grilled with one focused question, or rewritten
-as an explicit deferral — at the dimension that owns it. The recurring
-offenders, all rewritten or deferred before they reach an artifact:
-
-| Category                          | Examples                                          |
-| --------------------------------- | ------------------------------------------------- |
-| Degree adjectives without a scale | fast, scalable, robust, simple, intuitive, seamless |
-| Open-ended catch-alls             | etc., and so on, as needed, properly, gracefully  |
-| Unanchored quantifiers            | some, several, many, most, various                |
-| Soft verbs in criteria            | handle, support, manage, ensure, deal with        |
-
-A category label with a fit criterion attached is legal ("reliability: a
-crashed run resumes without data loss"); the bare label is not. The bar works
-*with* each rubric's altitude rules, not against them: a charter line stays
-directional **via test 3's deferral**, never via a bare adjective.
+The four tests, the offender table, the scope, and the legal forms live in
+`../../../references/specification-bar.md` — binding here for every fact
+recorded as evidence and every value-bearing line written. A line that fails a
+test is re-grilled with one focused question, or rewritten as an explicit
+deferral — at the dimension that owns it.
 
 ## Provenance and the decision ledger
 

@@ -135,14 +135,16 @@ author cannot see.
 
 So after writing an artifact and **before** the Accept/Adjust gate, the writing
 skill runs the `/consistency` critic on it (forked, fresh-eyes). For each
-contradiction it returns, the skill **surfaces it to the user and resolves it
-co-creatively** — re-grilling the affected dimension, rewriting, re-checking. The
-skill is the feedback loop, not the user. A contradiction blocks the gate until
-resolved, or until the user explicitly overrides it.
+finding it returns — a cross-section contradiction, or a value-bearing line
+failing the specification bar (`references/specification-bar.md`) — the skill
+**surfaces it to the user and resolves it co-creatively** — re-grilling the
+affected dimension, rewriting, re-checking. The skill is the feedback loop, not
+the user. A finding blocks the gate until resolved, or until the user
+explicitly overrides it.
 
 This complements `/audit`, it does not replace it: `/audit` is structural
 (frontmatter, references, status), `/consistency` is semantic (do the sections
-agree). Both run at closure.
+agree; are the lines specified). Both run at closure.
 
 ## Confirming artifacts
 
@@ -170,7 +172,7 @@ returns its output verbatim, the caller parses it.
 | `/research` | The skill needs domain expertise it cannot infer from context. |
 | `/summarize` | Consolidate multi-source output (e.g., N `/research` results). |
 | `/audit` | Validate `.spec/` artifacts at closure of any writing workflow. |
-| `/consistency` | Check an artifact's sections for contradictions before the Accept/Adjust gate. |
+| `/consistency` | Check an artifact for cross-section contradictions and specification-bar failures before the Accept/Adjust gate. |
 
 After any workflow that creates or modifies files under `.spec/`, invoke `/audit`
 with `target_paths` (comma-separated list of every file touched), `caller_skill`,
