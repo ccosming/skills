@@ -26,22 +26,28 @@ it under a shared set of rules (the _constitution_).
 
 Two entry points (_doors_) drive the work:
 
-- **`/spec`** — the only door that creates or evolves `.spec/` artifacts. It
-  bootstraps a new project and routes each request (charter, guidelines, stack,
-  domain, arch, ux, PRD, change request…) to the skill that owns it.
+- **`/spec`** — the only door that creates or evolves `.spec/` artifacts. It reads
+  the flow program (`references/workflow.md`) and runs each artifact (config,
+  charter, guidelines, personality, stack, domain, arch, ux, PRD, change…) through
+  **one universal authoring procedure** against the artifact's rubric; it
+  bootstraps, sequences, fans a PRD out into FEATs + ADRs, and cascades changes.
 - **`/code`** — implements a `ready` FEAT, running its build⇄review loop
   internally.
 
-Every other skill is a **delegate**, invoked by a door or by another skill; it
-does its job, reports in its own voice, and returns. Sequencing belongs to the
-door — delegates never tell you to run the next command. (A third door, `/issue`
-for symptom triage, is defined in the constitution but not yet implemented.)
+The authoring artifacts are **not** skills — each is a **rubric bundle** under
+`skills/spec/references/rubrics/` that `/spec` runs inline. The skills that remain
+are the two doors plus a handful of forked, single-purpose delegates: the critics
+(`/audit`, `/consistency`, `/detector`), the helpers (`/clarify`, `/research`,
+`/summarize`), the reviewer (`/challenge`), and the standalone `/grill`. A delegate
+does its job, reports, and returns — sequencing belongs to the door. (A third door,
+`/issue` for symptom triage, is defined in the constitution but not yet
+implemented.)
 
-Most artifact skills share a **grilling engine**: a dimension-coverage loop
-driven by a per-skill `references/rubric.md`. It scales depth by materiality
-(challenging contested, irreversible, or high-blast-radius decisions; confirming
-trivial ones), records stance-changing user interventions in an
-`## Interaction notes` section, and ends with a mandatory `Accept` / `Adjust`
+`/spec` authors every artifact through a shared **grilling engine**: a
+dimension-coverage loop run against the artifact's rubric bundle. It scales depth
+by materiality (challenging contested, irreversible, or high-blast-radius
+decisions; confirming trivial ones), records stance-changing user interventions in
+an `## Interaction notes` section, and ends with a mandatory `Accept` / `Adjust`
 gate — nothing advances until you accept the artifact.
 
 ### Workflow
@@ -49,80 +55,61 @@ gate — nothing advances until you accept the artifact.
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
-    Setup["/setup<br/>→ config.yaml"]
-    Found["/charter · /guidelines · /personality<br/>→ foundation files"]
-    Arch["/arch (optional)<br/>→ arch.md + ADRs"]
-    UX["/ux (optional)<br/>→ ux.md + ADRs"]
-    Domain["/domain (optional)<br/>→ domain.md"]
-    Stack["/stack<br/>→ stack.md"]
-    Grill["/grill (standalone)<br/>→ grill notes"]
-    PRD["/prd<br/>→ PRD + ADRs + FEATs"]
-    Code["/code<br/>implement FEAT"]
-    StackDel["/stack delegated<br/>repo-level changes"]
-    Challenge["/challenge<br/>→ REV with findings"]
-    PR["/pr<br/>change request"]
+    subgraph Spec["/spec — single door · runs each artifact's rubric"]
+        Config["config.yaml"]
+        Found["charter · guidelines · personality<br/>(foundation)"]
+        Opt["stack · domain · arch · ux<br/>(optional)"]
+        PRD["PRD → ADRs + FEATs"]
+        Config --> Found --> Opt --> PRD
+    end
+    Code["/code<br/>implement a ready FEAT"]
+    Challenge["/challenge<br/>review → REV"]
+    Change["change flow · cascade<br/>→ PR-NNN"]
 
-    Setup --> Found
-    Found --> Arch
-    Found --> UX
-    Found --> Stack
-    Arch --> Stack
-    Found -.-> Domain
-    Stack --> PRD
-    Grill -.-> PRD
-    Domain -.-> PRD
     PRD --> Code
-    Code -.->|stack-touching block| StackDel
-    StackDel -.-> Code
+    Code -.->|stack-touching block| Spec
     Code --> Challenge
     Challenge -.->|iterate up to 3| Code
-    PRD -.->|change on existing spec| PR
+    Spec -.->|change on existing spec| Change
+    Change -.-> Spec
 ```
 
 ### Skill index
 
 **Doors**
 
-- `/spec` — single door to `.spec/`; bootstraps and routes to the owning skill
-- `/code` — implement a FEAT (delegates stack-touching blocks to `/stack`,
-  invokes `/challenge` after implementation)
+- `/spec` — single door to `.spec/`. Reads the flow program (`workflow.md`) and
+  runs each artifact's rubric through one universal authoring procedure;
+  bootstraps, sequences, fans out, and cascades
+- `/code` — implement a `ready` FEAT (delegates stack-touching blocks back to
+  `/spec`, invokes `/challenge` after implementation)
 
-**Foundation** (bootstrap, in order)
+**Artifacts `/spec` authors** (rubric bundles in `skills/spec/references/rubrics/`,
+not skills)
 
-- `/setup` — write `config.yaml` (language preferences); first bootstrap step
-- `/charter` — project source of truth → `charter.md`
-- `/guidelines` — transversal engineering conventions → `guidelines.md`
-- `/personality` — agent persona `/code` embodies → `personality.md`
+- config → `config.yaml` (languages; the Config bootstrap step)
+- charter · guidelines · personality → the foundation, in order
+- stack · domain · arch · ux → optional design artifacts (domain also resolves
+  inline when a PRD introduces a term)
+- PRD → PRD + derived ADRs + FEATs (fan-out)
+- change → cascade over an existing spec, recorded as a `PR-NNN`
 
-**Design & structure** (optional artifacts, except stack)
+**Critics** (forked, read-only; run by `/spec` at each gate; not user-invocable)
 
-- `/stack` — repository stack, monorepo, devtools, folder structure → `stack.md`
-- `/arch` — technical architecture across C4 levels (monochrome Mermaid
-  flowcharts) + ADRs → `arch.md`
-- `/ux` — surface-agnostic experience (interaction loops + testable qualities) +
-  ADRs → `ux.md`
-- `/domain` — ubiquitous language (terms, bounded contexts, context map) →
-  `domain.md`. Also runs in delegated mode (inline) when `/prd` detects a term.
+- `/audit` — structural invariants over `.spec/` artifacts
+- `/consistency` — semantic critic: cross-section contradictions before the gate
+- `/detector` — cross-artifact captures, deposited by `/spec` into `state.yaml`
 
-**Capability & change**
+**Helpers** (forked, single-shot; not user-invocable)
 
-- `/prd` — define a new capability → PRD + derived ADRs + FEATs
-- `/pr` — change request over an existing PRD (cascade analysis, locked on
-  close)
-- `/challenge` — review an implemented FEAT → REV with classified findings; runs
-  up to 3 remediation cycles with `/code`
-
-**Helpers** (read-only or single-shot; `context: fork` — invoked directly with
-`Skill(...)`, run isolated, return their result; not user-invocable)
-
-- `/audit` — validate `.spec/` artifacts against the invariants (structural);
-  runs at the closure of every skill that writes to `.spec/`
-- `/consistency` — semantic critic; reads an assembled artifact cold and reports
-  cross-section contradictions before the confirmation gate (complements
-  `/audit`)
 - `/clarify` — disambiguate the single most load-bearing polysemic term
 - `/research` — single-perspective domain research
 - `/summarize` — multi-source consolidation
+
+**Review**
+
+- `/challenge` — review an implemented FEAT → REV with classified findings; runs
+  up to 3 remediation cycles with `/code`
 
 **Standalone**
 
@@ -167,20 +154,20 @@ title — the code lives in `id` and the filename, never a `title:` field.
 
 | Artifact         | Path                               | Description                                                                                                                                                   | Skills that use it                                                |
 | ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `setup` (creates), all skills (read via injected foundation)      |
+| **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `/spec` (Config step), all skills (read via foundation)      |
 | **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost-and-time ledger per artifact/skill/session. Written by the metrics hook (`Stop`/`UserPromptSubmit`/`PostToolUse`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
-| **Charter**      | `.spec/charter.md`                 | Project source of truth: problem, solution, domain, users, functional & non-functional requirements, success metrics, scope, constraints.                               | `charter` (creates), all downstream skills (read)                 |
-| **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `guidelines` (creates), all downstream skills (read)              |
-| **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `personality` (creates), `code` (read)                            |
-| **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                                              | `stack` (writes), `code`/`prd`/`challenge`/`pr` (read)            |
-| **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                                         | `domain` (writes), `prd`/`code`/`stack` (read if exists)          |
-| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (monochrome flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.                          | `arch` (writes), `stack`/`code`/`pr` (read if exists)             |
-| **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                                                      | `ux` (writes), `prd`/`code`/`pr` (read if exists)                 |
-| **PRD**          | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope, criteria).                                                                                         | `prd` (creates), `code`/`challenge`/`pr` (read)                   |
-| **ADR**          | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with a real trade-off (reduced Nygard format).                                                                                             | `prd`/`arch`/`stack` (create), `code`/`pr` (read)                 |
-| **FEAT**         | `.spec/feats/FEAT-NNN-{slug}.md`   | Implementable unit (scope, rules, criteria, plan, dependencies).                                                                                              | `prd` (creates), `code` (writes plan/status), `challenge` (reads) |
+| **Charter**      | `.spec/charter.md`                 | Project source of truth: problem, solution, domain, users, functional & non-functional requirements, success metrics, scope, constraints.                               | `/spec` (charter rubric), `/code` + downstream (read)                 |
+| **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `/spec` (guidelines rubric), downstream (read)              |
+| **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `/spec` (personality rubric), `/code` (read)                            |
+| **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                                              | `/spec` (stack rubric + sync), `/code` (read)            |
+| **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                                         | `/spec` (domain rubric), downstream (read if exists)          |
+| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (monochrome flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.                          | `/spec` (arch rubric), downstream (read if exists)             |
+| **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                                                      | `/spec` (ux rubric), downstream (read if exists)                 |
+| **PRD**          | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope, criteria).                                                                                         | `/spec` (prd rubric), `/code` + `/challenge` (read)                   |
+| **ADR**          | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with a real trade-off (reduced Nygard format).                                                                                             | `/spec` (adr rubric, fan-out), `/code` (read)                 |
+| **FEAT**         | `.spec/feats/FEAT-NNN-{slug}.md`   | Implementable unit (scope, rules, criteria, plan, dependencies).                                                                                              | `/spec` (feat rubric), `/code` (writes plan/status), `/challenge` (reads) |
 | **REV**          | `.spec/reviews/REV-NNN-{slug}.md`  | Code review with classified findings (blocker/major/minor/nit) and iterations.                                                                                | `challenge` (writes), `code` (reads in review mode)               |
-| **PR**           | `.spec/prs/PR-NNN-{slug}.md`       | Immutable change request (`locked`) with cascade analysis.                                                                                                    | `pr` (writes)                                                     |
+| **PR**           | `.spec/prs/PR-NNN-{slug}.md`       | Immutable change request (`locked`) with cascade analysis.                                                                                                    | `/spec` (change flow, writes)                                                     |
 | **GRILL**        | `.spec/grills/GRILL-NNN-{slug}.md` | Standalone interview notes (discovery/technical/full).                                                                                                        | `grill` (writes)                                                  |
 
 ## Conventions
@@ -226,7 +213,7 @@ Skills read `.spec/config.yaml` and apply:
 - **Neutral register always** — no regional idioms; Spanish uses
   `tú`/impersonal, never voseo.
 
-Supported languages: `en`, `es`. `/setup` recommends the detected system
+Supported languages: `en`, `es`. `/spec` recommends the detected system
 language.
 
 ### Markdown & diagrams
@@ -266,8 +253,9 @@ a user intervention shaped the artifact.
 ```text
 .claude-plugin/      Plugin + marketplace manifests
 hooks/               Session/format/metrics hooks (Python) + hooks.json
-references/          constitution.md · grilling-engine.md · diagrams.md
+references/          constitution.md · artifact-model.md · diagrams.md
 skills/<name>/       One folder per skill: SKILL.md (+ references/, scripts/)
+skills/spec/references/  workflow.md (flow program) · grilling-engine.md · rubrics/
 ```
 
 See [CLAUDE.md](CLAUDE.md) for the maintainer guide (skill authoring
