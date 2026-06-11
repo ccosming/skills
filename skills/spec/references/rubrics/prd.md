@@ -7,8 +7,27 @@ harness and software architecture. Turn a fuzzy intent into a coherent set of
 PRD + ADRs + FEATs ready to implement. (The fan-out to FEATs/ADRs and domain
 alignment: see `workflow.md` → _Fan-out_ and _Procedural orchestration → Domain_.)
 
+## Probes
+
+Apply after every open answer:
+
+1. **Goal behind the ask** — a request stated as a task ("add a button") names
+   the outcome it serves before it is specced: what becomes possible or cheaper?
+2. **Decidable criteria** — every acceptance criterion is pass/fail by a
+   stranger; rewrite soft verbs (handle, support, work) as observable behavior
+   with a threshold.
+3. **Quantified outcome** — a metric carries baseline, target, measurement
+   window, and the source the number is read from.
+4. **Scope by exclusion** — the Out list names adjacent capabilities explicitly;
+   "everything else" is not a boundary.
+5. **Altitude** — implementation detail (schema, endpoint, widget) defers to the
+   FEAT breakdown.
+
 ## Invariants
 
+- One PRD = one capability. When grilling reveals a second, stop and split:
+  `AskUserQuestion` which to spec now; park the other as a capture for its own
+  PRD.
 - Never renumber an existing ID; never touch `locked` or `in-progress` files.
 - Each write adds a changelog row with the **why**; SemVer per change.
 - If the capability conflicts with an existing PRD, stop and suggest the change
@@ -34,10 +53,10 @@ Partial order:
 | --------------------- | -------------- | -------------------------------------------------------------------- |
 | `problem`             | —              | concrete present-day pain stated, with no solution baked in          |
 | `users`               | problem        | affected roles/personas named, each with its stake                   |
-| `outcome`             | problem        | observable goals stated + at least one metric with baseline + target |
+| `outcome`             | problem        | observable goals stated + ≥1 metric with baseline, target, and measurement window |
 | `scope`               | outcome        | In / Out boundaries drawn; adjacent capabilities excluded explicitly |
 | `hypotheses_risks`    | scope          | key assumptions surfaced + each material risk paired with mitigation |
-| `acceptance_criteria` | outcome, scope | testable pass/fail conditions enumerated                             |
+| `acceptance_criteria` | outcome, scope | pass/fail conditions enumerated, each with trigger, observable, and threshold |
 
 ## Question seeds per dimension
 
@@ -88,7 +107,7 @@ Partial order:
 | Proposes a technical solution or tool     | Park it; technical decisions are derived after the capability, not grilled here |
 | Names a domain entity or coins a term     | Align it via `domain` (delegated); do not redefine it                          |
 | Describes implementation detail of a unit | Defer to the FEAT breakdown; keep the PRD at capability level                   |
-| Conflates two or more capabilities        | Flag for a possible split into separate PRDs before writing                     |
+| Conflates two or more capabilities        | Stop and split per the one-capability invariant                                 |
 
 ## Template
 

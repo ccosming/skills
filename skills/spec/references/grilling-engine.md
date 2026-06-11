@@ -5,6 +5,13 @@ A dimension-coverage loop run by `/spec` (the universal authoring procedure in
 dimensions + coverage criteria + question seeds + branching cues + template).
 This engine consumes the bundle; it never invents sections.
 
+The engine's product is a contract: an artifact precise enough that a stranger
+— or `/code` — acts on it without asking its author anything. Precision is the
+engine's job, not the user's: when the user arrives vague, the loop extracts
+the missing precision dimension by dimension, and what stays general stays
+general explicitly, with a named downstream owner. Every recorded fact and
+every written line clears _The bar_ below.
+
 ## Stance — lead, don't interrogate
 
 The calling skill is a **domain expert** (its persona), not a pollster. Grilling
@@ -22,10 +29,56 @@ build and why) — never substitute it. Open, optionless prose is only for genui
 divergent framing the user must author; everything craftable is led, not asked
 blank.
 
-Never carry a load-bearing **general** term forward by silently assuming its
-detail. Concretize it via a led proposal at the dimension that owns it, or leave
-it general **on purpose** because a downstream artifact owns the detail — but make
-the choice explicit; the silent assumption is the one thing the stance forbids.
+## The bar — when a line is specified
+
+Every fact recorded as evidence and every value-bearing line written into an
+artifact passes four tests:
+
+1. **Decidable** — a stranger could check it pass/fail without asking the
+   author. "Search feels fast" fails; "results render in ≤200 ms at p95"
+   passes.
+2. **Bounded** — its scope is stated: which role, surface, subdomain, or case
+   it covers — and what it excludes.
+3. **Quantified or deferred** — every claim of degree carries a number, unit,
+   or named scale; the only legal way to stay general is an **explicit
+   deferral naming the downstream owner** ("directional here; threshold owned
+   by the PRD"). A silent assumption is never recorded.
+4. **Named** — actors and objects use the project's terms ("the editor
+   publishes a draft"), never placeholders ("the system handles users
+   properly").
+
+A line that fails a test is re-grilled with one focused question, or rewritten
+as an explicit deferral — at the dimension that owns it. The recurring
+offenders, all rewritten or deferred before they reach an artifact:
+
+| Category                          | Examples                                          |
+| --------------------------------- | ------------------------------------------------- |
+| Degree adjectives without a scale | fast, scalable, robust, simple, intuitive, seamless |
+| Open-ended catch-alls             | etc., and so on, as needed, properly, gracefully  |
+| Unanchored quantifiers            | some, several, many, most, various                |
+| Soft verbs in criteria            | handle, support, manage, ensure, deal with        |
+
+A category label with a fit criterion attached is legal ("reliability: a
+crashed run resumes without data loss"); the bare label is not. The bar works
+*with* each rubric's altitude rules, not against them: a charter line stays
+directional **via test 3's deferral**, never via a bare adjective.
+
+## Provenance and the decision ledger
+
+Every recorded fact carries exactly one provenance tag:
+
+| Tag         | Meaning                                                        |
+| ----------- | -------------------------------------------------------------- |
+| `stated`    | The user said it.                                              |
+| `confirmed` | An inference the user explicitly accepted.                     |
+| `default`   | A recommended proposal accepted as-is.                         |
+| `deferred`  | Left general on purpose; the owning downstream artifact named. |
+
+The **decision ledger** is the per-dimension roll-up handed to the confirmation
+gate: one line per dimension — the decision and its tag. `confirmed` and
+`default` lines are called out at the gate for the user to veto. A fact that
+fits no tag was never gated: gate it (`AskUserQuestion`) before the ledger
+closes.
 
 ## Seeds
 
@@ -45,17 +98,16 @@ evidence = {}
 
 while not all required dimensions covered:
   available = dimensions whose deps are satisfied
-  next_dim  = available with lowest coverage
+  next_dim  = available with lowest coverage; ties resolve in the rubric's
+              table order
   gap       = identify the gap from the dimension's coverage criteria
-  seed      = pick the seed for (next_dim, gap) from the rubric
+  seed      = the rubric's seed for (next_dim, gap), verbatim or minimally
+              adapted; improvise only when no seed matches the gap
 
-  # Disambiguate before interpreting. If the gap rests on load-bearing terms the
-  # user supplied (the initial seed or a prior answer), loop /clarify over the
-  # material until it returns NO_POLYSEMY — one term per pass (dependencies between
-  # terms mean you resolve sequentially, re-reading after each). Ground the proposal
-  # on each resolved reading, or expose the rival readings as the options. Never
-  # wait for an "open answer": a polysemous seed term ("pipeline", "system") is
-  # resolved before the proposal rests on one meaning.
+  # Disambiguate before interpreting: loop /clarify over the user-supplied
+  # material this gap rests on until NO_POLYSEMY (see /clarify invocation);
+  # ground the proposal on each resolved reading, or expose the rival readings
+  # as the options.
 
   proposal  = the skill's expert default for this gap (persona craft; /research
               when its own knowledge is thin; or the orchestrator's seed for this
@@ -75,15 +127,22 @@ while not all required dimensions covered:
     gate every material inference/proposal via AskUserQuestion (Accept / Adjust),
     not an open prose "confirm?"
 
-  evidence[next_dim] += extracted facts
+  evidence[next_dim] += extracted facts, each tagged with its provenance —
+    stated | confirmed | default | deferred (see Provenance). Gate an untagged
+    inference via AskUserQuestion before recording it.
+  a dimension closes when its coverage criteria hold AND its facts clear The bar
   detect branching
   detect unreadiness
 
-write the artifact from the template, recording stance-changing interventions
-  in its ## Interaction notes (per the constitution)
+draft the artifact from the template
+scan the draft against The bar: re-grill (one focused question) or rewrite as
+  an explicit deferral every line that fails; write only at zero failures
+write the artifact, recording stance-changing interventions in its
+  ## Interaction notes (per the constitution)
 run the consistency pass (mandatory — see Consistency); resolve every
   contradiction with the user before the gate
-run the confirmation gate (mandatory — see Confirmation)
+hand the decision ledger to the confirmation gate (the orchestrator's step —
+  workflow.md; constitution _Confirming artifacts_)
 ```
 
 ## Depth (adaptive)
@@ -193,4 +252,4 @@ only feeds them. What is yours here:
 ## On Adjust
 
 When the gate returns **Adjust**, ask which dimension, re-run the loop narrowed to
-that one only, and rewrite — then hand back to the gate.
+that one only, rewrite, and refresh the ledger — then hand back to the gate.

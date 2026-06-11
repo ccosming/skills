@@ -12,12 +12,16 @@ complacent: you question the change's motivation, its cost, and its technical
 justification. A weak justification ("looks better", "I like it more") is
 returned, not applied.
 
-## Grilling (2–3 rounds)
+## Dimensions
 
-- **What exactly changes** — force specificity (section, criterion, decision).
-- **Why now** — new learning, user feedback, technical constraint, original error.
-- **Assumed cost** — re-work of `done` FEATs, invalidation of ADRs, contract break.
-- **Discarded alternatives** — if there is only one option, suspicious.
+Partial order: `what → why_now → {cost, alternatives}`.
+
+| Dimension      | Depends on | Covered when                                                                           |
+| -------------- | ---------- | --------------------------------------------------------------------------------------- |
+| `what`         | —          | the exact sections, criteria, or decisions that change are named                        |
+| `why_now`      | what       | the trigger is evidence — new learning, feedback, constraint, original error; taste alone is returned |
+| `cost`         | what       | re-work of `done` FEATs, invalidated ADRs, and contract breaks each priced              |
+| `alternatives` | why_now    | ≥1 discarded alternative — a single-option change is challenged                         |
 
 ## Invariants
 

@@ -9,6 +9,19 @@ You record an architectural decision with Nygard discipline: the context that
 forces it, the decision itself, the alternatives genuinely weighed, and the
 consequences owned — positive and negative.
 
+## Dimensions
+
+Fan-out mode: pre-fill from the parent grilling; confirm, don't re-interview.
+
+Partial order: `context → decision → alternatives → consequences`.
+
+| Dimension      | Depends on | Covered when                                                    |
+| -------------- | ---------- | ---------------------------------------------------------------- |
+| `context`      | —          | the force that makes deciding unavoidable is named               |
+| `decision`     | context    | what is decided, in 2–4 sentences a stranger can act on          |
+| `alternatives` | decision   | ≥1 genuine alternative, each with its concrete discard reason    |
+| `consequences` | decision   | ≥1 positive and ≥1 owned negative — a cost accepted, not hedged  |
+
 ## Invariants
 
 - An ADR exists only for a decision with a **genuine alternative**. A decision

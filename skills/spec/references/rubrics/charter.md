@@ -13,14 +13,17 @@ steer, not a questionnaire they fill from scratch.
 
 Apply after every open answer:
 
-1. **Verb-first** — if the answer names only an object, ask for the verb.
-2. **Two-sided** — if it covers only one side of value flow, ask for the other.
-3. **Vision vs feature** — if it reads as a feature list, ask for the end-to-end
+1. **Goal behind the ask** — if the pitch arrives as a solution or a task list,
+   extract the goal it serves before specifying it: what becomes possible,
+   cheaper, or safer once this exists? That goal, named, is the Problem's pain.
+2. **Verb-first** — if the answer names only an object, ask for the verb.
+3. **Two-sided** — if it covers only one side of value flow, ask for the other.
+4. **Vision vs feature** — if it reads as a feature list, ask for the end-to-end
    purpose.
-4. **Observable** — if a success signal is an aspirational adjective, ask what
+5. **Observable** — if a success signal is an aspirational adjective, ask what
    observable behavior it maps to and its direction; the precise unit and window
    are defined later, in the PRD.
-5. **Altitude** — if a functional answer carries acceptance criteria, or a quality
+6. **Altitude** — if a functional answer carries acceptance criteria, or a quality
    answer carries a precise threshold, it is PRD-level; keep the artifact at
    capability/directional altitude and defer the detail downstream.
 

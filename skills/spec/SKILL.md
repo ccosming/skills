@@ -28,6 +28,16 @@ and you dispatch the operations that are their own skill (`/code`, the critics).
 A change to an existing PRD runs as the cascade — the `change` rubric, not a
 separate skill.
 
+## Mission
+
+Every artifact you ship is a contract: precise enough that a stranger — or
+`/code` — acts on it without asking its author anything. The user owns the
+vision; you own the precision. A vague line in an accepted artifact is your
+defect, not the user's: the grilling engine extracts the missing precision,
+and what stays general stays general explicitly, with a named downstream owner
+(grilling-engine.md, _The bar_). Bias every spec small and sharply bounded —
+one that covers two capabilities specifies neither.
+
 ## Constitution
 
 Operate under the constitution injected at session start — voice, localization,
@@ -71,32 +81,16 @@ started" line.
 ## Bootstrap
 
 When the project is not bootstrapped and the user wants to start, execute the
-**bootstrap sequence** defined in workflow.md, gating between stages: continue
-only after the user **accepts** the current artifact. Drive it **silently** — no
-"next stage" announcement, no naming the sequence; the next stage's first
-question is the transition. Skip any stage whose file already exists; resume at
-the first gap.
+**bootstrap sequence** exactly as workflow.md defines it — its gating, silent
+transitions, and skip/resume rules included.
 
 ## Reactivity (the buffer)
 
-Cross-artifact material flows through `.spec/state.yaml` — its contract and the
-triggers are defined in workflow.md. Run this around every authoring dispatch:
-
-1. **Inject seeds (before dispatch).** Read `state.yaml` for `pending` captures
-   `for:` the target and surface them to the authoring as starting hypotheses —
-   the grilling engine consumes them as defaults to confirm, not blanks to ask.
-2. **Detect + deposit (after the gate).** Once the artifact is accepted, invoke
-   `/detector` (forked) over the artifact; it returns the cross-artifact
-   `captures`. **You then Write them to `.spec/state.yaml` yourself** (create the
-   file if absent, append entries if it exists), each as a `pending` entry (`for`,
-   `from`, `kind`, `seed`, `status`). The deposit is a file you write — never end
-   the turn with the captures only displayed. Mark any seed consumed this pass as
-   `consumed`.
-3. **Authority.** The artifact always wins; `state.yaml` is a courier, never a
-   source of truth. Drop any entry that would contradict an accepted artifact.
-
-Create `.spec/state.yaml` on first deposit. Keep it to what `ls` cannot tell you —
-`in_flight`, `next_suggested`, and the pending `captures`.
+Cross-artifact material flows through `.spec/state.yaml` — its contract, the
+triggers, and the seed/deposit mechanics are workflow.md's (universal procedure
+steps 4 and 9; _state.yaml — runtime memory_). The division of labor: the
+universal procedure authors artifacts; **you** perform every `state.yaml` write
+yourself.
 
 ## Disambiguate
 
@@ -106,12 +100,9 @@ it owns, per the registry). Route the answer back through _Resolve and run_.
 
 ## Invariant rules
 
-- The flow rules live in `references/workflow.md`. You execute them; you never
-  duplicate or improvise them here.
 - You never author a `.spec/` *artifact* by hand — the universal procedure (or
   the owning skill) writes those. You **do** maintain `.spec/state.yaml`, the
   runtime memory.
 - One request resolves to one target. If a request spans several, run the first
   and let its completion return here for the next.
 - Never run a downstream target on an unbootstrapped project. Bootstrap first.
-- When you cannot infer the target with confidence, disambiguate — do not guess.

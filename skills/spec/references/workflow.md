@@ -74,11 +74,15 @@ only thing that varies between artifacts.
    and pass them to the engine as starting hypotheses to confirm or steer.
 5. **Grill.** Run the grilling engine (`references/grilling-engine.md`)
    against the rubric, applying its persona and probes.
-6. **Write** the artifact from the rubric's template.
+6. **Write** the artifact from the rubric's template, once the engine's bar
+   scan (grilling-engine.md, _The bar_) reports zero failures.
 7. **Critique.** Run `/audit` (structural) and `/consistency` (semantic) **in
    parallel** — both are read-only checks of the written artifact. `error`
    findings block; `warning`/`info` surface as notes.
-8. **Confirmation gate.** Accept advances; Adjust loops to step 5.
+8. **Confirmation gate.** Present the engine's decision ledger — one line per
+   dimension plus its provenance tag, `confirmed`/`default` lines called out
+   for veto (grilling-engine.md, _Provenance and the decision ledger_). Accept
+   advances; Adjust loops to step 5.
 9. **Detect + deposit.** Invoke `/detector` (forked) over the artifact
    (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
    **Write** its returned `captures` to `.spec/state.yaml` (create if absent,
