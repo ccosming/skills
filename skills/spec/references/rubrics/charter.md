@@ -211,9 +211,10 @@ justifies building this. Omit only if there is genuinely no prior way.>
 
 ## Solution
 
-<One paragraph, max 2 sentences. Shape: [System name] [verb phrase] [object]
-[purpose]. The end-to-end answer to the Problem — not a feature list. Example:
-"Hub captures research and notes as raw material and transforms them into
+<One paragraph, max 2 sentences. Shape: [the name the user gave, else "the
+system"] [verb phrase] [object] [purpose]. The end-to-end answer to the Problem
+— not a feature list (naming: constitution, _Data boundary_). Example: "The
+system captures research and notes as raw material and transforms them into
 editorial content distributed across channels.">
 
 ## Domain

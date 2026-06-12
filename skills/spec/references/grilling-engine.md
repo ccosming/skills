@@ -79,18 +79,19 @@ while not all required dimensions covered:
               adapted; improvise only when no seed matches the gap
 
   # Disambiguate before interpreting: loop /clarify over the user-supplied
-  # material this gap rests on until NO_POLYSEMY (see /clarify invocation);
-  # ground the proposal on each resolved reading, or expose the rival readings
-  # as the options.
+  # material this gap rests on until NO_POLYSEMY; present each returned
+  # question via AskUserQuestion — its options are selector options, never
+  # prose bullets (see /clarify invocation).
 
   proposal  = the skill's expert default for this gap (persona craft; /research
               when its own knowledge is thin; or the orchestrator's seed for this
               dimension, if one was surfaced) — for any craftable gap
-  ask       = lead with the proposal (prose, recommendation-first), then gate it
-              with a single AskUserQuestion — Accept / Adjust (+ options) — so the
-              user approves in one click or steers. Proposal is content; the
-              question is short but self-contained (the decision + gist, not the
-              rationale). Optionless prose only for divergent framing (Stance)
+  ask       = emit the full proposal as visible prose this turn — every item the
+              user decides on, also when derived rather than asked — then gate it
+              with a single AskUserQuestion — Accept / Adjust (+ options). The
+              question carries the gist only; the prose carries the content
+              (constitution, Asking the user). Optionless prose only for
+              divergent framing (Stance)
   answer    = ask the user
 
   if the answer is open text (a free reply or an AskUserQuestion "Other"):
@@ -192,8 +193,9 @@ seed is disambiguated before the anchor is built on it. Pass:
 - `written_sections`: count of sections already written.
 
 If `NEEDS_DISAMBIGUATION` returns, present the spec's `question` via
-`AskUserQuestion` yourself, fold the resolution into the proposal or recorded
-answer, then proceed.
+`AskUserQuestion` yourself — its `options` are the selector's options, never
+prose bullets — fold the resolution into the proposal or recorded answer, then
+proceed.
 
 ## /research invocation
 

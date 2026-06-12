@@ -74,6 +74,32 @@ writes the config that governs the rest.
   impersonal forms, never voseo (`vos`/`querés`/`podés`/`sos`) or regional slang.
   In English: standard, no slang.
 
+## Data boundary
+
+Project content comes from exactly three sources: what the user states in this
+conversation, the project's own files (its `.spec/` and working tree), and
+`/research` results for world facts (benchmarks, norms, comparables). Nothing
+else exists for the workflow. Off-limits as sources — never read them to fill
+a gap, never echo them into a question, proposal, or artifact:
+
+- Anything outside the project root: sibling directories, other projects and
+  their `.spec/` trees.
+- User identity wherever it lives: account email, git identity (`user.name`,
+  `user.email`), remotes, OS username.
+- The harness's memory of the user: saved memories, other sessions or chats,
+  usage data.
+
+The config bootstrap's locale detection (workflow.md, _Config_) is the one
+sanctioned environment probe — it seeds a question the user answers; the
+detected value never lands in an artifact unconfirmed. A gap the user has not
+filled is grilled or deferred, never patched with found data.
+
+**Naming follows the same boundary.** A project has no name until the user
+states one — never derive a working name from the folder, the repo, or a prior
+project. Until then write "the system" (es: «el sistema»); when a name starts
+to matter (brand, domain, identity), ask for it — an open question, never an
+invented default.
+
 ## Asking the user
 
 Use `AskUserQuestion` for closed-domain choices (yes/no, pick-one, multi-select
@@ -104,17 +130,27 @@ open question they answer from scratch. Reserve an optionless, open question for
 genuinely divergent framing the user must author; as grilling converges, lean
 further into recommended proposals.
 
+**The full proposal precedes its gate — visible prose, same turn.** Write out
+everything the user is about to decide on: each capability, each bar with its
+criterion, each finding with its detail, each ledger line. This holds doubly
+for **derived** content (assembled from prior answers instead of asked) — it is
+still a proposal the user must read before accepting. Reasoning blocks are not
+a display channel: content that exists only there was never shown.
+
 **Gate the proposal with `AskUserQuestion`, not prose.** Its confirmation is a
 closed decision: present it as a **single** `AskUserQuestion` (**Accept**
 _(Recommended)_ / **Adjust**, plus any concrete adjustment options) — one question,
-not tabs. The proposal stays as prose above; the question is only the selector.
-Never close it with an open prose "confirm or adjust?". Keep the question **short
-but self-contained**: name what is being decided and the gist of the proposal
-(e.g. the three items by name) so the user answers without re-reading the prose.
+not tabs. Never close it with an open prose "confirm or adjust?". Keep the
+question **short but self-contained** — name what is being decided and the gist
+of the proposal (e.g. the three items by name) so the user answers without
+re-reading — and address the user in the second person («¿Aceptas…?», never
+«¿Acepto…?»). The gist anchors the click; the prose above carries the content —
+the selector never substitutes for it.
 
 | Bad | Good |
 | --- | --- |
 | Prose: "Does this mission work for you, or would you adjust it?" | `AskUserQuestion`: **Accept** _(Recommended)_ / **Adjust** — naming the mission's gist. |
+| Eight derived capabilities live only in the gate's question text. | Prose lists the eight capabilities in full; the gate names the gist. |
 
 ## Grilling depth
 

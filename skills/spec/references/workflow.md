@@ -79,10 +79,11 @@ only thing that varies between artifacts.
 7. **Critique.** Run `/audit` (structural) and `/consistency` (semantic) **in
    parallel** — both are read-only checks of the written artifact. `error`
    findings block; `warning`/`info` surface as notes.
-8. **Confirmation gate.** Present the engine's decision ledger — one line per
-   dimension plus its provenance tag, `confirmed`/`default` lines called out
-   for veto (grilling-engine.md, _Provenance and the decision ledger_). Accept
-   advances; Adjust loops to step 5.
+8. **Confirmation gate.** Present the engine's decision ledger **as visible
+   prose before the selector** — one line per dimension plus its provenance
+   tag, `confirmed`/`default` lines called out for veto (grilling-engine.md,
+   _Provenance and the decision ledger_). Accept advances; Adjust loops to
+   step 5.
 9. **Detect + deposit.** Invoke `/detector` (forked) over the artifact
    (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
    **Write** its returned `captures` to `.spec/state.yaml` (create if absent,
