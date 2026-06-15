@@ -78,7 +78,9 @@ only thing that varies between artifacts.
    scan (grilling-engine.md, _The bar_) reports zero failures.
 7. **Critique.** Run `/audit` (structural) and `/consistency` (semantic) **in
    parallel** — both are read-only checks of the written artifact. `error`
-   findings block; `warning`/`info` surface as notes.
+   findings block; `warning`/`info` surface as notes. After applying fixes,
+   re-run the affected critic — step 8 opens on a clean report, not on the
+   author's claim (constitution, _Artifact self-consistency_).
 8. **Confirmation gate.** Present the engine's decision ledger **as visible
    prose before the selector** — one line per dimension plus its provenance
    tag, `confirmed`/`default` lines called out for veto (grilling-engine.md,
@@ -274,6 +276,26 @@ file, not a versioned artifact: no frontmatter, no changelog, no `/audit`).
      chat: <en | es>
      artifacts: <en | es>
    ```
+
+5. **Offer the environment setup (consent, once).** Three opt-in integrations
+   that adapt the consumer project to the plugin, all idempotent and merged
+   without clobbering the user's files. Preview them dry, from this skill's
+   `scripts/`:
+
+   ```bash
+   python3 "<skill base directory>/scripts/setup_project.py" --project . --dry-run
+   ```
+
+   Present the preview in prose — **permissions** (read the plugin and invoke
+   its skills without per-call prompts), **markdownlint** (a root
+   `.markdownlint.json` so a markdownlint editor stops false-flagging generated
+   `.spec/` tables; its other rules stay on project-wide), and **prettier**
+   (ignore `.spec/`, only when the project already uses prettier) — then
+   `AskUserQuestion`: **Configure (Recommended)** | **Skip**. On Configure,
+   re-run without `--dry-run` and report what was added and any pre-existing
+   setting it left untouched. On Skip, continue — the harness then prompts per
+   read/skill, and a markdownlint editor flags generated tables. Run a subset
+   with `--only permissions,markdownlint,prettier`.
 
 Only `en` and `es` are supported; anything else falls back to `en`. To change
 languages later, edit config.yaml directly or re-run `/spec`.

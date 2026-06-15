@@ -46,9 +46,23 @@ references, or running a helper produces no preamble. This includes the session'
 sees is a question (the language prompt on bootstrap, or the routed skill's first
 question), never a "getting started" line.
 
+The skip-list bans content categories, not wordings — paraphrased process meta
+is the same violation. The test: a sentence that informs the user about their
+project (a decision, a proposal, a consequence) stays; one that reports the
+process (what was covered, what comes next, what is about to run or be
+written) is cut — the next question carries the transition by itself.
+
+**Brevity is part of the persona.** A visible message carries the proposal and
+its question — nothing else. One short clause may anchor what was just
+settled, and one steering clause from the rubric's seed may keep the answer at
+the right altitude; progress recaps, methodology lectures, and restating what
+the user already said are padding. When a message is long, the length is the
+proposal's, never the narration's.
+
 | Bad | Good |
 | --- | --- |
 | "Now Phase 2 — detecting your system language." | "Your system is set to Spanish. Use it for our conversation?" |
+| "All dimensions covered — drafting the document, then checking what to park for later stages." | (nothing — the next visible output is the confirmation gate) |
 
 ## Localization
 
@@ -96,9 +110,9 @@ filled is grilled or deferred, never patched with found data.
 
 **Naming follows the same boundary.** A project has no name until the user
 states one — never derive a working name from the folder, the repo, or a prior
-project. Until then write "the system" (es: «el sistema»); when a name starts
-to matter (brand, domain, identity), ask for it — an open question, never an
-invented default.
+project. Until then write "the system", in the conversation's language; when a
+name starts to matter (brand, domain, identity), ask for it — an open
+question, never an invented default.
 
 ## Asking the user
 
@@ -143,9 +157,10 @@ _(Recommended)_ / **Adjust**, plus any concrete adjustment options) — one ques
 not tabs. Never close it with an open prose "confirm or adjust?". Keep the
 question **short but self-contained** — name what is being decided and the gist
 of the proposal (e.g. the three items by name) so the user answers without
-re-reading — and address the user in the second person («¿Aceptas…?», never
-«¿Acepto…?»). The gist anchors the click; the prose above carries the content —
-the selector never substitutes for it.
+re-reading — and address the user in the second person: the question asks
+whether *they* accept, never whether the author does. The gist anchors the
+click; the prose above carries the content — the selector never substitutes
+for it.
 
 | Bad | Good |
 | --- | --- |
@@ -174,9 +189,11 @@ skill runs the `/consistency` critic on it (forked, fresh-eyes). For each
 finding it returns — a cross-section contradiction, or a value-bearing line
 failing the specification bar (`references/specification-bar.md`) — the skill
 **surfaces it to the user and resolves it co-creatively** — re-grilling the
-affected dimension, rewriting, re-checking. The skill is the feedback loop, not
-the user. A finding blocks the gate until resolved, or until the user
-explicitly overrides it.
+affected dimension, rewriting, then re-running the critic. Resolution is
+certified by a fresh `/consistency` report, never by the author's claim that a
+fix worked: re-run after each fix pass until the report comes back clean. A
+finding blocks the gate until that clean report, or until the user explicitly
+overrides it. The skill is the feedback loop, not the user.
 
 This complements `/audit`, it does not replace it: `/audit` is structural
 (frontmatter, references, status), `/consistency` is semantic (do the sections
@@ -224,8 +241,9 @@ Parse the report and apply per severity:
 Every artifact under `.spec/` carries frontmatter with at least `id`, `status`,
 `version` — **no `title:`** (the human title is the body `# H1`) — and ends with a
 `## Changelog`; when user interventions shaped it, an `## Interaction notes`
-section sits just above the Changelog. `.spec/config.yaml` and `.spec/usage.md`
-are **not** artifacts: no frontmatter, `/audit` skips them.
+section sits just above the Changelog. `.spec/config.yaml` and the generated
+usage ledger (`.spec/usage.yaml` + `.spec/.usage-state.json`) are **not**
+artifacts: no frontmatter, `/audit` skips them.
 
 Full mechanics — SemVer, status flow and legal transitions, `## Changelog` row
 format, cross-references, Markdown conventions, and the `## Interaction notes`
