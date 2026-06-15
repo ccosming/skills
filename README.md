@@ -134,16 +134,17 @@ The hooks in `hooks/hooks.json` are all Python under `hooks/`:
 | ---------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `inject.py`      | `SessionStart`                             | Emits the constitution plus, in a bootstrapped project, the live foundation into context — once per session, so skills do not re-read these files each run.                                           |
 | `format_spec.py` | `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim.       |
-| `metrics.py`     | `Stop`, `UserPromptSubmit`, `PostToolUse`, `SessionStart` | Updates the project's live cost-and-time ledger (`.spec/usage.md`). Four triggers so a missed `Stop` — e.g. a turn ending on a pending question — never strands the ledger: `PostToolUse` keeps it live mid-grilling and bootstraps it in a from-scratch session, the next prompt or session start backstops the rest. |
+| `metrics.py`     | `Stop`, `UserPromptSubmit`, `PostToolUse`, `SessionStart` | Updates the project's live cost-and-time ledger (`.spec/usage.yaml` + its `.spec/.usage-state.json` state sidecar). Four triggers so a missed `Stop` — e.g. a turn ending on a pending question — never strands the ledger: `PostToolUse` keeps it live mid-grilling and bootstraps it in a from-scratch session, the next prompt or session start backstops the rest. |
 
-`.spec/usage.md` is a per-project, accumulating ledger: cost per `.spec/`
+`.spec/usage.yaml` is a per-project, accumulating ledger: cost per `.spec/`
 artifact (the five token categories + cache hit, plus tool calls, user prompts,
 assistant turns), a time ledger per artifact (effective work vs. human wait vs.
-real wall-clock), a per-skill breakdown, and a per-session log. It is parsed
-incrementally; `Updated through` reports the last turn folded in, so a stale
-ledger shows itself. Written only when the project already has a `.spec/`
-directory. Like `config.yaml`, it is a generated non-artifact — `/audit` and the
-formatter skip it.
+real wall-clock), a per-skill breakdown, and a per-session log. Transcripts are
+parsed incrementally via the state sidecar; `updated_through` reports the last
+turn folded in, so a stale ledger shows itself. Written only when the project
+already has a `.spec/` directory; a legacy `usage.md` is migrated and removed.
+Like `config.yaml`, both files are generated non-artifacts — `/audit` skips
+them.
 
 ## Artifacts
 
@@ -155,7 +156,7 @@ title — the code lives in `id` and the filename, never a `title:` field.
 | Artifact         | Path                               | Description                                                                                                                                                   | Skills that use it                                                |
 | ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `/spec` (Config step), all skills (read via foundation)      |
-| **Usage ledger** | `.spec/usage.md`                   | Generated, accumulating cost-and-time ledger per artifact/skill/session. Written by the metrics hook (`Stop`/`UserPromptSubmit`/`PostToolUse`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
+| **Usage ledger** | `.spec/usage.yaml`                 | Generated, accumulating cost-and-time ledger per artifact/skill/session (state in `.spec/.usage-state.json`). Written by the metrics hook (`Stop`/`UserPromptSubmit`/`PostToolUse`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
 | **Charter**      | `.spec/charter.md`                 | Project source of truth: problem, solution, domain, users, functional & non-functional requirements, success metrics, scope, constraints.                               | `/spec` (charter rubric), `/code` + downstream (read)                 |
 | **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `/spec` (guidelines rubric), downstream (read)              |
 | **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `/spec` (personality rubric), `/code` (read)                            |

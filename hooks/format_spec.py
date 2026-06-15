@@ -246,7 +246,8 @@ def format_file(path):
 
 
 def is_spec_markdown(path):
-    # Skip usage.md: a generated ledger whose embedded JSON state must not be wrapped.
+    # Skip legacy usage.md ledgers (now usage.yaml): their embedded JSON state
+    # must not be wrapped.
     if os.path.basename(path) == "usage.md":
         return False
     return path.endswith(".md") and (os.sep + ".spec" + os.sep) in path
