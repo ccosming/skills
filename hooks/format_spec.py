@@ -27,8 +27,11 @@ FENCE_RE = re.compile(r"^(\s*)(`{3,}|~{3,})")
 HEADING_RE = re.compile(r"^#{1,6}\s")
 LIST_RE = re.compile(r"^(\s*)([-*+]|\d+[.)])(\s+)(.*)$")
 QUOTE_RE = re.compile(r"^\s*>")
-# inline-code span | markdown link | bare non-space run — first two stay atomic.
-TOKEN_RE = re.compile(r"`[^`]*`|\[[^\]]*\]\([^)]*\)|\S+")
+# inline-code span | markdown link | bare non-space run. The span/link branches
+# absorb glued non-space neighbors (`\S*` on each side) so adjacent punctuation —
+# `(`, `,`, `).` — rides with the token instead of splitting off and gaining a
+# spurious space when wrap_unit rejoins with single spaces.
+TOKEN_RE = re.compile(r"\S*`[^`]*`\S*|\S*\[[^\]]*\]\([^)]*\)\S*|\S+")
 
 
 def is_delim(line):
