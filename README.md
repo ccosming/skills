@@ -56,7 +56,7 @@ gate — nothing advances until you accept the artifact.
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
     subgraph Spec["/spec — single door · runs each artifact's rubric"]
-        Config["config.yaml"]
+        Config["languages → project.json"]
         Found["charter · guidelines · personality<br/>(foundation)"]
         Opt["stack · domain · arch · ux<br/>(optional)"]
         PRD["PRD → ADRs + FEATs"]
@@ -87,7 +87,7 @@ flowchart TD
 **Artifacts `/spec` authors** (rubric bundles in `skills/spec/references/rubrics/`,
 not skills)
 
-- config → `config.yaml` (languages; the Config bootstrap step)
+- config → languages in `project.json` (the Config bootstrap step)
 - charter · guidelines · personality → the foundation, in order
 - stack · domain · arch · ux → optional design artifacts (domain also resolves
   inline when a PRD introduces a term)
@@ -98,7 +98,7 @@ not skills)
 
 - `/audit` — structural invariants over `.spec/` artifacts
 - `/consistency` — semantic critic: cross-section contradictions before the gate
-- `/detector` — cross-artifact captures, deposited by `/spec` into `state.yaml`
+- `/detector` — cross-artifact captures, deposited by `/spec` into `project.json`
 
 **Helpers** (forked, single-shot; not user-invocable)
 
@@ -130,21 +130,20 @@ not skills)
 
 The hooks in `hooks/hooks.json` are all Python under `hooks/`:
 
-| Script           | Events                                     | What it does                                                                                                                                                                                          |
-| ---------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `inject.py`      | `SessionStart`                             | Emits the constitution plus, in a bootstrapped project, the live foundation into context — once per session, so skills do not re-read these files each run.                                           |
-| `format_spec.py` | `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim.       |
-| `metrics.py`     | `Stop`, `UserPromptSubmit`, `PostToolUse`, `SessionStart` | Updates the project's live cost-and-time ledger (`.spec/usage.yaml` + its `.spec/.usage-state.json` state sidecar). Four triggers so a missed `Stop` — e.g. a turn ending on a pending question — never strands the ledger: `PostToolUse` keeps it live mid-grilling and bootstraps it in a from-scratch session, the next prompt or session start backstops the rest. |
+| Script            | Events                                     | What it does                                                                                                                                                                                          |
+| ----------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inject.py`       | `SessionStart`                             | Emits the constitution plus, in a bootstrapped project, the live foundation (languages from `project.json` + the foundation files) into context — once per session.                                  |
+| `format_spec.py`  | `PostToolUse` (`Write`/`Edit`/`MultiEdit`) | Normalizes any `.spec/*.md` just written — aligns GFM tables, wraps prose (keeping links and code spans atomic), normalizes blank lines — and leaves fenced code and YAML frontmatter verbatim.       |
+| `metrics.py`      | `Stop`, `UserPromptSubmit`, `PostToolUse`, `SessionStart` | Folds the transcript into `project.json`'s `usage` section through the coordinator. Four triggers so a missed `Stop` — e.g. a turn ending on a pending question — never strands the ledger: `PostToolUse` keeps it live mid-grilling and bootstraps it in a from-scratch session, the next prompt or session start backstops the rest. |
+| `project_file.py` | (library + CLI, not event-bound)           | Single-writer coordinator for `.spec/project.json`. Every hook and skill that mutates it goes through here — an `flock` plus read-modify-write keeps a metrics fire from clobbering a `/spec` capture deposit, and vice versa. Migrates the legacy split files on first touch. |
 
-`.spec/usage.yaml` is a per-project, accumulating ledger: cost per `.spec/`
-artifact (the five token categories + cache hit, plus tool calls, user prompts,
-assistant turns), a time ledger per artifact (effective work vs. human wait vs.
-real wall-clock), a per-skill breakdown, and a per-session log. Transcripts are
-parsed incrementally via the state sidecar; `updated_through` reports the last
-turn folded in, so a stale ledger shows itself. Written only when the project
-already has a `.spec/` directory; a legacy `usage.md` is migrated and removed.
-Like `config.yaml`, both files are generated non-artifacts — `/audit` skips
-them.
+`.spec/project.json` is the per-project, accumulating non-artifact file:
+languages, runtime `state` (`in_flight`, `next_suggested`, cross-artifact
+`captures`), and the `usage` ledger (cost and time per artifact/skill/session,
+look-back attributed; `updated_through` reports the last turn folded in).
+Written only when the project already has a `.spec/` directory; the legacy
+`config.yaml`/`state.yaml`/`usage.yaml`/`.usage-state.json` files are migrated
+and removed. `/audit` skips it.
 
 ## Artifacts
 
@@ -155,8 +154,7 @@ title — the code lives in `id` and the filename, never a `title:` field.
 
 | Artifact         | Path                               | Description                                                                                                                                                   | Skills that use it                                                |
 | ---------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Config**       | `.spec/config.yaml`                | Language preferences (`language.chat`, `language.artifacts`). Generated non-artifact — drives localization everywhere.                                        | `/spec` (Config step), all skills (read via foundation)      |
-| **Usage ledger** | `.spec/usage.yaml`                 | Generated, accumulating cost-and-time ledger per artifact/skill/session (state in `.spec/.usage-state.json`). Written by the metrics hook (`Stop`/`UserPromptSubmit`/`PostToolUse`/`SessionStart`), not a skill. | `metrics.py` hook (writes)                                        |
+| **Project file** | `.spec/project.json`               | Generated non-artifact: languages (`language.chat`, `language.artifacts`), runtime `state` (in_flight, next_suggested, captures), and the `usage` ledger. Written only through the `project_file.py` coordinator. | `/spec` (languages + state via CLI), `metrics.py` (usage), all skills (read) |
 | **Charter**      | `.spec/charter.md`                 | Project source of truth: problem, solution, domain, users, functional & non-functional requirements, success metrics, scope, constraints.                               | `/spec` (charter rubric), `/code` + downstream (read)                 |
 | **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `/spec` (guidelines rubric), downstream (read)              |
 | **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `/spec` (personality rubric), `/code` (read)                            |
@@ -204,7 +202,7 @@ named part and re-confirms.
 
 ### Localization
 
-Skills read `.spec/config.yaml` and apply:
+Skills read the languages from `.spec/project.json` and apply:
 
 - **`language.chat`** — all user-facing prose (questions, summaries,
   confirmations).

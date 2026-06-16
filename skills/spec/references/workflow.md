@@ -8,9 +8,11 @@ constitution). It is the *program*; `/spec` is the *engine* that runs it.
 
 The model has three parts:
 
-- **Engine** — `/spec` reads this file and `state.yaml`, then acts.
+- **Engine** — `/spec` reads this file and `.spec/project.json`, then acts.
 - **Program** — this file: the flow rules, versioned, in one place.
-- **Memory** — `.spec/state.yaml`: the per-project runtime state.
+- **Memory** — `.spec/project.json` (`state` section): the per-project runtime
+  state. Written only through the coordinator (`hooks/project_file.py`), never
+  by hand — see _project.json — runtime memory_.
 
 Authoring artifacts are driven by a **rubric bundle**, not by bespoke
 per-artifact logic — each (`skills/spec/references/rubrics/<name>.md`: persona +
@@ -70,8 +72,9 @@ only thing that varies between artifacts.
    **Regenerate**. An accretive artifact reached by an impact (below) enters
    `update` instead of prompting.
 3. **Load the rubric bundle** for the target from `skills/spec/references/rubrics/`.
-4. **Inject seeds.** Read `state.yaml` for `pending` captures `for:` this artifact
-   and pass them to the engine as starting hypotheses to confirm or steer.
+4. **Inject seeds.** Read `.spec/project.json`'s `state.captures` for `pending`
+   entries `for:` this artifact and pass them to the engine as starting
+   hypotheses to confirm or steer.
 5. **Grill.** Run the grilling engine (`references/grilling-engine.md`)
    against the rubric, applying its persona and probes.
 6. **Write** the artifact from the rubric's template, once the engine's bar
@@ -88,9 +91,13 @@ only thing that varies between artifacts.
    step 5.
 9. **Detect + deposit.** Invoke `/detector` (forked) over the artifact
    (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
-   **Write** its returned `captures` to `.spec/state.yaml` (create if absent,
-   append if present), each `pending`. The deposit is a file write you perform,
-   not a displayed block. Mark any seed consumed this pass as `consumed`.
+   deposit **all** returned captures through **the coordinator** (SKILL.md,
+   _Plugin scripts_) in **one** Bash call with the batch verb — pass the captures
+   as a JSON array: `<the coordinator> --project . add-captures '[<json>, …]'`.
+   Invoke the command inline; never assign it to a shell variable (word-splitting
+   differs across shells). Mark any seed consumed this pass: `<the coordinator>
+   --project . update-capture "<seed substring>" consumed`. The deposit is a
+   command you run, not a displayed block. Never hand-write `project.json`.
 10. **Advance** per the bootstrap sequence, or surface the next options and stop.
 
 Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.
@@ -102,8 +109,8 @@ Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.
 `/spec` owns this order. Advance only after the user **accepts** the current
 artifact. Drive it silently — the next stage's first question is the transition.
 
-1. **config** — capture languages → `config.yaml` (see _Procedural orchestration →
-   Config_).
+1. **config** — capture languages → `project.json` `language` section (see
+   _Procedural orchestration → Config_).
 2. **charter** — what the system is.
 3. **guidelines** — engineering conventions.
 4. **personality** — the implementer's persona.
@@ -156,9 +163,9 @@ The PRD's `derives-from:` links each FEAT/ADR back to the originating capability
 
 The accretive artifacts are nourished as drivers reveal detail, and existing
 artifacts are revised through the **cascade**. Both run on the **impact graph**.
-The rule is **detect and propose, never auto-execute**: the engine writes
-`pending` impacts to `state.yaml`; each update runs through the universal loop's
-gate.
+The rule is **detect and propose, never auto-execute**: the engine deposits
+`pending` impacts into `project.json` (via the coordinator); each update runs
+through the universal loop's gate.
 
 ### Impact graph
 
@@ -188,8 +195,8 @@ settles.
 
 ## Cross-artifact triggers
 
-Two trigger types both deposit `pending` entries in `state.yaml`. They differ by
-*when* they fire:
+Two trigger types both deposit `pending` entries in `project.json`. They differ
+by *when* they fire:
 
 - **Capture (conversational bleed)** — mid-grill, the user gives material that
   belongs to another artifact. Park it; keep grilling the current one.
@@ -208,23 +215,52 @@ Two trigger types both deposit `pending` entries in `state.yaml`. They differ by
 | PRD, cascade   | new dependency / tech            | stack       | bottom-up  |
 | PRD, cascade   | user-facing surface              | ux          | bottom-up  |
 
-## state.yaml — runtime memory
+## project.json — runtime memory
 
-`state.yaml` holds **only what the filesystem cannot tell you**. Which artifacts
-exist is derived from `ls`; never duplicate that here.
+`.spec/project.json` is the single non-artifact file: languages, runtime state,
+and the usage ledger. Its `state` section holds **only what the filesystem
+cannot tell you** — which artifacts exist is derived from `ls`, never duplicated
+here.
 
-### Shape
+**One writer.** `project.json` is written only through the coordinator
+(`hooks/project_file.py`) — the metrics hook writes `usage`; `/spec` writes
+`language` and `state` via the coordinator's CLI. `/spec` **reads** the file
+directly (cold start) but **never writes it by hand**: a hand write from stale
+context would clobber the hook's `usage` section.
 
-```yaml
-in_flight: charter            # the artifact being authored, or null
-next_suggested: domain        # what /spec proposes at the next gate
-captures:                     # cross-artifact pending items (both directions)
-  - for: domain               # target artifact
-    from: charter             # source of the signal
-    kind: capture             # capture | impact
-    seed: "Two-sided marketplace; subdomains hinted: matching (core), payments (generic)."
-    status: pending           # pending | consumed | dropped
+### Shape (the `state` section)
+
+```json
+{
+  "state": {
+    "in_flight": "charter",
+    "next_suggested": "domain",
+    "captures": [
+      {
+        "for": "domain",
+        "from": "charter",
+        "kind": "capture",
+        "seed": "Two-sided marketplace; subdomains hinted: matching (core), payments (generic).",
+        "status": "pending"
+      }
+    ]
+  }
+}
 ```
+
+`kind` is `capture | impact`; `status` is `pending | consumed | dropped`.
+
+### Writing it
+
+Every write uses **the coordinator** (SKILL.md, _Plugin scripts_):
+
+| Need | Command |
+| --- | --- |
+| Set languages | `<the coordinator> --project . set-language <chat> <artifacts>` |
+| Set `in_flight` / `next_suggested` | `<the coordinator> --project . set-state <key> <value>` |
+| Deposit one capture | `<the coordinator> --project . add-capture '<json>'` |
+| Deposit many captures (one call) | `<the coordinator> --project . add-captures '[<json>, …]'` |
+| Mark a seed consumed/dropped | `<the coordinator> --project . update-capture "<seed substring>" <status>` |
 
 ### Lifecycle
 
@@ -234,13 +270,13 @@ never expires silently.
 
 ### Authority
 
-The artifact always wins. `state.yaml` is a courier between artifacts, never a
-source of truth. If an entry would contradict an accepted artifact, it is already
-stale — drop it.
+The artifact always wins. The `state` section is a courier between artifacts,
+never a source of truth. If an entry would contradict an accepted artifact, it is
+already stale — drop it.
 
 ### Cold start
 
-At session start `/spec` reads `state.yaml`, tells the user where they left off
+At session start `/spec` reads `project.json`, tells the user where they left off
 (`in_flight`, pending items), and proposes `next_suggested`. The user does not
 have to remember which artifact is missing.
 
@@ -251,12 +287,15 @@ former skills.
 
 ### Config
 
-The first bootstrap step — written by `/spec` inline, no rubric (config is a plain
-file, not a versioned artifact: no frontmatter, no changelog, no `/audit`).
+The first bootstrap step — `/spec` sets the languages in `project.json` through
+the coordinator (`language` is not a versioned artifact: no frontmatter, no
+changelog, no `/audit`).
 
-1. **Pre-flight.** `ls .spec/config.yaml`. If it exists → `AskUserQuestion`: **Keep
-   current** (Recommended) | **Regenerate**; on Keep, report the languages and
-   stop. Create `.spec/` if absent (`mkdir -p .spec`).
+1. **Pre-flight.** Create `.spec/` if absent (`mkdir -p .spec`). Read the current
+   languages: `<the coordinator> --project . get language` (SKILL.md, _Plugin
+   scripts_). If they are already set (not the `en`/`en` default with no project
+   bootstrapped) → `AskUserQuestion`: **Keep current** (Recommended) |
+   **Regenerate**; on Keep, report the languages and stop.
 2. **Resolve the language.** The resolved language is the user's request language
    when the invocation carried clear prose; otherwise the detected system locale;
    otherwise `en`. Detect the locale verbatim:
@@ -268,22 +307,19 @@ file, not a versioned artifact: no frontmatter, no changelog, no `/audit`).
 3. **Ask once.** A single `AskUserQuestion` carrying both `language.chat` (`en` |
    `es`) and `language.artifacts` (`en` | `es`); Recommended = the resolved
    language for both.
-4. **Write** `.spec/config.yaml`:
+4. **Set the languages** through **the coordinator**:
 
-   ```yaml
-   # Project configuration. Edit directly or re-run /spec to regenerate.
-   language:
-     chat: <en | es>
-     artifacts: <en | es>
+   ```bash
+   <the coordinator> --project . set-language <chat> <artifacts>
    ```
 
 5. **Offer the environment setup (consent, once).** Three opt-in integrations
    that adapt the consumer project to the plugin, all idempotent and merged
-   without clobbering the user's files. Preview them dry, from this skill's
-   `scripts/`:
+   without clobbering the user's files. Preview them dry with **the setup
+   script** (SKILL.md, _Plugin scripts_):
 
    ```bash
-   python3 "<skill base directory>/scripts/setup_project.py" --project . --dry-run
+   <the setup script> --project . --dry-run
    ```
 
    Present the preview in prose — **permissions** (read the plugin and invoke
@@ -298,7 +334,7 @@ file, not a versioned artifact: no frontmatter, no changelog, no `/audit`).
    with `--only permissions,markdownlint,prettier`.
 
 Only `en` and `es` are supported; anything else falls back to `en`. To change
-languages later, edit config.yaml directly or re-run `/spec`.
+languages later, re-run `/spec` or use `project_file.py set-language`.
 
 ### Stack
 

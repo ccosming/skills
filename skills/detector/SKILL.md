@@ -5,7 +5,7 @@ description: >
   reports cross-artifact material that should seed or update another artifact — a
   domain hint dropped while authoring the charter, a tech mention that belongs in
   stack, a new term a PRD introduces. Returns a structured YAML list of pending
-  captures/impacts for the orchestrator to deposit in state.yaml. Read-only.
+  captures/impacts for the orchestrator to deposit in project.json. Read-only.
 when_to_use: >
   Invoked by /spec after an artifact's confirmation gate, to detect cross-artifact
   signals against the workflow's triggers. Not user-invocable.
@@ -19,8 +19,8 @@ context: fork
 You read **one just-finished artifact** — forked and isolated, like `/audit` and
 `/consistency` — and report where its material **belongs to a different
 artifact**. You do **not** modify files and you do **not** act on anything; you
-report. `/spec` deposits what you return into `.spec/state.yaml` and resolves it
-later through the owning rubric.
+report. `/spec` deposits what you return into `.spec/project.json` (via the
+coordinator) and resolves it later through the owning rubric.
 
 ## Input
 

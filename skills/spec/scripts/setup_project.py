@@ -4,9 +4,11 @@
 Three opt-in, idempotent actions, each merged into the user's own files without
 clobbering anything already there:
 
-- permissions: allow reading the plugin and invoking its skills, in the
-  project's `.claude/settings.local.json`, so the harness stops prompting per
-  read and per skill call.
+- permissions: in the project's `.claude/settings.local.json`, allow reading the
+  plugin's rubric/reference trees, reading the project's own `.spec/` artifacts
+  (also covers the forked critics, which inherit these rules), running the
+  coordinator script, and invoking the plugin's skills — so the harness stops
+  prompting per read, per coordinator call, and per skill call.
 - markdownlint: an opinionated root `.markdownlint.json` (line-length off for
   tables/code/headings, sane prose width) so a markdownlint-based editor stops
   false-flagging generated `.spec/` tables — every other markdownlint rule
@@ -88,7 +90,21 @@ def write_json(path, data):
 # --- permissions ------------------------------------------------------------
 
 def permission_rules(root, namespace):
-    rules = [f"Read(//{root.as_posix().lstrip('/')}/**)"]
+    abs_root = root.as_posix()  # e.g. /Users/me/plugin (single leading slash)
+    # Plugin reads, scoped to the two trees the flow actually reads (rubrics,
+    # references) — not the whole root, so sibling dev files (notes/, .git/) stay
+    # out. The forked critics inherit these rules and read the same trees.
+    rules = [
+        f"Read(//{abs_root.lstrip('/')}/skills/**)",
+        f"Read(//{abs_root.lstrip('/')}/references/**)",
+    ]
+    # Project-side reads: the orchestrator and every forked critic (audit,
+    # consistency, detector) read the project's own artifacts under .spec/.
+    # Read rules govern Glob/Grep too, so this one line covers all three tools.
+    rules.append("Read(.spec/**)")
+    # The coordinator is invoked over Bash on every state write; pre-approve that
+    # one script (prefix match, args wild) so the flow stops prompting per call.
+    rules.append(f"Bash(python3 {abs_root}/hooks/project_file.py *)")
     rules += [
         f"Skill({namespace}:{frontmatter_name(md, md.parent.name)})"
         for md in sorted((root / "skills").glob("*/SKILL.md"))

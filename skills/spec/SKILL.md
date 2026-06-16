@@ -45,6 +45,18 @@ Operate under the constitution injected at session start — voice, localization
 `AskUserQuestion`, and the door/delegation model. If it is not in context, read
 `../../references/constitution.md` before proceeding.
 
+## Plugin scripts
+
+Two helper scripts ship with the plugin. The paths below are already resolved to
+absolute paths — use them verbatim in `Bash`. When `workflow.md` says **the
+coordinator** or **the setup script**, it means these exact commands; prepend the
+matching one to the arguments it gives:
+
+- **the coordinator** (single writer of `.spec/project.json`):
+  `python3 ${CLAUDE_PLUGIN_ROOT}/hooks/project_file.py`
+- **the setup script** (consent-gated environment setup):
+  `python3 ${CLAUDE_PLUGIN_ROOT}/skills/spec/scripts/setup_project.py`
+
 ## Read the program and the state
 
 Do this **silently** — your first action emits no preamble (constitution,
@@ -53,14 +65,15 @@ started" line.
 
 1. Read `references/workflow.md` — it defines the registry, dependencies,
    sequence, gates, and triggers. Everything below executes it.
-2. **Cold start:** if `.spec/state.yaml` exists, read it — tell the user where
-   they left off (`in_flight`, pending items) and propose `next_suggested`.
-3. The foundation (config + charter + guidelines + personality) is injected at
+2. **Cold start:** if `.spec/project.json` exists, read it — tell the user where
+   they left off (`state.in_flight`, pending `state.captures`) and propose
+   `state.next_suggested`.
+3. The foundation (languages + charter + guidelines + personality) is injected at
    session start; its presence is the bootstrap signal. List what else exists —
    do not assume:
 
    ```bash
-   ls .spec/config.yaml .spec/{charter,guidelines,personality,stack,domain,arch,ux}.md 2>/dev/null; ls .spec/prds .spec/feats .spec/adrs 2>/dev/null
+   ls .spec/project.json .spec/{charter,guidelines,personality,stack,domain,arch,ux}.md 2>/dev/null; ls .spec/prds .spec/feats .spec/adrs 2>/dev/null
    ```
 
 ## Resolve and run
@@ -87,11 +100,11 @@ transitions, and skip/resume rules included.
 
 ## Reactivity (the buffer)
 
-Cross-artifact material flows through `.spec/state.yaml` — its contract, the
-triggers, and the seed/deposit mechanics are workflow.md's (universal procedure
-steps 4 and 9; _state.yaml — runtime memory_). The division of labor: the
-universal procedure authors artifacts; **you** perform every `state.yaml` write
-yourself.
+Cross-artifact material flows through `.spec/project.json`'s `state` section —
+its contract, the triggers, and the seed/deposit mechanics are workflow.md's
+(universal procedure steps 4 and 9; _project.json — runtime memory_). The
+division of labor: the universal procedure authors artifacts; **you** deposit
+state only through the coordinator CLI (`project_file.py`), never by hand.
 
 ## Disambiguate
 
@@ -102,8 +115,9 @@ it owns, per the registry). Route the answer back through _Resolve and run_.
 ## Invariant rules
 
 - You never author a `.spec/` *artifact* by hand — the universal procedure (or
-  the owning skill) writes those. You **do** maintain `.spec/state.yaml`, the
-  runtime memory.
+  the owning skill) writes those. You **do** maintain `.spec/project.json`'s
+  runtime state, but only through the coordinator CLI (`project_file.py`), never
+  by hand-writing the file.
 - One request resolves to one target. If a request spans several, run the first
   and let its completion return here for the next.
 - Never run a downstream target on an unbootstrapped project. Bootstrap first.

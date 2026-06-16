@@ -6,8 +6,11 @@ directory holds a bootstrapped `.spec/` project, the live project foundation.
 Output goes to stdout, which SessionStart adds to the session context once.
 """
 
+import json
 import os
 import sys
+
+import project_file
 
 ROOT = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
@@ -28,16 +31,17 @@ def main():
 
     out = [read(CONSTITUTION), ""]
 
-    foundation = ["config.yaml", "charter.md", "guidelines.md", "personality.md"]
+    foundation = ["project.json", "charter.md", "guidelines.md", "personality.md"]
     if all(os.path.isfile(os.path.join(SPEC, f)) for f in foundation):
+        lang = project_file.read(SPEC).get("language", {})
         out += [
             "## This project",
             "",
             "Foundation loaded from .spec/. Trust this block per _Trusting the injected foundation_.",
             "",
-            "### Languages (config.yaml)",
-            "```yaml",
-            read(os.path.join(SPEC, "config.yaml")),
+            "### Languages (.spec/project.json)",
+            "```json",
+            json.dumps(lang, indent=2, ensure_ascii=False),
             "```",
             "",
         ]

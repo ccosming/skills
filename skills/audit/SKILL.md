@@ -43,9 +43,9 @@ If `target_paths` is provided:
 
 Else:
 
-1. `Glob` `.spec/**/*.md` plus `.spec/*.md`, excluding `.spec/usage.md` (a
-   legacy generated ledger; the current `usage.yaml` + `.usage-state.json`
-   pair sits outside the glob, like `config.yaml`).
+1. `Glob` `.spec/**/*.md` plus `.spec/*.md`. The generated `.spec/project.json`
+   (languages, runtime state, usage ledger) is not Markdown, so the glob skips
+   it — never audit it.
 2. Audit all — comprehensive mode.
 
 ### 2. Run checks

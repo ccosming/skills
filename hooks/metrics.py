@@ -8,18 +8,19 @@ prompt), `PostToolUse` (every tool call — covers a from-scratch session that
 bootstraps `.spec/` mid-run and then grills entirely through `AskUserQuestion`,
 where the only typed prompt predates `.spec/` and no `Stop` fires), and
 `SessionStart` (startup/resume/compact — a catch-up that reconciles any turn a
-missed trigger left unfolded). Each run folds the new transcript lines
-into the project's ledger pair: `.spec/usage.yaml` — the report (cost per
-`.spec/` artifact with the five token categories + cache hit, tool calls, user
-prompts, assistant turns; time per artifact splitting effective work vs. human
-wait vs. real wall-clock; a per-skill breakdown; a per-session log) — and
-`.spec/.usage-state.json`, the machine state the next run resumes from. The
-report is write-only (never parsed back), so no YAML library is needed.
+missed trigger left unfolded). Each run folds the new transcript lines into the
+`usage` section of `.spec/project.json`, written through the single-writer
+coordinator (`project_file.transaction`) so a fire that lands while `/spec` is
+depositing a capture never clobbers the rest of the file. `usage.report` is the
+human-readable rollup (cost per `.spec/` artifact, time effective/wait/real, a
+per-skill breakdown, a per-session log); `usage._state` is the resume state the
+next run folds onto.
 
-Both are generated non-artifacts (like `config.yaml`); `/audit` skips them.
-Written only when the project already has a `.spec/` directory — never created
-in a non-spec project. A legacy `.spec/usage.md` ledger is migrated: its
-embedded state seeds the new pair and the old file is removed.
+`project.json` is a generated non-artifact; `/audit` skips it. Written only when
+the project already has a `.spec/` directory — never created in a non-spec
+project. Legacy split files (`config.yaml`, `state.yaml`, `usage.yaml`,
+`.usage-state.json`, `usage.md`) are migrated and removed by the coordinator on
+first touch.
 
 Per-turn cost is kept cheap by INCREMENTAL parsing: each session stores a byte
 cursor and only the new transcript lines are read. The cursor self-heals — the
@@ -36,9 +37,10 @@ Also runnable directly for testing:
 
 import json
 import os
-import re
 import sys
 from datetime import datetime
+
+import project_file
 
 FIELDS = ["input", "cache_read", "cache_creation", "output", "tools", "prompts", "turns"]
 TIME = ["effective_sec", "idle_sec"]  # active work vs. human wait — look-back like tokens
@@ -192,29 +194,7 @@ def fold(snap, path):
     return snap
 
 
-# --- state load / render ----------------------------------------------------
-
-def load_state(state_path, legacy_md_path):
-    """Resume from the JSON sidecar; fall back to a legacy usage.md ledger."""
-    try:
-        with open(state_path, "r", encoding="utf-8") as f:
-            state = json.load(f)
-        if isinstance(state.get("sessions"), dict):
-            return state
-    except (OSError, ValueError):
-        pass
-    # Legacy: state embedded in usage.md as an HTML-comment JSON block.
-    try:
-        text = open(legacy_md_path, "r", encoding="utf-8").read()
-        start = text.index("<!-- spec-metrics-state v")  # any version — forward-compatible
-        body = text[text.index("\n", start) + 1 : text.index("\n-->", start)]
-        state = json.loads(body)
-        if isinstance(state.get("sessions"), dict):
-            return state
-    except (OSError, ValueError):
-        pass
-    return None
-
+# --- render ------------------------------------------------------------------
 
 def metric_entry(a):
     return {
@@ -247,38 +227,9 @@ def time_entry(a):
     return {"effective": fmt_dur(eff), "wait": fmt_dur(idle), "real": fmt_dur(eff + idle)}
 
 
-# Write-only YAML emission for the known report shape: nested dicts of scalars.
-# Strings are JSON-quoted (JSON scalars are valid YAML); keys are quoted only
-# when they leave the safe set (e.g. "ccosming:clarify", "(overhead)").
-
-SAFE_KEY = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.\-]*$")
-
-
-def yaml_scalar(v):
-    if isinstance(v, bool):
-        return "true" if v else "false"
-    if isinstance(v, float):
-        return f"{v:.1f}"
-    if isinstance(v, int):
-        return str(v)
-    return json.dumps(v, ensure_ascii=False)
-
-
-def yaml_lines(node, indent=0):
-    pad = "  " * indent
-    out = []
-    for k, v in node.items():
-        key = k if SAFE_KEY.match(k) else json.dumps(k, ensure_ascii=False)
-        if isinstance(v, dict):
-            out.append(f"{pad}{key}:")
-            out += yaml_lines(v, indent + 1)
-        else:
-            out.append(f"{pad}{key}: {yaml_scalar(v)}")
-    return out
-
-
 def render(state):
-    sessions = state["sessions"]
+    """Build the human-readable report dict from the raw resume state."""
+    sessions = state.get("sessions", {})
     through = max((s.get("last_ts", "") for s in sessions.values()), default="")
 
     agg_art, agg_skill, overhead = {}, {}, acc()
@@ -315,8 +266,12 @@ def render(state):
         }
 
     doc = {
-        "project": state["project"],
-        "project_path": state["project_path"],
+        "note": "Generated; do not edit. updated_through = last turn folded in. "
+                "Cost is look-back attributed: turns up to each .spec/ write charge "
+                "to that artifact; unattributed work shows under (overhead). "
+                "Time: effective = model + tool work; wait = human; real = both.",
+        "project": state.get("project", ""),
+        "project_path": state.get("project_path", ""),
         "updated_through": fmt_ts(through),
         "session_count": len(sessions),
         "cost_per_artifact": {k: metric_entry(a) for k, a in items},
@@ -329,16 +284,7 @@ def render(state):
     }
     if not agg_skill:
         del doc["cost_per_skill"]
-
-    header = [
-        "# Plugin usage ledger — generated; do not edit by hand.",
-        "# `updated_through` is the last turn folded in; if it lags wall-clock, a",
-        "# hook fire was missed and the next prompt or session start reconciles.",
-        "# Cost is look-back attributed: turns up to each .spec/ write charge to",
-        "# that artifact; unattributed work shows under (overhead). Time: effective",
-        "# = model + tool work; wait = human thinking or away; real = both.",
-    ]
-    return "\n".join(header + yaml_lines(doc)) + "\n"
+    return doc
 
 
 # --- driver -----------------------------------------------------------------
@@ -365,40 +311,23 @@ def peek_meta(path):
     return sid, cwd
 
 
-def ledger_paths(project_path):
-    """(report, state, legacy) paths, or None outside a .spec project."""
-    spec = os.path.join(project_path, ".spec")
-    if not os.path.isdir(spec):
-        return None
-    return (os.path.join(spec, "usage.yaml"),
-            os.path.join(spec, ".usage-state.json"),
-            os.path.join(spec, "usage.md"))
-
-
 def record(transcript, sid=None, project_path=None):
     p_sid, p_cwd = peek_meta(transcript)
     sid = sid or p_sid
     project_path = project_path or p_cwd or os.getcwd()
-    paths = ledger_paths(project_path)
-    if not paths or not sid:
+    spec_dir = os.path.join(project_path, ".spec")
+    if not os.path.isdir(spec_dir) or not sid:
         return None  # not a spec project, or unidentifiable session
-    report_path, state_path, legacy_path = paths
-    state = load_state(state_path, legacy_path) or {
-        "version": 3,
-        "project": os.path.basename(project_path.rstrip(os.sep)) or "root",
-        "project_path": project_path,
-        "sessions": {},
-    }
-    snap = state["sessions"].get(sid) or fresh_snapshot()
-    fold(snap, transcript)
-    state["sessions"][sid] = snap
-    with open(state_path, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False)
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(render(state))
-    if os.path.isfile(legacy_path):
-        os.remove(legacy_path)  # migrated into the yaml + sidecar pair
-    return report_path
+    with project_file.transaction(spec_dir) as data:
+        st = data["usage"]["_state"]
+        st.setdefault("sessions", {})
+        st["project"] = os.path.basename(project_path.rstrip(os.sep)) or "root"
+        st["project_path"] = project_path
+        snap = st["sessions"].get(sid) or fresh_snapshot()
+        fold(snap, transcript)
+        st["sessions"][sid] = snap
+        data["usage"]["report"] = render(st)
+    return os.path.join(spec_dir, project_file.FILE)
 
 
 def main():

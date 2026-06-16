@@ -33,7 +33,7 @@ and confirmations — never the workflow that produces them.
 Skip in user-facing prose:
 
 - Phase numbers, step indices ("Phase 2", "Step 1.3").
-- File operations ("config.yaml created", "writing to .spec/").
+- File operations ("project.json updated", "writing to .spec/").
 - Mechanism names ("grilling", "dimension by dimension").
 - Process meta ("now I'll", "let me load X").
 
@@ -67,9 +67,9 @@ proposal's, never the narration's.
 ## Localization
 
 Read `language.chat` and `language.artifacts` from the injected foundation (or
-`.spec/config.yaml`). If config is missing — only possible during the config
-bootstrap step — narrate in a **single language for the whole turn**, resolved in
-order: (1) the language of the user's request when it carries clear
+`.spec/project.json`). If the languages are unset — only possible during the
+config bootstrap step — narrate in a **single language for the whole turn**,
+resolved in order: (1) the language of the user's request when it carries clear
 natural-language text; (2) otherwise the system locale `/spec` detects; (3)
 English only if neither resolves. Never mix languages in one message. `/spec` then
 writes the config that governs the rest.
@@ -241,9 +241,10 @@ Parse the report and apply per severity:
 Every artifact under `.spec/` carries frontmatter with at least `id`, `status`,
 `version` — **no `title:`** (the human title is the body `# H1`) — and ends with a
 `## Changelog`; when user interventions shaped it, an `## Interaction notes`
-section sits just above the Changelog. `.spec/config.yaml` and the generated
-usage ledger (`.spec/usage.yaml` + `.spec/.usage-state.json`) are **not**
-artifacts: no frontmatter, `/audit` skips them.
+section sits just above the Changelog. `.spec/project.json` (languages, runtime
+state, and the generated usage ledger) is **not** an artifact: no frontmatter,
+`/audit` skips it. It is written only through the coordinator
+(`hooks/project_file.py`), never by hand.
 
 Full mechanics — SemVer, status flow and legal transitions, `## Changelog` row
 format, cross-references, Markdown conventions, and the `## Interaction notes`

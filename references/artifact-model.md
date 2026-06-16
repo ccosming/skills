@@ -11,9 +11,9 @@ and `version` — **no `title:`** (the human title is the body `# H1`). It ends
 with a `## Changelog` section; when user interventions shaped it, an
 `## Interaction notes` section sits just above the Changelog.
 
-`.spec/config.yaml` (languages) and the generated cost ledger
-(`.spec/usage.yaml` + `.spec/.usage-state.json`) are **not** artifacts: they
-carry no frontmatter and `/audit` skips them.
+`.spec/project.json` — languages, runtime state, and the generated cost ledger,
+all written through the coordinator (`hooks/project_file.py`) — is **not** an
+artifact: no frontmatter, `/audit` skips it.
 
 ### SemVer
 
