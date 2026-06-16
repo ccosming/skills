@@ -150,3 +150,53 @@ with a pointer so the rule keeps its teeth.
   the net token/quality effect; do not assume the move is free.
 
 **Resolution.** (pending)
+
+### OPT-002 — Document ingestion as a flow entry (enrich charter/domain from user-provided files)
+
+- **status:** proposed
+- **category:** quality (primary) · reasoning
+- **priority:** P3
+- **impact:** lets a user feed source files they already have (notes, papers/PDFs,
+  third-party markdown) and have their substance seed the charter and domain as
+  captures, instead of re-typing it into the grilling.
+- **effort:** L
+- **targets:** a new forked ingestion delegate (or a rubric-backed step);
+  `skills/spec/references/workflow.md` (a new trigger row + bootstrap touchpoint);
+  possibly `skills/research/`; the capture model in `hooks/project_file.py`.
+- **created:** 2026-06-15 · **updated:** 2026-06-15
+- **links:** charter/domain rubrics; the capture/trigger system in
+  `workflow.md` (_Cross-artifact triggers_); constitution _Data boundary_.
+
+**Context.** The flow has no path to ingest source documents the user already
+holds. An earlier design sketch included a triage step that reads provided
+files (notes, PDFs, papers, spreadsheets) and distills them to enrich the
+domain. This is the one idea from that sketch with no current equivalent:
+`/research` covers world facts, not the user's own files. It is most valuable
+for knowledge/content projects whose raw material *is* a corpus of documents,
+where today the user must restate that material by hand during the charter and
+domain grilling.
+
+**Proposal.** Add a consent-driven ingestion entry that reads **only** files the
+user explicitly provides or points to, extracts candidate domain terms,
+constraints, and capabilities, and deposits them as `pending` captures (`for:
+charter` / `for: domain`) through the coordinator — never auto-baking. The
+grilling then surfaces them as seeds to confirm or steer. Decide the shape: a
+forked helper like `/research`, or a rubric-backed bootstrap touchpoint. Keep it
+inside the existing capture/trigger model; do not add a parallel pipeline.
+
+**Acceptance.** Given a project and N user-provided source files, invoking the
+ingestion deposits captures into `project.json` (each tracing to a source file),
+and a subsequent charter/domain grilling surfaces them as seeds reaching the
+artifact through the gate — never auto-written. A live cycle shows material from
+a provided file landing in the artifact only after an explicit `Accept`.
+
+**Risk / watch.**
+- **Data boundary.** Read only files the user explicitly hands over or names;
+  never scan the project tree or sibling directories unsolicited (constitution,
+  _Data boundary_).
+- **No gate bypass.** Ingested material is a hypothesis, not a fact — it must
+  enter as a `pending` capture and pass the grilling/gate, not skip them.
+- **Extraction fidelity.** PDFs/spreadsheets/images vary; a low-confidence
+  extraction must be surfaced as such, not asserted as a settled term.
+
+**Resolution.** (pending)
