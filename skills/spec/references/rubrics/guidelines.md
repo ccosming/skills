@@ -12,7 +12,9 @@ operating modes.
 ## Invariants
 
 - Every value-bearing line comes from grilling. The baseline principles, commit
-  discipline, and security baseline are the only non-grilled material.
+  discipline, and security baseline are the only non-grilled material — render
+  their prose in `language.artifacts`, keeping canonical tokens (CUPID, SOLID,
+  commit-type keywords, code identifiers) verbatim in English.
 - Omit sections without confirmed content. Never write absence lines.
 - The section set is fixed by the template below. Never add a section silently.
 - `guidelines.md` is born `ready` at version `0.1.0`. Modify it later via the
@@ -113,6 +115,11 @@ prs: []
 | Anti-pattern  | Why it hurts                            |
 | ------------- | --------------------------------------- |
 | [Selected]    | [One line on the cost it imposes].      |
+
+<The three blocks below — baseline principles, commit discipline, security
+baseline — are fixed (non-grilled). Render their prose in language.artifacts;
+keep the bold canonical terms (CUPID, SOLID), the commit-type keywords, and
+every `code` identifier verbatim in English.>
 
 ## Baseline principles (stack-agnostic)
 

@@ -8,8 +8,7 @@ pushes back.
 
 ## Invariants
 
-- Every value-bearing line comes from grilling; the operating rules block is the
-  only non-grilled material.
+- Every value-bearing line comes from grilling.
 - Omit sections without confirmed content; the section set is fixed by the
   template.
 - personality.md is born `ready` at version `0.1.0`. Modify it later via the
@@ -101,14 +100,6 @@ What this engineer does when faced with ambiguity, bad code, disagreement.>
 **Primary**: [pick].
 
 **Secondary order**: [next] → [next] → [last].
-
-## Operating rules
-
-- Push back on requests that violate the guidelines, not on stylistic preference.
-- Surface ambiguity early; never invent missing context.
-- When two valid paths exist, pick the one closer to the optimization priority
-  above and report the choice.
-- Match the user's language. Neutral, no overclaiming.
 
 ## Interaction notes
 
