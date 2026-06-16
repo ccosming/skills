@@ -111,10 +111,14 @@ artifact. Drive it silently — the next stage's first question is the transitio
 
 1. **config** — capture languages → `project.json` `language` section (see
    _Procedural orchestration → Config_).
-2. **charter** — what the system is.
-3. **guidelines** — engineering conventions.
-4. **personality** — the implementer's persona.
-5. Foundation complete. Offer the optional stages and let the user pick or stop:
+2. **ideation fork** — on a fresh project, before the charter, offer a head start
+   (see _Procedural orchestration → Ideation entry_): seed the foundation from an
+   existing `/ideate` whitepaper, run an ideation session now, or go straight to
+   the charter. Captures it produces seed the charter and downstream foundation.
+3. **charter** — what the system is.
+4. **guidelines** — engineering conventions.
+5. **personality** — the implementer's persona.
+6. Foundation complete. Offer the optional stages and let the user pick or stop:
    stack, domain, arch, ux, then PRD.
 
 Skip any stage whose file already exists; resume at the first gap.
@@ -335,6 +339,39 @@ changelog, no `/audit`).
 
 Only `en` and `es` are supported; anything else falls back to `en`. To change
 languages later, re-run `/spec` or use `project_file.py set-language`.
+
+### Ideation entry
+
+On a **fresh** project (no foundation), after config and before the charter,
+offer a head start. `AskUserQuestion`:
+
+- **Seed from an existing idea** — only when closed `/ideate` whitepapers exist.
+  List them from the user's vault and the project, reading their frontmatter
+  `status`:
+
+  ```bash
+  ls ~/.ccosming/ideas/*.md .ideas/*.md 2>/dev/null
+  ```
+
+  Show the `closed` ones (topic + path) and let the user pick one or more (or
+  none). **The user selects** — never read the vault to seed on your own
+  (constitution, _Data boundary_).
+- **Ideate now** — invoke `/ideate` (`Skill(skill="ideate")`); it runs
+  project-level and inherits the languages. When it closes, continue here.
+- **Straight to the charter** — skip ideation; start the charter cold.
+
+For each selected (or just-closed) whitepaper, seed the foundation: invoke
+`/detector` forked over it and deposit what it returns through **the coordinator**:
+
+```
+Skill(skill="detector", args="source_artifact: <whitepaper path>; from: ideate")
+<the coordinator> --project . add-captures '[<json>, …]'
+```
+
+The captures land `pending` for charter/domain/personality/stack/arch/ux
+(foundation + design only — never PRD/FEAT). Then proceed to the charter, now
+seeded: step 4 of the universal procedure surfaces them. A whitepaper seeds
+**hypotheses**; the bar, critics, and gate still rule — nothing is auto-baked.
 
 ### Stack
 

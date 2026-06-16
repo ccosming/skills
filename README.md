@@ -38,10 +38,17 @@ The authoring artifacts are **not** skills — each is a **rubric bundle** under
 `skills/spec/references/rubrics/` that `/spec` runs inline. The skills that remain
 are the two doors plus a handful of forked, single-purpose delegates: the critics
 (`/audit`, `/consistency`, `/detector`), the helpers (`/clarify`, `/research`,
-`/summarize`), the reviewer (`/challenge`), and the standalone `/grill`. A delegate
-does its job, reports, and returns — sequencing belongs to the door. (A third door,
-`/issue` for symptom triage, is defined in the constitution but not yet
-implemented.)
+`/summarize`), the reviewer (`/challenge`), and the standalone ideation skills
+(`/ideate` and the older `/grill`). A delegate does its job, reports, and returns —
+sequencing belongs to the door. (A third door, `/issue` for symptom triage, is
+defined in the constitution but not yet implemented.)
+
+Ideation has its own front door: **`/ideate`** turns a half-formed idea into a
+standalone concept whitepaper — readable on its own, saved to a global
+`~/.ccosming/ideas/` vault or the project's `.ideas/`. On a fresh project `/spec`
+offers to seed the foundation from a closed whitepaper (via `/detector`), so an
+idea travels from brainstorm to charter without leaving Claude Code. The grill
+seeds hypotheses; the bar, critics, and gate still rule.
 
 `/spec` authors every artifact through a shared **grilling engine**: a
 dimension-coverage loop run against the artifact's rubric bundle. It scales depth
@@ -134,9 +141,13 @@ not skills)
 
 **Standalone**
 
-- `/grill` — interview to articulate a fuzzy idea before a PRD →
-  `.spec/grills/`. User-invoked only; nothing else calls it. Reuses `/clarify`,
-  `/research`, `/summarize`.
+- `/ideate` — articulate a half-formed idea into a standalone concept whitepaper
+  (a global `~/.ccosming/ideas/` vault or the project's `.ideas/`); explores the
+  idea and its implementation options without specifying the product. `/spec` can
+  seed a new project's foundation from a closed one. The ideation front door.
+- `/grill` — (older, pending removal) interview to articulate a fuzzy idea before
+  a PRD → `.spec/grills/`. User-invoked only. Reuses `/clarify`, `/research`,
+  `/summarize`.
 
 **Authoring & quality** (general utilities, not part of the spec flow)
 

@@ -153,7 +153,7 @@ with a pointer so the rule keeps its teeth.
 
 ### OPT-002 — Document ingestion as a flow entry (enrich charter/domain from user-provided files)
 
-- **status:** proposed
+- **status:** in-progress
 - **category:** quality (primary) · reasoning
 - **priority:** P3
 - **impact:** lets a user feed source files they already have (notes, papers/PDFs,
@@ -163,7 +163,7 @@ with a pointer so the rule keeps its teeth.
 - **targets:** a new forked ingestion delegate (or a rubric-backed step);
   `skills/spec/references/workflow.md` (a new trigger row + bootstrap touchpoint);
   possibly `skills/research/`; the capture model in `hooks/project_file.py`.
-- **created:** 2026-06-15 · **updated:** 2026-06-15
+- **created:** 2026-06-15 · **updated:** 2026-06-16
 - **links:** charter/domain rubrics; the capture/trigger system in
   `workflow.md` (_Cross-artifact triggers_); constitution _Data boundary_.
 
@@ -198,5 +198,11 @@ a provided file landing in the artifact only after an explicit `Accept`.
   enter as a `pending` capture and pass the grilling/gate, not skip them.
 - **Extraction fidelity.** PDFs/spreadsheets/images vary; a low-confidence
   extraction must be surfaced as such, not asserted as a settled term.
+
+**Note (2026-06-16).** Implemented broader than the original framing: as the
+`/ideate` ideation front door (a standalone concept whitepaper → global
+`~/.ccosming/ideas/` vault or project `.ideas/`), with file ingestion folded in
+as one way to start a session, and `/spec` seeding the foundation from a closed
+whitepaper via `/detector`. Pending live validation in a clean run.
 
 **Resolution.** (pending)

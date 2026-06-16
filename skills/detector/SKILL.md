@@ -5,10 +5,12 @@ description: >
   reports cross-artifact material that should seed or update another artifact — a
   domain hint dropped while authoring the charter, a tech mention that belongs in
   stack, a new term a PRD introduces. Returns a structured YAML list of pending
-  captures/impacts for the orchestrator to deposit in project.json. Read-only.
+  captures/impacts for the orchestrator to deposit in project.json. Also reads an
+  /ideate whitepaper to seed a new project's foundation. Read-only.
 when_to_use: >
   Invoked by /spec after an artifact's confirmation gate, to detect cross-artifact
-  signals against the workflow's triggers. Not user-invocable.
+  signals against the workflow's triggers; or at bootstrap to seed the foundation
+  from a closed /ideate whitepaper. Not user-invocable.
 allowed-tools: Read, Glob, Grep
 user-invocable: false
 context: fork
@@ -27,9 +29,10 @@ coordinator) and resolves it later through the owning rubric.
 Args parsed as semicolon-separated `key: value` pairs:
 
 - **`source_artifact`** _(required)_: the artifact just authored (e.g.
-  `.spec/charter.md`).
+  `.spec/charter.md`), or an `/ideate` whitepaper (e.g.
+  `.ideas/IDEATE-001-slug.md` or `~/.ccosming/ideas/slug.md`).
 - **`from`** _(required)_: the artifact name that produced the material (e.g.
-  `charter`).
+  `charter`), or `ideate` when the source is a whitepaper.
 
 Read `source_artifact` in full. The targets and what each owns are listed in
 _What to detect_ below — no other file needed.
@@ -45,6 +48,17 @@ The cross-artifact targets and what each owns:
 - **guidelines** — engineering conventions, simplicity/maintainability bars
 - **personality** — the persona the `/code` agent embodies (NOT the author's own
   brand or writing voice — that is content the artifact owns, not the implementer)
+
+When the source is an **`/ideate` whitepaper** (`from: ideate`), **`charter`** is
+also a valid target, and the whitepaper's natural sections map to targets as
+**option-level hypotheses** (nothing decided):
+
+- "What — the idea" / "Why" / who it is for → **charter** (problem, solution, users)
+- "Boundaries and non-goals" → **charter** (scope); "Realities" → **charter** (constraints)
+- "How it could be solved" / what makes it special → **domain** (core), **ux**
+- "Implementation options" → **stack**, **arch** (each option a hypothesis, not a decision)
+
+Foundation and design only — never seed `prd`/`feat` from a whitepaper.
 
 Two kinds of signal:
 

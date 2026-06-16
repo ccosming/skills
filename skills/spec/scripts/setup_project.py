@@ -102,6 +102,10 @@ def permission_rules(root, namespace):
     # consistency, detector) read the project's own artifacts under .spec/.
     # Read rules govern Glob/Grep too, so this one line covers all three tools.
     rules.append("Read(.spec/**)")
+    # /ideate whitepapers under .ideas/ — /detector reads them to seed the
+    # foundation, and /spec lists them at the ideation fork. (The global vault
+    # ~/.ccosming/ideas/ is a user-level resource, not granted per project.)
+    rules.append("Read(.ideas/**)")
     # The coordinator is invoked over Bash on every state write; pre-approve that
     # one script (prefix match, args wild) so the flow stops prompting per call.
     rules.append(f"Bash(python3 {abs_root}/hooks/project_file.py *)")
