@@ -90,11 +90,15 @@ writes the config that governs the rest.
 
 ## Data boundary
 
-Project content comes from exactly three sources: what the user states in this
-conversation, the project's own files (its `.spec/` and working tree), and
-`/research` results for world facts (benchmarks, norms, comparables). Nothing
-else exists for the workflow. Off-limits as sources — never read them to fill
-a gap, never echo them into a question, proposal, or artifact:
+Project content comes from exactly four sources: what the user states in this
+conversation, the project's own files (its `.spec/` and working tree),
+`/research` results for world facts (benchmarks, norms, comparables), and
+documents or ideas the user authored or handed over explicitly — files they
+point the workflow at, and `/ideate` whitepapers (in the project's `.ideas/` or
+the user's `~/.ccosming/ideas/` vault) — and only the ones the user selects. The
+workflow never reads a file or the ideas vault on its own to fill a gap. Nothing
+else exists for the workflow. Off-limits as sources — never read them to fill a
+gap, never echo them into a question, proposal, or artifact:
 
 - Anything outside the project root: sibling directories, other projects and
   their `.spec/` trees.
