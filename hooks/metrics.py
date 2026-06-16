@@ -13,7 +13,7 @@ missed trigger left unfolded). Each run folds the new transcript lines into the
 coordinator (`project_file.transaction`) so a fire that lands while `/spec` is
 depositing a capture never clobbers the rest of the file. `usage.report` is the
 human-readable rollup (cost per `.spec/` artifact, time effective/wait/real, a
-per-skill breakdown, a per-session log); `usage._state` is the resume state the
+per-skill breakdown, a per-model breakdown, a per-session log); `usage._state` is the resume state the
 next run folds onto.
 
 `project.json` is a generated non-artifact; `/audit` skips it. Written only when
@@ -92,6 +92,7 @@ def fresh_snapshot():
         "buffer": acc(),  # pending look-back work, shown as provisional overhead
         "artifacts": {},  # rel path -> acc (flushed)
         "skills": {},  # skill -> acc
+        "models": {},  # model name -> acc (per assistant turn)
     }
 
 
@@ -102,6 +103,7 @@ def fold(snap, path):
         data = f.read()
     parts = data.split(b"\n")  # parts[-1] is the trailing (incomplete) remainder
     buffer, artifacts, skills = snap["buffer"], snap["artifacts"], snap["skills"]
+    models = snap.setdefault("models", {})  # model name -> acc
     # forward-compat: snapshots written by older versions lack newer fields
     snap.setdefault("last_ts", "")
     snap.setdefault("pending_ask", False)
@@ -183,6 +185,10 @@ def fold(snap, path):
             if active:
                 skills.setdefault(active, acc())
                 add(skills[active], turn)
+            model = msg.get("model")
+            if model:
+                models.setdefault(model, acc())
+                add(models[model], turn)
             if written:  # flush look-back buffer to the artifact written here
                 artifacts.setdefault(written[0], acc())
                 add(artifacts[written[0]], buffer)
@@ -232,7 +238,7 @@ def render(state):
     sessions = state.get("sessions", {})
     through = max((s.get("last_ts", "") for s in sessions.values()), default="")
 
-    agg_art, agg_skill, overhead = {}, {}, acc()
+    agg_art, agg_skill, agg_model, overhead = {}, {}, {}, acc()
     for s in sessions.values():
         for k, a in s["artifacts"].items():
             agg_art.setdefault(k, acc())
@@ -240,6 +246,9 @@ def render(state):
         for k, a in s["skills"].items():
             agg_skill.setdefault(k, acc())
             add(agg_skill[k], a)
+        for k, a in s.get("models", {}).items():
+            agg_model.setdefault(k, acc())
+            add(agg_model[k], a)
         add(overhead, s["buffer"])  # provisional, not yet attributed
 
     grand = acc()
@@ -263,12 +272,16 @@ def render(state):
             "total_tokens": total_tokens(row),
             "effective": fmt_dur(row["effective_sec"]),
             "wait": fmt_dur(row["idle_sec"]),
+            "models": [m for m, _ in sorted(
+                s.get("models", {}).items(),
+                key=lambda kv: total_tokens(kv[1]), reverse=True)],
         }
 
     doc = {
         "note": "Generated; do not edit. updated_through = last turn folded in. "
                 "Cost is look-back attributed: turns up to each .spec/ write charge "
                 "to that artifact; unattributed work shows under (overhead). "
+                "cost_per_model splits tokens by the model that produced each turn. "
                 "Time: effective = model + tool work; wait = human; real = both.",
         "project": state.get("project", ""),
         "project_path": state.get("project_path", ""),
@@ -280,10 +293,16 @@ def render(state):
             k: metric_entry(a)
             for k, a in sorted(agg_skill.items(), key=lambda kv: total_tokens(kv[1]), reverse=True)
         },
+        "cost_per_model": {
+            k: metric_entry(a)
+            for k, a in sorted(agg_model.items(), key=lambda kv: total_tokens(kv[1]), reverse=True)
+        },
         "sessions": session_log,
     }
     if not agg_skill:
         del doc["cost_per_skill"]
+    if not agg_model:
+        del doc["cost_per_model"]
     return doc
 
 
