@@ -356,8 +356,9 @@ offer a head start. `AskUserQuestion`:
   Show the `closed` ones (topic + path) and let the user pick one or more (or
   none). **The user selects** — never read the vault to seed on your own
   (constitution, _Data boundary_).
-- **Ideate now** — invoke `/ideate` (`Skill(skill="ideate")`); it runs
-  project-level and inherits the languages. When it closes, continue here.
+- **Ideate now** — invoke `/ideate` (`Skill(skill="ideate")`); it asks where to
+  save (your vault or this project) and inherits the languages. When it closes,
+  continue here.
 - **Straight to the charter** — skip ideation; start the charter cold.
 
 For each selected (or just-closed) whitepaper, seed the foundation: invoke

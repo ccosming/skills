@@ -45,7 +45,8 @@ question and steer back to the idea level.
 
 One self-contained file per session. Readable without any plugin context.
 `/spec`-agnostic: no plugin jargon, no routing metadata, no artifact names. The
-body follows this structure (translate headings to the user's language):
+body follows this structure — **section headers stay in English** (like every
+`.spec/` artifact); the prose follows `language.artifacts`:
 
 ```markdown
 ---
@@ -115,18 +116,16 @@ Section rules:
 
 Two homes, by where the idea belongs:
 
-- **Global vault (default for standalone ideation):** `~/.ccosming/ideas/<slug>.md`
-  — your personal idea vault, portable across projects. Most early ideas are
-  pre-project; they live here.
+- **Global vault (the default):** `~/.ccosming/ideas/<slug>.md` — your personal
+  idea vault, portable across projects. Most early ideas are pre-project; they
+  live here.
 - **Project-level:** `<project>/.ideas/IDEATE-NNN-{slug}.md` — when you are
   ideating about *this* repository specifically.
 
-Mode selection:
-
-- **Invoked directly by the user:** ask once at the start (Step 1) —
-  `AskUserQuestion`: **Global vault (Recommended)** | **This project**.
-- **Invoked by `/spec`** (its bootstrap ideation fork): project-level, no scope
-  question — the idea belongs to the project being built.
+Mode selection: **always ask** at the start (Step 1), whoever invoked (the user
+directly, or `/spec` at its bootstrap fork) — `AskUserQuestion`: **Global vault
+(Recommended)** | **This project**. The vault is the default home (ideas are
+portable and yours); pick the project only when the idea is about this repository.
 
 Resolve `~` at runtime (`$HOME`); never hardcode an absolute home path.
 
@@ -207,9 +206,9 @@ reply introduces a load-bearing ambiguous term.
 
 ### 1. Resolve scope and check for resumable sessions
 
-- If invoked by `/spec`: scope is **project-level**; skip the scope question.
-- If invoked directly: `AskUserQuestion` — **Global vault (Recommended)** | **This
-  project**.
+- **Ask the scope** (always, whoever invoked) — `AskUserQuestion`: **Global vault
+  (Recommended)** | **This project**. The vault is the portable default; pick the
+  project only when the idea is about this repository.
 - List in-progress whitepapers in the resolved home and offer to resume:
 
   ```bash

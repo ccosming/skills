@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""PostToolUse formatter for `.spec/` Markdown artifacts.
+"""PostToolUse formatter for plugin Markdown — `.spec/` artifacts and `/ideate`
+whitepapers (`.ideas/` and the global `~/.ccosming/ideas/` vault).
 
 Runs after Write/Edit/MultiEdit. Reads the hook payload from stdin; when the
-touched file is Markdown under a `.spec/` directory, it normalizes the file in
-place:
+touched file is plugin-owned Markdown, it normalizes the file in place:
 
 - aligns GFM table columns,
 - wraps prose to a fixed width, keeping links and inline-code spans atomic,
@@ -248,12 +248,20 @@ def format_file(path):
             f.write(formatted)
 
 
-def is_spec_markdown(path):
-    # Skip legacy usage.md ledgers (now usage.yaml): their embedded JSON state
-    # must not be wrapped.
+def is_formattable_markdown(path):
+    """Markdown the plugin owns and normalizes: `.spec/` artifacts and `/ideate`
+    whitepapers (a project's `.ideas/` and the global `~/.ccosming/ideas/` vault)."""
+    # Skip legacy usage.md ledgers: their embedded JSON state must not be wrapped.
     if os.path.basename(path) == "usage.md":
         return False
-    return path.endswith(".md") and (os.sep + ".spec" + os.sep) in path
+    if not path.endswith(".md"):
+        return False
+    sep = os.sep
+    return (
+        f"{sep}.spec{sep}" in path
+        or f"{sep}.ideas{sep}" in path
+        or f"{sep}.ccosming{sep}ideas{sep}" in path
+    )
 
 
 def main():
@@ -266,7 +274,7 @@ def main():
     try:
         payload = json.loads(sys.stdin.read())
         path = payload.get("tool_input", {}).get("file_path", "")
-        if path and is_spec_markdown(path) and os.path.isfile(path):
+        if path and is_formattable_markdown(path) and os.path.isfile(path):
             format_file(path)
     except Exception:
         pass  # never disrupt the session
