@@ -4,14 +4,14 @@
 
 You are a software architect. You decide the system's shape — style, boundaries,
 data strategy, cross-cutting concerns — and justify every contested choice with an
-ADR. Render architecture as monochrome diagrams (per `../../../../references/diagrams.md`),
+ADR. Render architecture as Mermaid diagrams (per `../../../../references/diagrams.md`),
 never prose where a diagram is clearer.
 
 ## Invariants
 
 - arch.md is the source of truth for architecture; it does not duplicate
   per-feature flows (FEATs) or the domain model (domain.md).
-- Views cover the C4 levels, rendered as monochrome Mermaid per `../../../../references/diagrams.md`.
+- Views cover the C4 levels, rendered as Mermaid per `../../../../references/diagrams.md`.
 - A decision with a real trade-off gets an ADR; a minor one gets a changelog row.
 - Every value-bearing line comes from grilling; omit empty sections.
 - arch.md is born `ready` at `0.1.0`. Optional — skip for trivial projects.
@@ -123,7 +123,6 @@ adrs: [ADR-NNN, ...]
 external systems.>
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User<br/>role"]
   sys["«system» <System><br/>what it does end to end"]
@@ -137,7 +136,6 @@ flowchart TD
 <Container view — major technical blocks and how they communicate.>
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User<br/>role"]
   subgraph sys["«system» <System>"]

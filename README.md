@@ -52,26 +52,47 @@ gate — nothing advances until you accept the artifact.
 
 ### Workflow
 
-```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
-flowchart TD
-    subgraph Spec["/spec — single door · runs each artifact's rubric"]
-        Config["languages → project.json"]
-        Found["charter · guidelines · personality<br/>(foundation)"]
-        Opt["stack · domain · arch · ux<br/>(optional)"]
-        PRD["PRD → ADRs + FEATs"]
-        Config --> Found --> Opt --> PRD
-    end
-    Code["/code<br/>implement a ready FEAT"]
-    Challenge["/challenge<br/>review → REV"]
-    Change["change flow · cascade<br/>→ PR-NNN"]
+Every artifact — foundation, design, or driver — is produced by the **same
+authoring loop**: `/spec` resolves the target, seeds it from parked captures,
+grills it against its rubric and the specification bar, writes it, runs the
+read-only critics, gates on your `Accept`, then detects and deposits
+cross-artifact material for whatever comes next.
 
-    PRD --> Code
-    Code -.->|stack-touching block| Spec
-    Code --> Challenge
-    Challenge -.->|iterate up to 3| Code
-    Spec -.->|change on existing spec| Change
-    Change -.-> Spec
+```mermaid
+flowchart LR
+    R["request →<br/>resolve target"] --> S["inject seeds<br/>(pending captures)"]
+    S --> G["grill against rubric<br/>· specification bar"]
+    G --> W["write artifact"]
+    W --> C["/audit + /consistency<br/>(parallel, read-only)"]
+    C -->|findings| G
+    C -->|clean| Q{"decision ledger →<br/>Accept · Adjust"}
+    Q -->|Adjust| G
+    Q -->|Accept| D["/detector →<br/>deposit captures"]
+    D --> N["advance"]
+```
+
+Zooming out, that loop runs over a **layered sequence** — foundation before
+design before drivers — and the `project.json` buffer couriers material both
+ways: top-down **captures** seed downstream artifacts, and bottom-up **impacts**
+from drivers re-validate the design tier (the cascade). Each box in the spine is
+one run of the loop above.
+
+```mermaid
+flowchart TD
+    U["user request"] --> SP["/spec · single door<br/>(engine runs workflow.md)"]
+    SP --> FND["foundation<br/>config · charter · guidelines · personality"]
+    FND --> DSG["design — optional<br/>stack · domain · arch · ux"]
+    DSG --> DRV["drivers<br/>PRD → FEATs + ADRs (fan-out)"]
+    DRV --> CODE["/code · implement a ready FEAT"]
+    CODE --> CH["/challenge → REV"]
+    CH -.->|iterate ≤3| CODE
+    CODE -.->|stack-touching block| SP
+    DRV -.->|change| PR["cascade → PR-NNN"]
+    PR -.->|re-validate| FND
+    BUF[("project.json buffer<br/>captures · impacts")]
+    FND -.->|capture| BUF
+    DRV -.->|impact| BUF
+    BUF -.->|seeds · re-validate| DSG
 ```
 
 ### Skill index
@@ -160,7 +181,7 @@ title — the code lives in `id` and the filename, never a `title:` field.
 | **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `/spec` (personality rubric), `/code` (read)                            |
 | **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                                              | `/spec` (stack rubric + sync), `/code` (read)            |
 | **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                                         | `/spec` (domain rubric), downstream (read if exists)          |
-| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (monochrome flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.                          | `/spec` (arch rubric), downstream (read if exists)             |
+| **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (stereotype-labeled flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.                          | `/spec` (arch rubric), downstream (read if exists)             |
 | **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                                                      | `/spec` (ux rubric), downstream (read if exists)                 |
 | **PRD**          | `.spec/prds/PRD-NNN-{slug}.md`     | New capability definition (problem, users, metrics, scope, criteria).                                                                                         | `/spec` (prd rubric), `/code` + `/challenge` (read)                   |
 | **ADR**          | `.spec/adrs/ADR-NNN-{slug}.md`     | Technical decision with a real trade-off (reduced Nygard format).                                                                                             | `/spec` (adr rubric, fan-out), `/code` (read)                 |
@@ -218,8 +239,8 @@ language.
 ### Markdown & diagrams
 
 - One `# H1` per artifact: the human title, **without** the artifact code.
-- Diagrams use the minimalist Mermaid style from `references/diagrams.md` —
-  `flowchart`/`graph` with `theme: neutral`, no custom colors. Architecture
+- Diagrams follow `references/diagrams.md` — `flowchart`/`graph` with **no theme
+  or init block** (default Mermaid rendering), no custom colors. Architecture
   views render the C4 levels as stereotype-labeled flowcharts.
 - Line wrapping, table alignment, and blank-line spacing are the formatter's job
   (the `PostToolUse` hook) — write valid Markdown and let it normalize.

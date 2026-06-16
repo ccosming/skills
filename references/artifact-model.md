@@ -109,9 +109,9 @@ One-sided references are flagged by `/audit`.
 - One `# H1` per artifact: the human title, **without** the artifact code
   (`ADR-001`, `FEAT-003`). The code lives in `id` and the filename.
 - Section headers stay English; their content follows `language.artifacts`.
-- Diagrams use the minimalist Mermaid style from the catalog — a grayscale `base`
-  palette (the catalog's init block) with mid-gray edges, never per-diagram colors,
-  and a layout chosen for legibility (direction, grouping, short labels).
+- Diagrams follow the catalog (`references/diagrams.md`) — **no theme or init
+  block** (default Mermaid rendering), never per-diagram colors, and a layout
+  chosen for legibility (direction, grouping, short labels).
 - Line wrapping, table-column alignment, and blank-line spacing are normalized
   automatically: the plugin reformats every `.spec/` Markdown file after each
   write. Write valid Markdown and let the formatter normalize it — never hand-pad

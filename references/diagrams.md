@@ -10,25 +10,13 @@ one clear view over exhaustive documentation.
 
 ## Rendering
 
-Every diagram is monochrome (grayscale) and minimalist. It is a tuned `base`
-palette, not a stock theme, for two reasons: a hardcoded stock theme (e.g.
-`neutral`) overrides GitHub's light/dark adaptation, so its light fills turn into
-harsh near-white cutouts on a dark page and its edges wash out; and grayscale has
-to stay legible on *both* backgrounds, which needs mid-gray edges, not the stock
-faint ones.
+Set **no theme and no init block** — let Mermaid render with its default, which
+adapts to GitHub's light and dark backgrounds. Do not hand-style diagrams
+either: no `style`/`classDef` fills, no `linkStyle` colors. Uniform default
+rendering over a bespoke palette.
 
-- Prepend this exact init block as the **first line** of every diagram. It sets a
-  grayscale palette with mid-gray edges and toned label backgrounds that reads on
-  light and dark GitHub alike:
-
-  ```text
-  %%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
-  ```
-
-- Never add per-diagram color — no `style`/`classDef` fills, no `linkStyle`
-  colors. The palette is the only styling; every diagram stays monochrome.
 - Architecture views (the former C4 family) render as `flowchart`, not the C4
-  shapes — C4's fixed styling ignores the palette. The C4 semantics survive as
+  shapes — C4's fixed styling is its own look. The C4 semantics survive as
   `«person»` / `«system»` / `«external»` / `«container»` / `«component»`
   stereotype labels and `subgraph` boundaries.
 
@@ -70,13 +58,11 @@ dense one:
 
 System architecture across abstraction levels. Each level answers a distinct
 question for a distinct audience. The C4 semantics are kept as stereotype labels
-and `subgraph` boundaries, rendered through `flowchart` so the neutral theme
-applies.
+and `subgraph` boundaries, rendered through `flowchart`.
 
 ### System context — the widest view: system + users + external systems
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User<br/>role"]
   sys["«system» System<br/>what it does end to end"]
@@ -88,7 +74,6 @@ flowchart TD
 ### Containers — the major technical blocks (apps, APIs, stores, workers)
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User<br/>role"]
   subgraph sys["«system» System"]
@@ -106,7 +91,6 @@ flowchart TD
 ### Components — the internals of one container
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   subgraph api["«container» API"]
     ctrl["«component» Controller<br/>handles requests"]
@@ -119,7 +103,6 @@ flowchart TD
 ### Runtime flow — a runtime interaction across containers (numbered steps)
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   user["«person» User"]
   web["«container» Web App"]
@@ -141,7 +124,6 @@ Defines the vocabulary and responsibilities. Relations: inheritance,
 association, composition, aggregation.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 classDiagram
   class User {
     +String name
@@ -168,7 +150,6 @@ High-level scope agreement. The "what" from the user's perspective, never the
 nodes.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart LR
   customer([Customer])
   admin([Administrator])
@@ -184,7 +165,6 @@ The temporal dimension of one scenario. Ideal for APIs, protocols, debugging a
 concrete flow.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 sequenceDiagram
   actor C as Client
   participant S as Server
@@ -204,7 +184,6 @@ sequenceDiagram
 Process logic end to end. Surfaces bottlenecks and business rules.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart TD
   Start([Start]) --> A[Receive order]
   A --> D{In stock?}
@@ -218,7 +197,6 @@ Captures valid states and the events that move between them; prevents invalid
 states. For event-driven logic and state machines.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 stateDiagram-v2
   [*] --> Pending
   Pending --> Paid: confirmPayment()
@@ -236,7 +214,6 @@ which carries richer semantics; reach for this when a plain dependency sketch
 suffices.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 flowchart LR
   web[Web UI] --> api[REST API]
   api --> auth[Auth Service]
@@ -251,7 +228,6 @@ Maps the experience over time with a sentiment score (1–5) per step. Descripti
 context, not behaviorally enforceable; pair it with testable quality criteria.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ebebeb','primaryBorderColor':'#686868','primaryTextColor':'#101010','lineColor':'#686868','secondaryColor':'#cccccc','tertiaryColor':'#a9a9a9','clusterBkg':'#cccccc','clusterBorder':'#525252','edgeLabelBackground':'#ebebeb'}}}%%
 journey
   title Checkout journey
   section Browse

@@ -130,4 +130,4 @@ language.artifacts. Omit the whole section if there were none.>
 | YYYY-MM-DD HH:MM | 0.1.0   | Initial creation as part of PRD-NNN breakdown: <order and dependencies agreed>.   |
 ````
 
-> Mermaid blocks use the monochrome theme init from `../../../../references/diagrams.md`.
+> Mermaid blocks follow `../../../../references/diagrams.md` — no theme or init block.

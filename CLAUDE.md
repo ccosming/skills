@@ -20,7 +20,7 @@ skills/
 │   ├── constitution.md      # Rules every spec-workflow skill obeys
 │   ├── artifact-model.md    # SemVer, status flow, changelog, cross-reference rules
 │   ├── specification-bar.md # When a line counts as specified — shared by author and critic
-│   └── diagrams.md          # Mermaid diagram catalog (monochrome, neutral)
+│   └── diagrams.md          # Mermaid diagram catalog (layout + shape conventions)
 ├── CLAUDE.md                # This maintainer guide
 ├── README.md                # User-facing plugin overview
 └── skills/
