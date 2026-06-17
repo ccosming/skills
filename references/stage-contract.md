@@ -9,11 +9,14 @@ reach it through `/spec`.
 
 ## What /spec passes you (args)
 
-- `mode` — `create` (artifact absent), `regenerate` (replace an existing one), or
-  `adjust` (the gate returned Adjust; re-grill one dimension only).
+- `mode` — `create` (artifact absent), `regenerate` (replace an existing one),
+  `adjust` (the gate returned Adjust; re-grill one dimension only), or `slice`
+  (lean track: fold in one provided slice without a full grill — see _Slice mode_).
 - `seeds` — pending hypotheses captured earlier. Treat each as a recommended
   default to confirm or steer, never a settled fact (grilling engine, _Seeds_).
 - `adjust_dimension` — present only when `mode: adjust`; the one dimension to revise.
+- `slice` — present only when `mode: slice`; the specific material to fold in (a
+  term, a boundary, a surface, a tool) and the dimension it belongs to.
 
 ## Run
 
@@ -31,6 +34,15 @@ reach it through `/spec`.
 
 **`adjust` mode:** re-grill only `adjust_dimension`, rewrite that part of the
 artifact, refresh the ledger, and hand back. Do not re-grill settled dimensions.
+
+**`slice` mode (lean track):** do not run the dimension loop. Take the provided
+`slice`, confirm or steer it in one focused exchange only if it is underspecified,
+then fold it into the artifact — creating the artifact born `ready` (frontmatter +
+that one slice) if absent, or extending it (and bumping its version + changelog) if
+present — applying the specification bar to that slice. Leave the rest of the
+artifact untouched. Return the one-line ledger entry for the slice; `/spec`'s caller
+(the PRD/FEAT that drove it) surfaces the addition at its own gate, so a slice has
+no separate confirmation gate of its own.
 
 ## Constitution
 

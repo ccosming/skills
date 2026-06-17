@@ -13,7 +13,7 @@ section.
     {
       "version": 1,
       "language": {"chat": "en", "artifacts": "en"},   # owned by /spec
-      "state":   {"in_flight": null, "next_suggested": null, "captures": []},
+      "state":   {"category": null, "in_flight": null, "next_suggested": null, "captures": []},
       "usage":   {"report": {...}, "_state": {...}}     # owned by the hook
     }
 
@@ -31,6 +31,7 @@ CLI (/spec calls this over Bash):
     project_file.py --project . get [dotted.key]
     project_file.py --project . set-language <chat> <artifacts>
     project_file.py --project . set-state <in_flight|next_suggested> <value>
+    project_file.py --project . set-category <lean|full>
     project_file.py --project . add-capture '<json object>'
     project_file.py --project . add-captures '<json array>'
     project_file.py --project . add-captures-file <path-to-json-array>
@@ -58,7 +59,7 @@ def default():
     return {
         "version": 1,
         "language": {"chat": "en", "artifacts": "en"},
-        "state": {"in_flight": None, "next_suggested": None, "captures": []},
+        "state": {"category": None, "in_flight": None, "next_suggested": None, "captures": []},
         "usage": {"report": {}, "_state": {"sessions": {}}},
     }
 
@@ -187,6 +188,8 @@ def main():
     p_state = sub.add_parser("set-state")
     p_state.add_argument("key", choices=["in_flight", "next_suggested"])
     p_state.add_argument("value")
+    p_cat = sub.add_parser("set-category")
+    p_cat.add_argument("track", choices=["lean", "full"])
     sub.add_parser("add-capture").add_argument("json", help="a capture object as JSON")
     sub.add_parser("add-captures").add_argument("json", help="a JSON array of capture objects")
     sub.add_parser("add-captures-file").add_argument(
@@ -209,6 +212,8 @@ def main():
             data["language"] = {"chat": args.chat, "artifacts": args.artifacts}
         elif args.cmd == "set-state":
             data["state"][args.key] = None if args.value in ("", "null") else args.value
+        elif args.cmd == "set-category":
+            data["state"]["category"] = args.track
         elif args.cmd == "add-capture":
             cap = json.loads(args.json)
             cap.setdefault("status", "pending")

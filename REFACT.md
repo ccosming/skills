@@ -85,9 +85,19 @@ Shared backbone (references/, one copy): authoring procedure ·
     cascade rubric (`change.md`) stays inline in `skills/spec/references/rubrics/`.
     The wrapper stays in `/spec`. Pending: a live `/spec` run to confirm the
     dispatch + wrapper-resume across the sub-skill boundary.
-- [ ] **Phase 3 — Categorizer + tracks + lean.** Categorizer subagent +
+- [x] **Phase 3 — Categorizer + tracks + lean.** Categorizer subagent +
   deterministic checklist; `category` field + migration default; slice-
   incremental orthogonal artifacts on the lean track.
+  - **Done.** `skills/categorizer/` (forked, read-only) applies a deterministic
+    six-signal checklist over the charter and returns `lean`/`full` + the signals;
+    `/spec` confirms the track with the user and persists it. The coordinator gained
+    `state.category` + a `set-category <lean|full>` verb (absent ⇒ treated as `full`,
+    so pre-track projects are unchanged). `workflow.md` gained a _Tracks_ section, a
+    categorize+branch step in the bootstrap, track-aware PRD prerequisites, and an
+    _On-demand orthogonals_ section; the stage contract gained a `slice` mode (fold
+    one slice, bar-applied, no full grill, no separate gate). Pending: a live `/spec`
+    run on a lean-shaped charter to confirm the categorize → confirm → branch →
+    PRD-first flow and a slice pass.
 - [ ] **Phase 4 — Rubric split + drafting/fan-out in subagents.** Split each
   rubric into dimensions (grilling) + template (writing), then move drafting and
   FEAT/ADR fan-out to parallel subagents that load only the template.

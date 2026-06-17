@@ -68,8 +68,8 @@ started" line.
    gates, triggers) and `../../references/authoring-procedure.md` (the universal
    loop you run for every artifact). Everything below executes them.
 2. **Cold start:** if `.spec/project.json` exists, read it — tell the user where
-   they left off (`state.in_flight`, pending `state.captures`) and propose
-   `state.next_suggested`.
+   they left off (`state.in_flight`, pending `state.captures`), note the track
+   (`state.category`; absent ⇒ full), and propose `state.next_suggested`.
 3. The foundation (languages + charter + guidelines + personality) is injected at
    session start; its presence is the bootstrap signal. List what else exists —
    do not assume:

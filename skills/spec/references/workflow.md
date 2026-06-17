@@ -72,6 +72,36 @@ bootstrap sequence, the impact graph, _Writing it_ — are this file's job; the 
 of each artifact is the rubric's. Where an artifact's rubric is not yet in place,
 `/spec` dispatches to its owning skill instead — same artifact, same gates.
 
+## Tracks
+
+After the foundation is complete, `/spec` classifies the project into one of two
+**tracks** and records it in `project.json` (`state.category`). The track decides
+how the design artifacts (stack, domain, arch, ux) come into being.
+
+- **full** — design upfront. After the foundation, author stack / domain / arch /
+  ux, then PRDs. The PRD's design prerequisites bind (each waivable). This is also
+  the behavior for any project whose `category` is unset.
+- **lean** — drivers first. After the foundation, go straight to PRDs. The design
+  artifacts are **not** prerequisites; each is born **slice-incremental** the first
+  time a PRD or FEAT needs material it owns (_On-demand orthogonals_), then accretes.
+
+**Categorizing.** At foundation-complete, `/spec` dispatches the `categorizer`
+(forked; a deterministic checklist over `charter.md`):
+
+```
+Skill(skill="categorizer", args="charter_path: .spec/charter.md")
+```
+
+It returns a track + the signals that drove it. `/spec` presents the verdict and the
+user confirms or switches with one `AskUserQuestion` (**Accept <track>** | **Use
+<other track>**), then records it — `<the coordinator> --project <root> set-category
+<track>`. The categorizer never writes; `/spec` persists the confirmed track.
+
+**Migration.** A project whose `project.json` has no `state.category` (anything
+bootstrapped before tracks existed) is treated as **full** — its flow is unchanged.
+The categorizer runs only for a new project at foundation-complete, or on demand
+when the user asks to re-evaluate.
+
 ## Definition flow (top-down)
 
 ### Bootstrap sequence
@@ -88,10 +118,15 @@ artifact. Drive it silently — the next stage's first question is the transitio
 3. **charter** — what the system is.
 4. **guidelines** — engineering conventions.
 5. **personality** — the implementer's persona.
-6. Foundation complete. Offer the design stages (stack, domain, arch, ux), then
-   PRD. They are not silently skippable — a PRD requires domain, arch, and ux,
-   each waivable with a reason (_Dependencies_); author them now or be asked at
-   PRD time.
+6. **Foundation complete → categorize.** Dispatch the `categorizer` (forked) over
+   the charter and confirm the track with the user (_Tracks_); record it via
+   `set-category`.
+7. **Branch on the track** (_Tracks_):
+   - **full** — offer the design stages (stack, domain, arch, ux), then PRD. They
+     are not silently skippable; a PRD's design prerequisites bind, each waivable
+     with a reason (_Dependencies_).
+   - **lean** — go straight to PRD. The design artifacts are built slice-incremental
+     on demand (_On-demand orthogonals_), never upfront.
 
 Skip any stage whose file already exists; resume at the first gap.
 
@@ -108,14 +143,17 @@ Foundation = config + charter + guidelines + personality.
 | arch        | foundation                                    | —                              |
 | ux          | foundation                                    | —                              |
 | stack       | foundation                                    | arch                           |
-| PRD         | foundation + domain, arch, ux (each waivable) | stack                          |
+| PRD (full)  | foundation + domain, arch, ux (each waivable) | stack                          |
+| PRD (lean)  | foundation                                    | —                              |
 | cascade     | target PRD exists and is not `in-progress`    | —                              |
 
-A missing hard prerequisite routes there first. A PRD's design prerequisites
-(domain, arch, ux) also block — but each may be **waived at the gate with a
-one-line reason** (recorded in the PRD's interaction notes), never skipped
-silently: a headless library waives `ux`, a CRUD tool rarely waives `domain`. A
-missing recommendation is surfaced once and the user decides.
+A missing hard prerequisite routes there first. The PRD row depends on the track
+(_Tracks_): in **full**, its design prerequisites (domain, arch, ux) block — each
+**waivable at the gate with a one-line reason** (recorded in the PRD's interaction
+notes), never skipped silently (a headless library waives `ux`, a CRUD tool rarely
+waives `domain`); in **lean**, they do not block — the orthogonal artifacts are born
+slice-incremental as the PRD/FEAT reveals their material (_On-demand orthogonals_).
+A missing recommendation is surfaced once and the user decides.
 
 ### Gates
 
@@ -196,6 +234,30 @@ by *when* they fire:
 | PRD, cascade   | new dependency / tech            | stack       | bottom-up  |
 | PRD, cascade   | user-facing surface              | ux          | bottom-up  |
 
+## On-demand orthogonals (lean track)
+
+In the **lean** track the design artifacts (stack, domain, arch, ux) are not built
+upfront. Each is born the first time a PRD or FEAT needs material it owns, then
+accretes — bottom-up, one slice at a time.
+
+When PRD/FEAT grilling surfaces a slice an orthogonal artifact owns — a domain term,
+an arch boundary, a UX surface, a stack dependency (the _Cross-artifact triggers_
+rows, bottom-up) — `/spec` does not merely park it: it dispatches the owning stage
+skill in **`slice` mode** (stage-contract) to fold in just that slice. The skill
+creates the artifact born `ready` (seeded by the slice) if absent, or extends it if
+present, applying the bar to the slice only — no full-dimension grilling and no
+separate gate. The driving PRD/FEAT surfaces its orthogonal additions at its own
+confirmation gate, and the artifact is subject to the normal critics whenever it is
+next authored in full.
+
+`/code` requires `stack`. If a FEAT reaches implementation while `stack` is still
+absent, that need triggers the same slice pass (a minimal stack for what the FEAT
+builds) before coding.
+
+A lean artifact grows exactly as the drivers demand and no more. To switch a lean
+project to upfront design, re-run the categorizer or author the design artifacts
+directly — they are the same artifacts, only built sooner.
+
 ## project.json — runtime memory
 
 `.spec/project.json` is the single non-artifact file: languages, runtime state,
@@ -214,6 +276,7 @@ context would clobber the hook's `usage` section.
 ```json
 {
   "state": {
+    "category": "lean",
     "in_flight": "charter",
     "next_suggested": "domain",
     "captures": [
@@ -229,7 +292,8 @@ context would clobber the hook's `usage` section.
 }
 ```
 
-`kind` is `capture | impact`; `status` is `pending | consumed | dropped`.
+`kind` is `capture | impact`; `status` is `pending | consumed | dropped`. `category`
+is `lean | full` (absent ⇒ treated as `full` — see _Tracks_).
 
 ### Writing it
 
@@ -246,6 +310,7 @@ every time.
 | --- | --- |
 | Set languages | `<the coordinator> --project <root> set-language <chat> <artifacts>` |
 | Set `in_flight` / `next_suggested` | `<the coordinator> --project <root> set-state <key> <value>` |
+| Set the track | `<the coordinator> --project <root> set-category <track>` (`lean` or `full`) |
 | Deposit one capture | `<the coordinator> --project <root> add-capture '<json>'` |
 | Deposit a batch (preferred) | write the array to `~/.ccosming/spec-inbox/<artifact>-captures.json` (resolve `~` to an absolute path at runtime — the dir is pre-approved for `Write`, never `.spec/`), then `<the coordinator> --project <root> add-captures-file <that path>` — the coordinator deletes the file after a successful deposit |
 | Mark a seed consumed/dropped | `<the coordinator> --project <root> update-capture "<seed substring>" <status>` |

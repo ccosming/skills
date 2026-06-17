@@ -34,14 +34,22 @@ Two entry points (_doors_) drive the work:
 - **`/code`** — implements a `ready` FEAT, running its build⇄review loop
   internally.
 
-The authoring artifacts are **not** skills — each is a **rubric bundle** under
-`skills/spec/references/rubrics/` that `/spec` runs inline. The skills that remain
-are the two doors plus a handful of forked, single-purpose delegates: the critics
-(`/audit`, `/consistency`, `/detector`), the helpers (`/clarify`, `/research`,
-`/summarize`), the reviewer (`/challenge`), and the standalone ideation skills
-(`/ideate` and the older `/grill`). A delegate does its job, reports, and returns —
-sequencing belongs to the door. (A third door, `/issue` for symptom triage, is
-defined in the constitution but not yet implemented.)
+Each authoring artifact is its own **stage skill** (`charter`, `guidelines`,
+`personality`, `stack`, `domain`, `arch`, `ux`, `prd`, `feat`, `adr`) — internal,
+not user-invocable — that owns its rubric and follows a shared stage contract
+(`references/stage-contract.md`): it grills and writes, while `/spec`'s universal
+procedure wraps every dispatch with the cross-cutting steps (prerequisites,
+critique, gate, detect, advance). Alongside them are forked, single-purpose
+delegates: the critics (`/audit`, `/consistency`, `/detector`), the helpers
+(`/clarify`, `/research`, `/summarize`), the classifier (`/categorizer`), the
+reviewer (`/challenge`), and the standalone ideation skills (`/ideate` and the older
+`/grill`). A delegate does its job, reports, and returns — sequencing belongs to the
+door. (A third door, `/issue` for symptom triage, is defined in the constitution but
+not yet implemented.)
+
+After the foundation, `/spec` picks a **track** — `/categorizer` reads the charter
+and proposes one: **full** designs stack/domain/arch/ux upfront, **lean** goes
+straight to PRDs and grows the design artifacts slice-by-slice on demand.
 
 Ideation has its own front door: **`/ideate`** turns a half-formed idea into a
 standalone concept whitepaper — readable on its own, saved to a global
