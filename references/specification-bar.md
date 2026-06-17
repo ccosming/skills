@@ -1,10 +1,11 @@
 # The specification bar
 
 When a line in a `.spec/` artifact counts as **specified**. One source, two
-enforcers: the grilling engine applies it while authoring (per recorded fact,
-plus a pre-write scan of the draft); `/consistency` re-verifies it fresh-eyes
-after the write. Every skill that writes or critiques artifacts treats this
-file as binding.
+enforcement points: the author applies it while authoring — per recorded fact
+during grilling, plus a pre-write scan of the draft (the drafter on the stage-skill
+path, the grilling engine inline) — and `/consistency` re-verifies it fresh-eyes
+after the write. Every skill that writes or critiques artifacts treats this file as
+binding.
 
 ## Scope
 

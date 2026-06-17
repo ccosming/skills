@@ -56,9 +56,8 @@ no separate confirmation gate of its own.
 
 ## Constitution
 
-Operate under the constitution injected at session start — voice, localization
-(write the artifact in `language.artifacts`), and `AskUserQuestion` rules. If it is
-not in context, read `constitution.md` first.
+Operate under the constitution injected at session start. If it is not in context,
+read `constitution.md` first. Write the artifact's content in `language.artifacts`.
 
 ## Boundaries
 

@@ -25,6 +25,14 @@ never directs the user to run another command — sequencing belongs to the door
 skill needs a missing artifact, stop and point the user to `/spec` (the only door
 that creates artifacts), never to the hidden delegate.
 
+When a door delegates artifact authoring to a **stage skill**, the closure steps
+around the write — self-consistency, `/audit`, the confirmation gate, capture
+deposit, advancing — belong to the **orchestrator**, not the delegate: the stage
+skill grills, writes its one artifact, and returns its decision ledger
+(`stage-contract.md`, `authoring-procedure.md`). So a rule below that names "the
+writing skill" means the authoring workflow as a whole — the skill itself when it
+authors standalone, its orchestrator when authoring is delegated.
+
 ## Voice
 
 Speak only as the skill's operator persona. The user reads questions, content,
@@ -32,7 +40,7 @@ and confirmations — never the workflow that produces them.
 
 Skip in user-facing prose:
 
-- Phase numbers, step indices ("Phase 2", "Step 1.3").
+- Phase numbers, step indices, question indices ("Phase 2", "Step 1.3", "Q2 — …").
 - File operations ("project.json updated", "writing to .spec/").
 - Mechanism names ("grilling", "dimension by dimension").
 - Process meta ("now I'll", "let me load X").
@@ -136,7 +144,11 @@ from a known taxonomy). For open exploration, ask in plain prose.
 **Cadence — one material decision per turn.** This holds in **every channel** —
 `AskUserQuestion` *and* plain prose: never stack several open or material questions
 in one turn, never offer to "answer them together". Two material decisions are two
-turns; decompose them into a guided sequence.
+turns; decompose them into a guided sequence. A **multi-part question counts as
+several questions** — even under a single topic and even in free-text exploration:
+three facets of one theme ("how do you do this today? what makes it slip? what
+would the ideal be?") is three turns, not one. Ask the single highest-value facet;
+let the rest follow.
 
 | Bad (one turn) | Good (sequence) |
 | --- | --- |
@@ -188,16 +200,20 @@ may be contradicted, excluded, or made infeasible by another. Writing each secti
 to satisfy its own dimension can still assemble a self-contradicting whole the
 author cannot see.
 
-So after writing an artifact and **before** the Accept/Adjust gate, the writing
-skill runs the `/consistency` critic on it (forked, fresh-eyes). For each
-finding it returns — a cross-section contradiction, or a value-bearing line
-failing the specification bar (`references/specification-bar.md`) — the skill
-**surfaces it to the user and resolves it co-creatively** — re-grilling the
-affected dimension, rewriting, then re-running the critic. Resolution is
-certified by a fresh `/consistency` report, never by the author's claim that a
-fix worked: re-run after each fix pass until the report comes back clean. A
-finding blocks the gate until that clean report, or until the user explicitly
-overrides it. The skill is the feedback loop, not the user.
+So after writing an artifact and **before** the Accept/Adjust gate, the authoring
+workflow runs the `/consistency` critic on it (forked, fresh-eyes — the writing
+skill when it authors standalone, the orchestrator when authoring is delegated, per
+_Entry points and delegation_). For each finding it returns — a cross-section
+contradiction, or a value-bearing line failing the specification bar
+(`references/specification-bar.md`) — it **surfaces it to the user and resolves it
+co-creatively** — re-grilling the affected dimension, rewriting, then re-running
+the critic. Resolution is certified by a fresh `/consistency` report, never by the
+author's claim that a fix worked: re-run after each fix pass until the report comes
+back clean. An **`error`** finding blocks the gate until that clean report, or
+until the user explicitly overrides it; a **`warning`** is surfaced and resolved
+the same way when feasible but does not hard-block — the user may accept the
+artifact with it noted; **`info`** is contextual. The workflow is the feedback
+loop, not the user.
 
 This complements `/audit`, it does not replace it: `/audit` is structural
 (frontmatter, references, status), `/consistency` is semantic (do the sections
@@ -222,6 +238,12 @@ Helper skills are invoked directly, never wrapped in `Task`:
 result without polluting the caller's context — never add a `Task` wrapper. Args
 are semicolon-separated `key: value` pairs interpolated into the helper; it
 returns its output verbatim, the caller parses it.
+
+From its own side a forked helper is a **pure step**: it never calls
+`AskUserQuestion`, never addresses or waits on the user, and never writes or edits
+files — its returned text **is** the result, and control returns to the caller the
+instant it emits. The caller owns all user interaction and all file writes. This is
+what makes a helper agnostic to its caller (a skill, a CLI, an API, a batch job).
 
 | Helper | When |
 | --- | --- |
