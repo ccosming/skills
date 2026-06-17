@@ -21,6 +21,7 @@ skills/
 │   ├── artifact-model.md       # SemVer, status flow, changelog, cross-reference rules
 │   ├── specification-bar.md    # When a line counts as specified — shared by author and critic
 │   ├── authoring-procedure.md  # The universal loop /spec runs for every rubric-backed artifact
+│   ├── stage-contract.md       # What every authoring stage skill does (args, grill→write→ledger, boundaries)
 │   ├── grilling-engine.md      # Dimension-coverage grilling loop (persona, bar scan, decision ledger)
 │   └── diagrams.md             # Mermaid diagram catalog (layout + shape conventions)
 ├── CLAUDE.md                # This maintainer guide

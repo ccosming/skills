@@ -32,15 +32,15 @@ The nodes of the flow.
 | ----------- | ---------------------------- | --------------- | ----------- | --------- |
 | config      | `/spec` (inline, bootstrap 1)| —               | static      | no        |
 | charter     | `charter` skill              | `skills/charter`| anchor      | yes       |
-| guidelines  | `/spec` + rubric             | `guidelines.md` | calibration | yes       |
-| personality | `/spec` + rubric             | `personality.md`| calibration | yes       |
-| stack       | `/spec` + rubric             | `stack.md`      | accretive   | yes       |
-| domain      | `/spec` + rubric             | `domain.md`     | accretive   | yes       |
-| arch        | `/spec` + rubric             | `arch.md`       | accretive   | yes       |
-| ux          | `/spec` + rubric             | `ux.md`         | accretive   | yes       |
-| PRD         | `/spec` + rubric             | `prd.md`        | driver      | yes       |
-| FEAT        | `/spec` + rubric (fan-out)   | `feat.md`       | driver      | yes       |
-| ADR         | `/spec` + rubric (fan-out)   | `adr.md`        | record      | yes       |
+| guidelines  | `guidelines` skill           | `skills/guidelines` | calibration | yes   |
+| personality | `personality` skill          | `skills/personality`| calibration | yes   |
+| stack       | `stack` skill                | `skills/stack`      | accretive   | yes   |
+| domain      | `domain` skill               | `skills/domain`     | accretive   | yes   |
+| arch        | `arch` skill                 | `skills/arch`       | accretive   | yes   |
+| ux          | `ux` skill                   | `skills/ux`         | accretive   | yes   |
+| PRD         | `prd` skill                  | `skills/prd`        | driver      | yes   |
+| FEAT        | `feat` skill (fan-out)       | `skills/feat`       | driver      | yes   |
+| ADR         | `adr` skill (fan-out)        | `skills/adr`        | record      | yes   |
 
 `/code` consumes the registry and writes source; it never authors a `.spec`
 artifact.
