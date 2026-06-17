@@ -110,7 +110,9 @@ Section rules:
   write "none" lines.
 - **No blockquotes.** Use a bold lead-in label or a `####` subsection for asides.
 - **Flows are diagrams.** Render any flow inside a ` ```mermaid ` block, never
-  ASCII. No theme/init block — default Mermaid (see `../../references/diagrams.md`).
+  ASCII. No theme/init block — default Mermaid. Break long node labels with
+  `<br/>`, never `\n` (a literal `\n` renders as text). See
+  `../../references/diagrams.md`.
 
 ## Where it lives (dual-mode)
 
@@ -124,8 +126,10 @@ Two homes, by where the idea belongs:
 
 Mode selection: **always ask** at the start (Step 1), whoever invoked (the user
 directly, or `/spec` at its bootstrap fork) — `AskUserQuestion`: **Global vault
-(Recommended)** | **This project**. The vault is the default home (ideas are
-portable and yours); pick the project only when the idea is about this repository.
+(Recommended)** | **This project**. The vault is **always** the recommended
+option — ideas are portable and yours by default. Never flip the recommendation
+to the project, not even when `/spec` invoked the skill inside a repo; the user
+can still choose the project, but the skill does not steer them there.
 
 Resolve `~` at runtime (`$HOME`); never hardcode an absolute home path.
 
@@ -207,8 +211,9 @@ reply introduces a load-bearing ambiguous term.
 ### 1. Resolve scope and check for resumable sessions
 
 - **Ask the scope** (always, whoever invoked) — `AskUserQuestion`: **Global vault
-  (Recommended)** | **This project**. The vault is the portable default; pick the
-  project only when the idea is about this repository.
+  (Recommended)** | **This project**. The vault is **always** recommended (first
+  option), even when `/spec` invoked the skill; never flip the recommendation to
+  the project. The user may still pick the project.
 - List in-progress whitepapers in the resolved home and offer to resume:
 
   ```bash

@@ -33,8 +33,9 @@ dense one:
   declaration order, not the graph itself.
 - **Group with `subgraph`** — bound related nodes to add structure and cut
   crossings; name the boundary in domain terms.
-- **Short labels** — wrap node text with `<br/>` and keep edge labels to a few
-  words (long ones overlap). Put detail in the node, not on the edge.
+- **Short labels** — break node text with `<br/>`, never `\n` (a literal `\n`
+  does not wrap and renders as text in GitHub's Mermaid). Keep edge labels to a
+  few words (long ones overlap). Put detail in the node, not on the edge.
 - **One question per diagram** — if a view needs more than ~12 nodes or the
   branches tangle, split it into two focused diagrams instead of one mega-graph.
 
