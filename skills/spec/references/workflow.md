@@ -87,8 +87,10 @@ only thing that varies between artifacts.
 8. **Confirmation gate.** Present the engine's decision ledger **as visible
    prose before the selector** — one line per dimension plus its provenance
    tag, `confirmed`/`default` lines called out for veto (grilling-engine.md,
-   _Provenance and the decision ledger_). Accept advances; Adjust loops to
-   step 5.
+   _Provenance and the decision ledger_). Then `AskUserQuestion`: **Accept &
+   continue** (advance to step 10) | **Accept & pause** (lock the artifact and
+   stop at a commit point) | **Adjust** (loops to step 5). Accept & pause records
+   the artifact as accepted, then stops per step 10.
 9. **Detect + deposit.** Invoke `/detector` (forked) over the artifact
    (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
    deposit **all** returned captures through **the coordinator** (SKILL.md,
@@ -102,7 +104,11 @@ only thing that varies between artifacts.
    consumed`. Every call is a single static command (_Writing it_): absolute
    `--project` root, no `cd` / `$(…)` / shell variables. The deposit is a command
    you run, not a displayed block. Never hand-write `project.json`.
-10. **Advance** per the bootstrap sequence, or surface the next options and stop.
+10. **Advance** per the bootstrap sequence — unless the gate chose **Accept &
+    pause**: set `next_suggested` to the next stage, leave `in_flight` cleared, and
+    stop with a one-line resume handoff (the artifact is `ready`; the user runs
+    `/commit`, then re-invokes `/spec` to continue). Otherwise advance, or surface
+    the next options and stop.
 
 Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.
 
@@ -122,8 +128,10 @@ artifact. Drive it silently — the next stage's first question is the transitio
 3. **charter** — what the system is.
 4. **guidelines** — engineering conventions.
 5. **personality** — the implementer's persona.
-6. Foundation complete. Offer the optional stages and let the user pick or stop:
-   stack, domain, arch, ux, then PRD.
+6. Foundation complete. Offer the design stages (stack, domain, arch, ux), then
+   PRD. They are not silently skippable — a PRD requires domain, arch, and ux,
+   each waivable with a reason (_Dependencies_); author them now or be asked at
+   PRD time.
 
 Skip any stage whose file already exists; resume at the first gap.
 
@@ -131,26 +139,31 @@ Skip any stage whose file already exists; resume at the first gap.
 
 Foundation = config + charter + guidelines + personality.
 
-| Target      | Requires (block, route there first)        | Recommends (note, don't block) |
-| ----------- | ------------------------------------------- | ------------------------------ |
-| charter     | config                                      | —                              |
-| guidelines  | config + charter                            | —                              |
-| personality | config + charter + guidelines               | —                              |
-| domain      | foundation                                  | —                              |
-| arch        | foundation                                  | —                              |
-| ux          | foundation                                  | —                              |
-| stack       | foundation                                  | arch                           |
-| PRD         | foundation                                  | domain, arch, ux               |
-| cascade     | target PRD exists and is not `in-progress`  | —                              |
+| Target      | Requires (block, route there first)           | Recommends (note, don't block) |
+| ----------- | --------------------------------------------- | ------------------------------ |
+| charter     | config                                        | —                              |
+| guidelines  | config + charter                              | —                              |
+| personality | config + charter + guidelines                 | —                              |
+| domain      | foundation                                    | —                              |
+| arch        | foundation                                    | —                              |
+| ux          | foundation                                    | —                              |
+| stack       | foundation                                    | arch                           |
+| PRD         | foundation + domain, arch, ux (each waivable) | stack                          |
+| cascade     | target PRD exists and is not `in-progress`    | —                              |
 
-A missing hard prerequisite routes there first; a missing recommendation is
-surfaced once and the user decides.
+A missing hard prerequisite routes there first. A PRD's design prerequisites
+(domain, arch, ux) also block — but each may be **waived at the gate with a
+one-line reason** (recorded in the PRD's interaction notes), never skipped
+silently: a headless library waives `ux`, a CRUD tool rarely waives `domain`. A
+missing recommendation is surfaced once and the user decides.
 
 ### Gates
 
 A **gate** is a pause where the engine waits for the user — one after every
-artifact (post-critique). Accept advances; Adjust loops. Between bootstrap
-stages, never announce the transition.
+artifact (post-critique), with three outcomes: **Accept & continue** advances;
+**Accept & pause** locks the artifact and stops at a clean commit point (resume
+via the recorded `next_suggested`); **Adjust** loops. On the continue path, never
+announce the transition between bootstrap stages.
 
 ## Fan-out (PRD → FEATs + ADRs)
 
