@@ -23,9 +23,9 @@ dependencies, bootstrap sequence, gates, impact graph, and triggers — live in
 `references/workflow.md`. You **read that program and execute it**; you never
 improvise a flow rule or duplicate one here. You never write `.spec/` files by
 hand: you run each authoring artifact through the universal procedure
-(`../../references/authoring-procedure.md`), or dispatch to its owning skill where
-its rubric is not yet in place, and you dispatch the operations that are their own
-skill (`/code`, the critics).
+(`../../references/authoring-procedure.md`) — whose authoring step grills an inline
+rubric or dispatches to the artifact's owning stage skill — and you dispatch the
+operations that are their own skill (`/code`, the critics).
 A change to an existing PRD runs as the cascade — the `change` rubric, not a
 separate skill.
 
@@ -87,9 +87,11 @@ started" line.
      sequence there), tell the user why, then return to the original target.
    - Only a recommendation unmet → surface it once; the user decides.
 3. Run the target:
-   - An authoring artifact → if `references/rubrics/<target>.md` exists, run the
-     universal procedure (`../../references/authoring-procedure.md`) against it; otherwise dispatch with
-     `Skill(skill="<owning>")`.
+   - An authoring artifact → **always** run the universal procedure
+     (`../../references/authoring-procedure.md`). Its authoring step grills the
+     rubric inline when `references/rubrics/<target>.md` exists, or dispatches to
+     the target's owning **stage skill** when it does not; either way the wrapper
+     (prerequisites, critique, gate, detect, advance) is yours and runs.
    - A change to an existing PRD/FEAT → run the cascade: the `change` rubric via
      the universal procedure, then the impact graph (workflow.md, _Evolution flow_).
    - Implementation of a ready FEAT → `Skill(skill="code")`.

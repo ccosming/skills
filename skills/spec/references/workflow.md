@@ -15,12 +15,12 @@ The model has three parts:
   by hand — see _project.json — runtime memory_.
 
 Authoring artifacts are driven by a **rubric bundle**, not by bespoke
-per-artifact logic — each (`skills/spec/references/rubrics/<name>.md`: persona +
-dimensions + seeds + template + invariants) is run by `/spec` through the
-*universal authoring procedure* (`../../../references/authoring-procedure.md`).
-Where an artifact's rubric is not yet in
-place, `/spec` dispatches to its owning skill instead — same artifact, same
-gates. The operations that are always their own skill are those that are not
+per-artifact logic — each (persona + dimensions + seeds + template + invariants)
+is run by `/spec` through the *universal authoring procedure*
+(`../../../references/authoring-procedure.md`). A rubric lives either inline
+(`skills/spec/references/rubrics/<name>.md`) or inside the artifact's own **stage
+skill** (`skills/<name>/references/`); when it is owned by a stage skill, `/spec`
+dispatches the grilling there — same artifact, same gates. The operations that are always their own skill are those that are not
 "author one artifact from one rubric": `/code` (writes source), and the read-only
 critics (`/audit`, `/consistency`, `/detector`).
 
@@ -31,7 +31,7 @@ The nodes of the flow.
 | Artifact    | Authored by                  | Rubric          | Tier        | Versioned |
 | ----------- | ---------------------------- | --------------- | ----------- | --------- |
 | config      | `/spec` (inline, bootstrap 1)| —               | static      | no        |
-| charter     | `/spec` + rubric             | `charter.md`    | anchor      | yes       |
+| charter     | `charter` skill              | `skills/charter`| anchor      | yes       |
 | guidelines  | `/spec` + rubric             | `guidelines.md` | calibration | yes       |
 | personality | `/spec` + rubric             | `personality.md`| calibration | yes       |
 | stack       | `/spec` + rubric             | `stack.md`      | accretive   | yes       |

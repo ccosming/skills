@@ -70,14 +70,23 @@ Shared backbone (references/, one copy): authoring procedure ·
     the procedure at start, so behavior is preserved by construction. All cross-
     references verified resolving. Behavioral check (a `/spec` run) is the next
     live test.
-- [ ] **Phase 2 — One pilot stage.** Decompose `charter` end-to-end as the
-  template (stage skill + rubric split + the `/spec` wrapper). Validate, then
-  replicate to the remaining stages.
+- [ ] **Phase 2 — Per-stage skills.** Decompose each authoring stage into a
+  `user-invocable: false` stage skill that owns its rubric; `/spec`'s authoring
+  step dispatches to it, while the wrapper (prerequisites, critique, gate, detect,
+  advance) stays in `/spec`. (The rubric split moved to Phase 4, where it pairs
+  with the drafting subagent — the split has no value without it, and splitting
+  blind risks the artifact's quality.)
+  - **Charter pilot done.** `skills/charter/` owns `SKILL.md` +
+    `references/{charter.md, charter-archetypes.md}`; `/spec` dispatches charter via
+    the existing inline-vs-skill rule, wrapper intact. Pattern proven; the remaining
+    stages (guidelines, personality, stack, domain, arch, ux, prd, feat, adr)
+    replicate it.
 - [ ] **Phase 3 — Categorizer + tracks + lean.** Categorizer subagent +
   deterministic checklist; `category` field + migration default; slice-
   incremental orthogonal artifacts on the lean track.
-- [ ] **Phase 4 — Drafting + fan-out in subagents.** Move drafting and FEAT/ADR
-  fan-out to parallel subagents (relies on the rubric split from Phase 2).
+- [ ] **Phase 4 — Rubric split + drafting/fan-out in subagents.** Split each
+  rubric into dimensions (grilling) + template (writing), then move drafting and
+  FEAT/ADR fan-out to parallel subagents that load only the template.
 
 ## Risks watched
 
