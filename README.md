@@ -190,7 +190,7 @@ title — the code lives in `id` and the filename, never a `title:` field.
 | **Charter**      | `.spec/charter.md`                 | Project source of truth: problem, solution, domain, users, functional & non-functional requirements, success metrics, scope, constraints.                               | `/spec` (charter rubric), `/code` + downstream (read)                 |
 | **Guidelines**   | `.spec/guidelines.md`              | Transversal engineering practices. Stack-agnostic.                                                                                                            | `/spec` (guidelines rubric), downstream (read)              |
 | **Personality**  | `.spec/personality.md`             | Agent persona `/code` embodies (seniority, decision bias, communication, priority).                                                                           | `/spec` (personality rubric), `/code` (read)                            |
-| **Stack**        | `.spec/stack.md`                   | Living source of truth for languages, monorepo, devtools, configs. Tracks `sync_status` against the actual repo.                                              | `/spec` (stack rubric + sync), `/code` (read)            |
+| **Stack**        | `.spec/stack.md`                   | Living source of truth for runtimes, package/task tooling, code quality, git governance, dev environment, build/release, and configs. Archetype-gated, research-backed. Tracks `sync_status` against the actual repo. | `/spec` (stack rubric + sync), `/code` (read)            |
 | **Domain**       | `.spec/domain.md`                  | **Optional**. Ubiquitous language (DDD): terms, bounded contexts, context map. Skills degrade gracefully when absent.                                         | `/spec` (domain rubric), downstream (read if exists)          |
 | **Architecture** | `.spec/arch.md`                    | **Optional**. Technical architecture across C4 levels (stereotype-labeled flowcharts), boundaries, data, integrations, NFRs. Generates ADRs.                          | `/spec` (arch rubric), downstream (read if exists)             |
 | **Experience**   | `.spec/ux.md`                      | **Optional**. Surface-agnostic experience: interaction loops + testable quality triples. Generates ADRs.                                                      | `/spec` (ux rubric), downstream (read if exists)                 |
@@ -267,7 +267,7 @@ type:
 | Domain                                           | `id`, `status`, `version`, `prs`                                         |
 | Architecture                                     | `id`, `status`, `version`, `prs`, `adrs`                                 |
 | Experience                                       | `id`, `status`, `version`, `prs`, `adrs`, `surfaces`                     |
-| Stack                                            | `doc`, `status`, `sync_status`, `version`, `last_verified`, `adrs`       |
+| Stack                                            | `doc`, `status`, `sync_status`, `version`, `archetype`, `last_verified`, `adrs`, `sources` |
 | PRD                                              | `id`, `status`, `version`, `prs`, `adrs`, `feats`                        |
 | ADR                                              | `id`, `status`, `version`, `prs`, `prds`, `feats`                        |
 | FEAT                                             | `id`, `status`, `version`, `prs`, `reviews`, `prd`, `adrs`, `depends_on` |

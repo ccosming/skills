@@ -405,12 +405,24 @@ seeded: step 4 of the universal procedure surfaces them. A whitepaper seeds
 - **Modes:** `bootstrap` (first time) · `update` (add/bump/restructure) ·
   `sync-check` (drift between stack.md and the repo) · `delegated` (a `/code`
   block touches stack-managed surface).
+- **Bootstrap is archetype-first and research-backed** (`stack.md`, _Method_):
+  pick the archetype from the charter, load its column from `stack-archetypes.md`
+  to gate the dimensions, read `arch` for the concrete tools it implies, and run
+  scoped `/research` (default-on) for current versions and pertinent base images
+  before proposing each `core` dimension.
 - **Managed surface** — `/code` delegates any change to these, never edits them
-  directly: `package.json`, lockfiles, `tsconfig`, linter/formatter/test configs,
-  framework/build/CI configs, the top-level folder skeleton, editor/repo config.
-  **Not** stack territory: feature code, its tests, FEAT-specific migrations.
+  directly: `package.json`/manifests, lockfiles, `tsconfig`, linter/formatter/test
+  configs and their plugin sets, git-hook configs (lefthook/husky/pre-commit),
+  monorepo/task-runner configs, version-manager files (`.mise.toml`/`.tool-versions`),
+  `docker-compose`/devcontainer files, framework/build/CI configs, the top-level
+  folder skeleton, editor/repo config. **Not** stack territory: feature code, its
+  tests, FEAT-specific migrations.
+- **Contested choice → ADR.** For each tool choice with a genuine alternative,
+  author an ADR through the universal loop with the `adr` rubric (the same
+  procedure as the PRD _Fan-out_), and link it in `stack.md`'s `adrs:`. A choice
+  with no genuine alternative gets only a changelog row.
 - After any write: bump SemVer, run sync verification, set `sync_status` +
-  `last_verified`. A contested tool choice → an ADR via fan-out.
+  `last_verified`.
 
 ### Domain
 
