@@ -34,7 +34,11 @@ clear, decidable condition — when in doubt, it is **not** hit.
 | 3 | Multiple primary roles | **≥2** roles tagged `primary` under Users |
 | 4 | Cross-cutting quality bars | **≥2** distinct ISO-25010 categories in Non-functional requirements |
 | 5 | External mandate | any Non-negotiable constraint is compliance / legal / regulatory |
-| 6 | Architecture-heavy archetype | archetype ∈ {backend service / API, data / ML pipeline, systems runtime / framework} |
+
+Every signal reads an **explicit written section** of the charter (Domain table,
+Functional/Non-functional requirements, Users, Non-negotiable constraints) — never an
+inferred property such as the archetype, which the charter does not record — so the
+verdict is reproducible.
 
 **Verdict rule:** `full` if **two or more** signals are hit, **or** if signal 5
 (external mandate) is hit at all; otherwise `lean`. Signal 5 alone forces `full`

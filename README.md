@@ -122,8 +122,9 @@ flowchart TD
 - `/code` — implement a `ready` FEAT (delegates stack-touching blocks back to
   `/spec`, invokes `/challenge` after implementation)
 
-**Artifacts `/spec` authors** (rubric bundles in `skills/spec/references/rubrics/`,
-not skills)
+**Artifacts `/spec` authors** (each an internal *stage skill* under `skills/<name>/`
+that owns its rubric; only the cascade rubric stays inline in
+`skills/spec/references/rubrics/`)
 
 - config → languages in `project.json` (the Config bootstrap step)
 - charter · guidelines · personality → the foundation, in order

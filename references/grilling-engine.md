@@ -1,10 +1,11 @@
 # Grilling engine
 
-A dimension-coverage loop run by `/spec` (the universal authoring procedure in
-`authoring-procedure.md`) against a **rubric bundle**
-(`skills/spec/references/rubrics/<artifact>.md`: persona + dimensions + coverage
-criteria + question seeds + branching cues + template).
-This engine consumes the bundle; it never invents sections.
+A dimension-coverage loop run by an authoring stage (a stage skill, or `/spec`
+inline for the cascade) against a **rubric bundle** — the artifact's *dimensions*
+file (`skills/<artifact>/references/<artifact>.md`: persona + dimensions + coverage
+criteria + question seeds + branching cues). The artifact template is split out and
+loaded only by the `drafting` subagent, not here. This engine consumes the bundle;
+it never invents sections.
 
 The engine's product is a contract: an artifact precise enough that a stranger
 — or `/code` — acts on it without asking its author anything. Precision is the
@@ -68,7 +69,7 @@ re-proposed.
 ## Loop
 
 ```text
-Load dimensions, seeds, branching cues, template from the rubric.
+Load dimensions, seeds, branching cues from the rubric.
 evidence = {}
 
 while not all required dimensions covered:
@@ -110,15 +111,15 @@ while not all required dimensions covered:
   detect branching
   detect unreadiness
 
-draft the artifact from the template
-scan the draft against The bar: re-grill (one focused question) or rewrite as
-  an explicit deferral every line that fails; write only at zero failures
-write the artifact, recording stance-changing interventions in its
-  ## Interaction notes (per the constitution)
+produce the decision ledger — one confirmed fact per dimension, each tagged with
+  its provenance; every recorded line already clears The bar (above)
 run the consistency pass (mandatory — see Consistency); resolve every
   contradiction with the user before the gate
-hand the decision ledger to the confirmation gate (the orchestrator's step —
-  authoring-procedure.md; constitution _Confirming artifacts_)
+hand the ledger to the caller, which drafts the artifact from the template and
+  bar-checks it (a stage skill -> the `drafting` subagent; or `/spec` inline for
+  the cascade) and records stance-changing interventions in ## Interaction notes,
+  then to the confirmation gate (authoring-procedure.md; constitution
+  _Confirming artifacts_)
 ```
 
 ## Depth (adaptive)

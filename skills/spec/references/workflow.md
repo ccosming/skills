@@ -246,19 +246,21 @@ In the **lean** track the design artifacts (stack, domain, arch, ux) are not bui
 upfront. Each is born the first time a PRD or FEAT needs material it owns, then
 accretes — bottom-up, one slice at a time.
 
-When PRD/FEAT grilling surfaces a slice an orthogonal artifact owns — a domain term,
-an arch boundary, a UX surface, a stack dependency (the _Cross-artifact triggers_
-rows, bottom-up) — `/spec` does not merely park it: it dispatches the owning stage
-skill in **`slice` mode** (stage-contract) to fold in just that slice. The skill
-creates the artifact born `ready` (seeded by the slice) if absent, or extends it if
-present, applying the bar to the slice only — no full-dimension grilling and no
-separate gate. The driving PRD/FEAT surfaces its orthogonal additions at its own
-confirmation gate, and the artifact is subject to the normal critics whenever it is
-next authored in full.
+When PRD/FEAT grilling surfaces material an orthogonal artifact owns — a domain term,
+an arch boundary, a UX surface, a stack dependency — the stage skill **parks** it as
+usual (grilling engine, _Branching_), and `/spec`'s detector deposits it as a pending
+capture (the _Cross-artifact triggers_ rows, bottom-up). On the **lean** track `/spec`
+does not leave it pending: right after the driving artifact's gate it realizes each
+orthogonal capture by dispatching the owning stage skill in **`slice` mode**
+(stage-contract) — creating the artifact born `ready` (seeded by the slice) if absent,
+or extending it if present, bar applied to the slice only, no full-dimension grilling
+and no separate gate. (On the **full** track those captures simply stay pending and
+feed each design artifact's later full authoring.)
 
 `/code` requires `stack`. If a FEAT reaches implementation while `stack` is still
-absent, that need triggers the same slice pass (a minimal stack for what the FEAT
-builds) before coding.
+absent, `/code` stops and routes to `/spec`, which creates a minimal stack (a slice
+or focused pass for what the FEAT builds) before `/code` resumes — `/code` never
+authors `stack` itself.
 
 A lean artifact grows exactly as the drivers demand and no more. To switch a lean
 project to upfront design, re-run the categorizer or author the design artifacts
@@ -470,7 +472,9 @@ seeded: step 4 of the universal procedure surfaces them. A whitepaper seeds
 
 To add an artifact, gate, or trigger: add its row to the registry, its edges to
 the dependency table and impact graph, and any trigger rows — here, in one file.
-A new rubric-backed artifact also needs its bundle under
-`skills/spec/references/rubrics/`; that craft is not centralizable. An operation
-that is *not* "author one artifact from one rubric" (a new fan-out or cascade
-shape) is the only thing that warrants its own skill.
+A new rubric-backed artifact also needs its **stage skill** under `skills/<name>/`
+— a thin SKILL.md following the stage contract, with its dimensions rubric and
+template in `references/`; that craft is not centralizable. The cross-cutting
+wrapper (prerequisites, critique, gate, detect, advance) and the drafter are
+shared, so a new stage adds no orchestration here beyond its registry row and
+edges.

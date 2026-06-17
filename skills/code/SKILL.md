@@ -45,7 +45,8 @@ present. This is a separate axis from the artifact language — a Spanish
 
 1. **Foundation** (charter, guidelines, personality) is injected at session
    start — do not re-read. Additionally read:
-   - `.spec/stack.md` (if missing, stop and direct the user to `/spec`)
+   - `.spec/stack.md` (if missing — e.g. a lean-track project that has not needed
+     it yet — stop and route to `/spec`, which creates it before you resume)
    - `.spec/domain.md` (optional — if exists, use its **concepts** to name code,
      rendered in the code language above; do not transliterate a Spanish term into
      a Spanish identifier)
