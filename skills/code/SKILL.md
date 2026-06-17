@@ -35,16 +35,20 @@ Operate under the constitution injected at session start — voice, localization
 model (SemVer, status flow, changelog, cross-references). If it is not in
 context, read `../../references/constitution.md` before proceeding.
 
-Localization exception: code identifiers and comments may follow `stack.md`
-conventions instead of `language.artifacts`.
+Code language: identifiers and comments are written in **English by default**,
+independent of `language.artifacts` and of the domain's coined term language.
+`stack.md` (_Invariants_) may set a different code language; follow it when
+present. This is a separate axis from the artifact language — a Spanish
+`domain.md` does **not** make the code Spanish.
 
 ## Pre-flight (mandatory)
 
 1. **Foundation** (charter, guidelines, personality) is injected at session
    start — do not re-read. Additionally read:
    - `.spec/stack.md` (if missing, stop and direct the user to `/spec`)
-   - `.spec/domain.md` (optional — if exists, use its terms when generating code
-     identifiers and comments)
+   - `.spec/domain.md` (optional — if exists, use its **concepts** to name code,
+     rendered in the code language above; do not transliterate a Spanish term into
+     a Spanish identifier)
 
 2. **In `implement` mode**:
    - List `.spec/feats/` and filter those with `status: ready`.
@@ -160,8 +164,11 @@ For each block:
    blocks.
 6. If the cadence is "per block", report status to the user and wait. If it is
    "final", continue.
-7. Atomic commit per block following Conventional Commits with FEAT scope:
-   `feat(FEAT-NNN): <block>` or the corresponding type.
+7. Commit the block **through the commit skill** —
+   `Skill(skill="commit", args="suggested_scope: FEAT-NNN; subject: <block>")`. It
+   inspects the diff, runs the secrets check, drafts the Conventional Commit
+   (`feat(FEAT-NNN): <block>` or the right type), and commits **only after the
+   user's explicit approval**. Never run `git add`/`git commit` yourself.
 
 ### 6. Closure
 
@@ -174,6 +181,8 @@ For each block:
 5. Update `version:` and add a row to the changelog citing the new version:
    _"Implementation completed.
    <Brief summary of what was built and specific decisions not documented in ADR>"_.
+   Commit these closure edits through the commit skill
+   (`Skill(skill="commit", args="suggested_scope: FEAT-NNN; subject: close")`).
 6. Report to the user: completed blocks and commands to verify locally. Then
    offer to challenge the implementation; on yes, invoke
    `Skill(skill="challenge")`. The build⇄review loop runs inside `/code`.
@@ -257,6 +266,10 @@ Per the constitution (_Invoking helpers and /audit_). After Closure of either
   `Task` (stack mode). `/code` writes product code only.
 - **Do not mix features**: a `/code` touches one FEAT. If the need to touch
   another arises, stop and report.
+- **Never commit by hand.** Every commit — per block (§ 5.7) and the closure
+  edits (§ 6) — goes through `Skill(skill="commit")`, which runs the secrets
+  check and requires explicit user approval. `/code` never runs `git add` or
+  `git commit` itself, and never bypasses the approval gate.
 - **Do not touch tests without touching code** (except new coverage) nor vice
   versa.
 - **SemVer**: MINOR when starting implementation (adds Implementation plan);

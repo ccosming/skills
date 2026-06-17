@@ -3,7 +3,6 @@ name: commit
 description: Draft a Conventional Commit message in English, get explicit user approval, then commit; never bypasses hooks. Use when asked to "commit", "make a commit", "stage and commit", or "write a commit message".
 license: MIT
 allowed-tools: Bash, Read, Grep, AskUserQuestion
-disable-model-invocation: true
 ---
 
 # Git commit with approval
@@ -41,6 +40,12 @@ Before drafting, audit the staged surface:
 If any hit, **pause**: surface the finding to the user in the proposal turn (step 4) and require explicit acknowledgement before executing.
 
 ### 3. Draft the message
+
+**Caller context (e.g. from `/code`):** when another skill invokes this one with a
+suggested scope/subject in its args (e.g. `suggested_scope: FEAT-007; subject:
+pure validation logic`), seed the draft with it. Steps 1, 2, and 4 still run in
+full — the suggestion never skips the secrets check or the approval gate. Direct
+user invocations carry no such args; draft from the diff.
 
 Determine:
 
