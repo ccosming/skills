@@ -37,7 +37,9 @@ Two entry points (_doors_) drive the work:
 Each authoring artifact is its own **stage skill** (`charter`, `guidelines`,
 `personality`, `stack`, `domain`, `arch`, `ux`, `prd`, `feat`, `adr`) — internal,
 not user-invocable — that owns its rubric and follows a shared stage contract
-(`references/stage-contract.md`): it grills and writes, while `/spec`'s universal
+(`references/stage-contract.md`): it grills, then hands the decisions to a forked
+`/drafting` subagent that transcribes them into the artifact against the template
+(so the heavy templates stay out of the main context), while `/spec`'s universal
 procedure wraps every dispatch with the cross-cutting steps (prerequisites,
 critique, gate, detect, advance). Alongside them are forked, single-purpose
 delegates: the critics (`/audit`, `/consistency`, `/detector`), the helpers

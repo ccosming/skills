@@ -98,9 +98,18 @@ Shared backbone (references/, one copy): authoring procedure ·
     one slice, bar-applied, no full grill, no separate gate). Pending: a live `/spec`
     run on a lean-shaped charter to confirm the categorize → confirm → branch →
     PRD-first flow and a slice pass.
-- [ ] **Phase 4 — Rubric split + drafting/fan-out in subagents.** Split each
+- [x] **Phase 4 — Rubric split + drafting/fan-out in subagents.** Split each
   rubric into dimensions (grilling) + template (writing), then move drafting and
   FEAT/ADR fan-out to parallel subagents that load only the template.
+  - **Done.** Every rubric is split into `<name>.md` (dimensions — loaded in the main
+    context for grilling) and `<name>-template.md` (loaded only by the drafter). A new
+    forked `drafting` skill takes a decision ledger (or, in fan-out, the PRD + one
+    decomposition item), transcribes it into the template, runs a bar self-check, and
+    returns the body — so the heavy templates never enter the caller's context. The
+    stage contract's write step delegates to it; the PRD fan-out drafts each FEAT/ADR
+    with an independent drafter and presents them at one gate (adjust → re-grill).
+    Pending: a live run to confirm the grill → ledger → drafter → write round-trip and
+    the parallel fan-out.
 
 ## Risks watched
 

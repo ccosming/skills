@@ -20,23 +20,33 @@ reach it through `/spec`.
 
 ## Run
 
-1. Load your rubric bundle (named in your SKILL.md) — persona, probes, dimensions,
-   seeds, branching cues, invariants, template — plus any companion it names.
+1. Load your **dimensions** rubric (named in your SKILL.md — `<name>.md`: persona,
+   probes, dimensions, coverage, seeds, branching cues, invariants) plus any
+   companion it names. You do **not** load the artifact template — the drafter does.
 2. Run the grilling engine (`grilling-engine.md`) against the rubric: lead with
-   expert proposals the user confirms or steers, one question per turn, applying
-   the rubric's probes and the specification bar (`specification-bar.md`). Inject
-   the `seeds` as starting hypotheses.
-3. Write the artifact from the rubric's template once the engine's bar scan reports
-   zero failures. Record only stance-changing interventions in `## Interaction
-   notes`.
-4. Hand the **decision ledger** (one line per dimension + its provenance tag) back
-   to `/spec` for the confirmation gate. Stop there — do not advance.
+   expert proposals the user confirms or steers, one question per turn, applying the
+   rubric's probes and the specification bar (`specification-bar.md`). Inject the
+   `seeds` as starting hypotheses. The engine's product is a **decision ledger** —
+   one confirmed fact per dimension, each with its provenance tag.
+3. **Draft via the drafter (forked).** When the ledger is complete, write it to a
+   temp input file (`~/.ccosming/spec-inbox/<artifact>-draft.md`; resolve `~` at
+   runtime — the dir is pre-approved for `Write`), then dispatch:
+   `Skill(skill="drafting", args="artifact: <name>; input: <that temp path>; output:
+   <artifact path>; language: <language.artifacts>")`. The drafter loads only the
+   template (`<name>-template.md`), transcribes the ledger into the body, and returns
+   `--- body ---` plus a `--- bar ---` self-check. If the bar reports failures,
+   re-grill those lines and re-draft; once clean, write the returned body verbatim to
+   the artifact path and add `## Interaction notes` only for stance-changing
+   interventions.
+4. Hand the **decision ledger** back to `/spec` for the confirmation gate. Stop there
+   — do not advance.
 
 **`adjust` mode:** re-grill only `adjust_dimension`, rewrite that part of the
 artifact, refresh the ledger, and hand back. Do not re-grill settled dimensions.
 
-**`slice` mode (lean track):** do not run the dimension loop. Take the provided
-`slice`, confirm or steer it in one focused exchange only if it is underspecified,
+**`slice` mode (lean track):** do not run the dimension loop. Read your
+`<name>-template.md` for the shape of the section the slice belongs in. Take the
+provided `slice`, confirm or steer it in one focused exchange only if it is underspecified,
 then fold it into the artifact — creating the artifact born `ready` (frontmatter +
 that one slice) if absent, or extending it (and bumping its version + changelog) if
 present — applying the specification bar to that slice. Leave the rest of the

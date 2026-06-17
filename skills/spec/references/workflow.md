@@ -170,11 +170,17 @@ A PRD is not a bespoke procedure — it is the universal loop plus orchestration
 1. Author the **PRD** via the universal loop. Its template yields a
    **decomposition**: the FEATs to spawn and the contested decisions that warrant
    ADRs.
-2. For each listed FEAT → author via the universal loop with the `feat` rubric,
-   passing the PRD and sibling FEATs as context.
-3. For each contested decision → author via the universal loop with the `adr`
-   rubric. A decision without a genuine alternative gets a changelog row, not an
-   ADR.
+2. **Draft the children in parallel — do not re-grill each one.** The PRD already
+   decided their shape, so for each listed FEAT and each contested decision, `/spec`
+   writes the PRD plus that one decomposition item to a **per-child** temp input file
+   and dispatches a forked drafter — `Skill(skill="drafting", args="artifact:
+   feat|adr; input: <that path>; output: <FEAT/ADR path>; language:
+   <language.artifacts>")` — collecting the returned bodies. The drafters are
+   independent and their heavy templates never enter `/spec`'s context. A decision
+   without a genuine alternative gets a changelog row, not an ADR.
+3. Write the drafted bodies, run the critics over them, and present them at **one
+   confirmation gate**. An adjusted child re-grills via its stage skill (the
+   `feat`/`adr` dimensions); an accepted set advances.
 
 The PRD's `derives-from:` links each FEAT/ADR back to the originating capability.
 
