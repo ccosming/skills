@@ -33,7 +33,13 @@ CLI (/spec calls this over Bash):
     project_file.py --project . set-state <in_flight|next_suggested> <value>
     project_file.py --project . add-capture '<json object>'
     project_file.py --project . add-captures '<json array>'
+    project_file.py --project . add-captures-file <path-to-json-array>
     project_file.py --project . update-capture <seed-substring> <pending|consumed|dropped>
+
+`add-captures-file` reads a JSON array from a file and deletes the file after a
+successful deposit. Prefer it over `add-captures` for batch deposits: the call
+stays a single static command (no `"$(cat …)"` substitution), so a standing
+`Bash(python3 …/project_file.py *)` permission covers it without a prompt.
 """
 
 import argparse
@@ -183,6 +189,9 @@ def main():
     p_state.add_argument("value")
     sub.add_parser("add-capture").add_argument("json", help="a capture object as JSON")
     sub.add_parser("add-captures").add_argument("json", help="a JSON array of capture objects")
+    sub.add_parser("add-captures-file").add_argument(
+        "path", help="path to a file holding a JSON array of captures; deleted after deposit"
+    )
     p_upd = sub.add_parser("update-capture")
     p_upd.add_argument("match", help="substring of the capture's seed")
     p_upd.add_argument("status", choices=["pending", "consumed", "dropped"])
@@ -211,10 +220,26 @@ def main():
             for cap in caps:
                 cap.setdefault("status", "pending")
                 data["state"]["captures"].append(cap)
+        elif args.cmd == "add-captures-file":
+            with open(args.path, encoding="utf-8") as fh:
+                caps = json.load(fh)
+            if not isinstance(caps, list):
+                parser.error("add-captures-file expects a JSON array")
+            for cap in caps:
+                cap.setdefault("status", "pending")
+                data["state"]["captures"].append(cap)
         elif args.cmd == "update-capture":
             for cap in data["state"]["captures"]:
                 if args.match in (cap.get("seed") or ""):
                     cap["status"] = args.status
+
+    # Clean up the inbox file only after the deposit transaction has committed,
+    # so nothing lingers on disk and no `rm` is needed in the calling shell.
+    if args.cmd == "add-captures-file":
+        try:
+            os.unlink(args.path)
+        except OSError:
+            pass
     print(f"project.json updated: {args.cmd}")
 
 

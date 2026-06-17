@@ -109,6 +109,13 @@ def permission_rules(root, namespace):
     # The coordinator is invoked over Bash on every state write; pre-approve that
     # one script (prefix match, args wild) so the flow stops prompting per call.
     rules.append(f"Bash(python3 {abs_root}/hooks/project_file.py *)")
+    # Capture-deposit scratch: before a batch deposit the orchestrator writes the
+    # captures array to ~/.ccosming/spec-inbox/<name>.json, then hands the path to
+    # the coordinator's `add-captures-file` (which deletes it after). Pre-approve
+    # Writes to that one scratch dir so batch deposits run with zero prompts. $HOME
+    # is resolved at setup time (never hardcoded); a glob covers every project.
+    inbox = (Path.home() / ".ccosming" / "spec-inbox").as_posix()
+    rules.append(f"Write(//{inbox.lstrip('/')}/**)")
     rules += [
         f"Skill({namespace}:{frontmatter_name(md, md.parent.name)})"
         for md in sorted((root / "skills").glob("*/SKILL.md"))

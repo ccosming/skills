@@ -92,12 +92,16 @@ only thing that varies between artifacts.
 9. **Detect + deposit.** Invoke `/detector` (forked) over the artifact
    (`Skill(skill="detector", args="source_artifact: <path>; from: <artifact>")`);
    deposit **all** returned captures through **the coordinator** (SKILL.md,
-   _Plugin scripts_) in **one** Bash call with the batch verb — pass the captures
-   as a JSON array: `<the coordinator> --project . add-captures '[<json>, …]'`.
-   Invoke the command inline; never assign it to a shell variable (word-splitting
-   differs across shells). Mark any seed consumed this pass: `<the coordinator>
-   --project . update-capture "<seed substring>" consumed`. The deposit is a
-   command you run, not a displayed block. Never hand-write `project.json`.
+   _Plugin scripts_). Write the captures as a JSON array to
+   `~/.ccosming/spec-inbox/<artifact>-captures.json` (resolve `~` to an absolute
+   path at runtime — the dir is pre-approved for `Write`, never `.spec/`), then
+   deposit them in **one** static call: `<the coordinator> --project <root>
+   add-captures-file <that path>` (the coordinator deletes the file after a
+   successful deposit). Mark any seed consumed
+   this pass: `<the coordinator> --project <root> update-capture "<seed substring>"
+   consumed`. Every call is a single static command (_Writing it_): absolute
+   `--project` root, no `cd` / `$(…)` / shell variables. The deposit is a command
+   you run, not a displayed block. Never hand-write `project.json`.
 10. **Advance** per the bootstrap sequence, or surface the next options and stop.
 
 Steps 1–2, 4, 6–10 are universal. The rubric supplies only steps 3 and 5.
@@ -256,15 +260,22 @@ context would clobber the hook's `usage` section.
 
 ### Writing it
 
-Every write uses **the coordinator** (SKILL.md, _Plugin scripts_):
+Every write uses **the coordinator** (SKILL.md, _Plugin scripts_). Keep each call
+a **single static command** so the standing `Bash(python3 …/project_file.py *)`
+permission matches it and it runs without a prompt: the absolute coordinator path
+(already resolved in SKILL.md), the project's **absolute root** as `--project`
+(never `.` — the shell's cwd is not guaranteed to be the project, and an absolute
+root needs no `cd`), and **no** `$(…)` substitution, shell variables, `cd`, `rm`,
+or `echo`. A temp-file + `"$(cat …)"` deposit defeats the permission and prompts
+every time.
 
 | Need | Command |
 | --- | --- |
-| Set languages | `<the coordinator> --project . set-language <chat> <artifacts>` |
-| Set `in_flight` / `next_suggested` | `<the coordinator> --project . set-state <key> <value>` |
-| Deposit one capture | `<the coordinator> --project . add-capture '<json>'` |
-| Deposit many captures (one call) | `<the coordinator> --project . add-captures '[<json>, …]'` |
-| Mark a seed consumed/dropped | `<the coordinator> --project . update-capture "<seed substring>" <status>` |
+| Set languages | `<the coordinator> --project <root> set-language <chat> <artifacts>` |
+| Set `in_flight` / `next_suggested` | `<the coordinator> --project <root> set-state <key> <value>` |
+| Deposit one capture | `<the coordinator> --project <root> add-capture '<json>'` |
+| Deposit a batch (preferred) | write the array to `~/.ccosming/spec-inbox/<artifact>-captures.json` (resolve `~` to an absolute path at runtime — the dir is pre-approved for `Write`, never `.spec/`), then `<the coordinator> --project <root> add-captures-file <that path>` — the coordinator deletes the file after a successful deposit |
+| Mark a seed consumed/dropped | `<the coordinator> --project <root> update-capture "<seed substring>" <status>` |
 
 ### Lifecycle
 
@@ -357,16 +368,18 @@ offer a head start. `AskUserQuestion`:
   none). **The user selects** — never read the vault to seed on your own
   (constitution, _Data boundary_).
 - **Ideate now** — invoke `/ideate` (`Skill(skill="ideate")`); it asks where to
-  save (your vault or this project) and inherits the languages. When it closes,
-  continue here.
+  save (the global vault is recommended, even here) and inherits the languages.
+  When it closes, continue here.
 - **Straight to the charter** — skip ideation; start the charter cold.
 
 For each selected (or just-closed) whitepaper, seed the foundation: invoke
-`/detector` forked over it and deposit what it returns through **the coordinator**:
+`/detector` forked over it, write the returned captures to
+`~/.ccosming/spec-inbox/ideate-captures.json` (resolve `~` at runtime), then
+deposit from it through **the coordinator** (_Writing it_):
 
 ```
 Skill(skill="detector", args="source_artifact: <whitepaper path>; from: ideate")
-<the coordinator> --project . add-captures '[<json>, …]'
+<the coordinator> --project <root> add-captures-file ~/.ccosming/spec-inbox/ideate-captures.json
 ```
 
 The captures land `pending` for charter/domain/personality/stack/arch/ux
