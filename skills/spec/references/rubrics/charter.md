@@ -104,7 +104,7 @@ skill body.
 
 | Gap       | Seed                                                                             |
 | --------- | -------------------------------------------------------------------------------- |
-| not asked | AskUserQuestion with top-3 inferred + Other (see `archetypes.md` § Presentation) |
+| not asked | AskUserQuestion with top-3 inferred + Other (see `charter-archetypes.md` § Presentation) |
 
 ### `domain`
 
@@ -118,7 +118,7 @@ skill body.
 Domain framing is **strategic, not detailed**: name the domain + 2–5 subdomains
 with their class, one line each. No glossary, entities, or bounded contexts —
 those are `domain.md`'s job. The archetype seeds the likely **generic**
-subdomains (see `archetypes.md`).
+subdomains (see `charter-archetypes.md`).
 
 ### `functional-requirements`
 
