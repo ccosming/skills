@@ -16,6 +16,9 @@ _Procedural orchestration → Stack_.)
   changes.
 - Major decisions get ADRs; minor changes only a changelog row.
 - SemVer from `0.1.0`; drift must be resolved before `/code` delegates.
+- Code identifiers and comments are **English by default**, independent of
+  `language.artifacts` and of a domain term's coined language; record any override
+  here. `/code` follows this convention, not the artifact language.
 
 Dimensions, coverage criteria, question seeds, branching cues, and the artifact
 template for `stack` bootstrap. Methodology lives in the grilling engine; this

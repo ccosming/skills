@@ -14,7 +14,10 @@ _Procedural orchestration → Domain_.)
   row.
 - Bounded contexts are MECE; every term has exactly one owning context.
 - No silent term coining; renames cascade via the change flow, not here.
-- Term names keep the language they were coined in; never translate them.
+- Term names keep the language they were coined in; never translate them here —
+  this fixes the **vocabulary in the artifacts**, not the code. Code identifiers
+  follow the code language (English by default — `stack.md`, _Invariants_), so a
+  Spanish term can map to an English identifier without being renamed here.
 
 Dimensions, coverage criteria, question seeds, branching cues, and the artifact
 template for `domain` init. Methodology lives in the grilling engine; this
