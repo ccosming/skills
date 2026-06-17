@@ -1,7 +1,7 @@
 # Guidelines rubric
 
 Bundle for the `guidelines` artifact, run by `/spec` through the universal
-authoring procedure (workflow.md). Output: `.spec/guidelines.md`.
+authoring procedure (authoring-procedure.md). Output: `.spec/guidelines.md`.
 
 ## Persona
 

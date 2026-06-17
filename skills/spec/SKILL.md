@@ -22,9 +22,10 @@ You are the engine of the .spec flow. The flow rules — the artifact registry,
 dependencies, bootstrap sequence, gates, impact graph, and triggers — live in
 `references/workflow.md`. You **read that program and execute it**; you never
 improvise a flow rule or duplicate one here. You never write `.spec/` files by
-hand: you run each authoring artifact through the universal procedure workflow.md
-defines (or dispatch to its owning skill where its rubric is not yet in place),
-and you dispatch the operations that are their own skill (`/code`, the critics).
+hand: you run each authoring artifact through the universal procedure
+(`../../references/authoring-procedure.md`), or dispatch to its owning skill where
+its rubric is not yet in place, and you dispatch the operations that are their own
+skill (`/code`, the critics).
 A change to an existing PRD runs as the cascade — the `change` rubric, not a
 separate skill.
 
@@ -63,8 +64,9 @@ Do this **silently** — your first action emits no preamble (constitution,
 _Voice_). The user's first visible output is a question, never a "getting
 started" line.
 
-1. Read `references/workflow.md` — it defines the registry, dependencies,
-   sequence, gates, and triggers. Everything below executes it.
+1. Read `references/workflow.md` (the program — registry, dependencies, sequence,
+   gates, triggers) and `../../references/authoring-procedure.md` (the universal
+   loop you run for every artifact). Everything below executes them.
 2. **Cold start:** if `.spec/project.json` exists, read it — tell the user where
    they left off (`state.in_flight`, pending `state.captures`) and propose
    `state.next_suggested`.
@@ -86,7 +88,7 @@ started" line.
    - Only a recommendation unmet → surface it once; the user decides.
 3. Run the target:
    - An authoring artifact → if `references/rubrics/<target>.md` exists, run the
-     universal procedure (workflow.md) against it; otherwise dispatch with
+     universal procedure (`../../references/authoring-procedure.md`) against it; otherwise dispatch with
      `Skill(skill="<owning>")`.
    - A change to an existing PRD/FEAT → run the cascade: the `change` rubric via
      the universal procedure, then the impact graph (workflow.md, _Evolution flow_).

@@ -284,9 +284,9 @@ a user intervention shaped the artifact.
 ```text
 .claude-plugin/      Plugin + marketplace manifests
 hooks/               Session/format/metrics hooks (Python) + hooks.json
-references/          constitution.md · artifact-model.md · diagrams.md
+references/          backbone: constitution · artifact-model · specification-bar · authoring-procedure · grilling-engine · diagrams
 skills/<name>/       One folder per skill: SKILL.md (+ references/, scripts/)
-skills/spec/references/  workflow.md (flow program) · grilling-engine.md · rubrics/
+skills/spec/references/  workflow.md (flow program) · rubrics/
 ```
 
 See [CLAUDE.md](CLAUDE.md) for the maintainer guide (skill authoring

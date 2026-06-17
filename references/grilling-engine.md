@@ -1,8 +1,9 @@
 # Grilling engine
 
 A dimension-coverage loop run by `/spec` (the universal authoring procedure in
-`workflow.md`) against a **rubric bundle** (`rubrics/<artifact>.md`: persona +
-dimensions + coverage criteria + question seeds + branching cues + template).
+`authoring-procedure.md`) against a **rubric bundle**
+(`skills/spec/references/rubrics/<artifact>.md`: persona + dimensions + coverage
+criteria + question seeds + branching cues + template).
 This engine consumes the bundle; it never invents sections.
 
 The engine's product is a contract: an artifact precise enough that a stranger
@@ -32,7 +33,7 @@ blank.
 ## The bar — when a line is specified
 
 The four tests, the offender table, the scope, and the legal forms live in
-`../../../references/specification-bar.md` — binding here for every fact
+`specification-bar.md` — binding here for every fact
 recorded as evidence and every value-bearing line written. A line that fails a
 test is re-grilled with one focused question, or rewritten as an explicit
 deferral — at the dimension that owns it.
@@ -117,7 +118,7 @@ write the artifact, recording stance-changing interventions in its
 run the consistency pass (mandatory — see Consistency); resolve every
   contradiction with the user before the gate
 hand the decision ledger to the confirmation gate (the orchestrator's step —
-  workflow.md; constitution _Confirming artifacts_)
+  authoring-procedure.md; constitution _Confirming artifacts_)
 ```
 
 ## Depth (adaptive)
@@ -214,8 +215,8 @@ constraints).
 
 ## Consistency
 
-Critique and the gate are the orchestrator's steps (workflow.md 7–8); the engine
-only feeds them. What is yours here:
+Critique and the gate are the orchestrator's steps (authoring-procedure.md 7–8);
+the engine only feeds them. What is yours here:
 
 - **Coupled dimensions** — a target that depends on a constraint (e.g. cadence =
   hours ÷ effort) — are reconciled against the assembled whole, once, not

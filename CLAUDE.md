@@ -16,11 +16,13 @@ skills/
 │   ├── format_spec.py       # PostToolUse: format .spec/*.md just written
 │   ├── metrics.py           # Stop/UserPromptSubmit/PostToolUse/SessionStart: fold usage into .spec/project.json
 │   └── project_file.py      # Single-writer coordinator for .spec/project.json (lib + CLI); used by hooks and /spec
-├── references/              # Plugin-wide docs injected/loaded at runtime
-│   ├── constitution.md      # Rules every spec-workflow skill obeys
-│   ├── artifact-model.md    # SemVer, status flow, changelog, cross-reference rules
-│   ├── specification-bar.md # When a line counts as specified — shared by author and critic
-│   └── diagrams.md          # Mermaid diagram catalog (layout + shape conventions)
+├── references/              # Plugin-wide backbone: docs injected/loaded at runtime
+│   ├── constitution.md         # Rules every spec-workflow skill obeys
+│   ├── artifact-model.md       # SemVer, status flow, changelog, cross-reference rules
+│   ├── specification-bar.md    # When a line counts as specified — shared by author and critic
+│   ├── authoring-procedure.md  # The universal loop /spec runs for every rubric-backed artifact
+│   ├── grilling-engine.md      # Dimension-coverage grilling loop (persona, bar scan, decision ledger)
+│   └── diagrams.md             # Mermaid diagram catalog (layout + shape conventions)
 ├── CLAUDE.md                # This maintainer guide
 ├── README.md                # User-facing plugin overview
 └── skills/
