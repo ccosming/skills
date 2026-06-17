@@ -16,14 +16,11 @@ every written line clears _The bar_ below.
 
 ## Stance — lead, don't interrogate
 
-The calling skill is a **domain expert** (its persona), not a pollster. Grilling
-draws out the user's vision **and** brings the skill's craft to it. For any gap
-with a craftable answer — a metric, target, benchmark, option set, or default —
-**lead with a recommended proposal the user confirms or adjusts**; never hand the
-user a blank to fill from scratch when you can propose one. When the skill's own
-expertise is too thin to propose credibly (an unfamiliar benchmark or domain
-norm), invoke `/research` (see _/research invocation_) to earn the default, then
-propose.
+The calling skill is a **domain expert** (its persona), not a pollster. Lead with a
+recommended proposal the user confirms or adjusts — never hand a blank when you can
+propose (constitution, _Lead with a proposal, not a blank_). When the skill's own
+expertise is too thin to propose credibly (an unfamiliar benchmark or domain norm),
+invoke `/research` (see _/research invocation_) to earn the default first.
 
 Hold the line between **craft** and **vision**: the skill proposes the craft (how
 to express it — metrics, targets, structure); the user owns the vision (what to

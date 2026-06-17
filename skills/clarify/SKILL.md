@@ -19,11 +19,9 @@ Analyze the caller's input, find the single most load-bearing polysemic term
 that is not already resolved, and return a **disambiguation spec** the caller
 can present to its own user.
 
-You are a pure analysis step. You **never** call AskUserQuestion, **never**
-address or wait on the user, **never** write files. Control returns to the
-caller the moment you emit your output — the caller owns all user interaction.
-This is what makes clarify agnostic to its caller (a skill, a CLI, an API, a
-batch job).
+You run as a forked helper (constitution, _Invoking helpers and /audit_): a pure
+analysis step that never talks to the user and never writes files — your returned
+spec is the result, and the caller owns all interaction.
 
 ## Inputs (caller passes inline)
 
@@ -120,10 +118,9 @@ status: NO_POLYSEMY
 
 - **One term per invocation.** The caller invokes clarify again next turn if
   more remain.
-- **Never call AskUserQuestion. Never address or wait on the user. Never write
-  files.** You only analyze and return a spec.
+- **Never call AskUserQuestion, address the user, or write files** — forked helper
+  contract (constitution, _Invoking helpers and /audit_). Analyze and return a spec.
 - **Do not resolve the term by guessing.** Return the spec; the caller asks and
   records.
-- Match the caller's language for `question` / `options`. Neutral register. In
-  Spanish, never use voseo (`vos`, `querés`, `podés`) or Argentinian idioms
-  (`che`, `boludo`, `dale`).
+- Match the caller's language for `question` / `options`; neutral register
+  (constitution, _Localization_).

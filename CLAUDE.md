@@ -23,6 +23,7 @@ skills/
 │   ├── authoring-procedure.md  # The universal loop /spec runs for every rubric-backed artifact
 │   ├── stage-contract.md       # What every authoring stage skill does (args, grill→write→ledger, boundaries)
 │   ├── grilling-engine.md      # Dimension-coverage grilling loop (persona, bar scan, decision ledger)
+│   ├── interview-conduct.md    # Shared conduct for free-form interview skills (/ideate, /grill)
 │   └── diagrams.md             # Mermaid diagram catalog (layout + shape conventions)
 ├── CLAUDE.md                # This maintainer guide
 ├── README.md                # User-facing plugin overview

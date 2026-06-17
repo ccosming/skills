@@ -34,81 +34,22 @@ design tree is fully resolved. Capture every turn in a markdown notes file under
   notes file, so the user and future sessions know from where the questioning is
   coming.
 
-## Operational bias
+## Interview conduct
 
-Apply to every turn. These shape voice and depth, not just the rules below:
+Follow `../../references/interview-conduct.md` for the shared conduct: stance and
+operational bias, two-phase questioning, the loop rules (walk `open_questions`
+top-down, read before asking, write the notes file before the next question,
+counter-questions first, no side effects), forked-helper invocation (the literal
+`Skill(...)` calls for `/clarify`, `/research`, `/summarize`), and working-file
+formatting (no blockquotes, Mermaid for flows). Cadence, language register, and the
+no-internal-scaffolding rule are the constitution's.
 
-- **Bias toward narrowing scope**. Push the user to define less, deeper. Resist
-  branch expansion. Free-text questions are open, not diffuse.
-- **Reuse what exists**. If a pattern, decision, or artifact is already in the
-  repo, surface it before asking the user to redefine it.
-- **Peer-reviewer brevity**. Every sentence that can be removed gets removed.
-  Match the economy of a senior engineer reviewing a teammate.
+Grill deltas:
 
-## Rules
-
-- One question per turn.
-- If a question can be answered by exploring the codebase, explore instead of
-  asking.
-- Walk the tree top-down. Resolve questions in the order they appear in the
-  frontmatter `open_questions` list. Never skip ahead to a child before its
-  parent is resolved.
-- Update the notes file before posing the next question. Never batch.
-- Zero filler. State the question (or framing + recommendation) directly.
-  End-of-turn summary: one sentence maximum.
-- Match the user's language. When the user writes in Spanish, always use neutral
-  Spanish: use "tú" or impersonal forms, never use voseo ("vos", "querés",
-  "podés", "tenés", "sos") or Argentinian idioms ("che", "boludo", "laburar",
-  "dale", "re-" as intensifier).
-- Do not touch code, run destructive commands, or implement. Only read, ask, and
-  write to the notes file.
-- If the user asks a counter-question, answer it first, then continue with the
-  next tree question.
-
-### Formatting of the notes file
-
-- **No blockquotes.** Never use Markdown `>` for callouts, asides, or emphasis.
-  Use a bold lead-in label (e.g. `**Tensión transversal:** ...`) or a `####`
-  subsection instead.
-- **Flows are diagrams, not ASCII.** Whenever you define a flow, render it
-  inside a ` ```mermaid ` block: a `flowchart` for a user/process flow, a
-  `sequenceDiagram` for interactions between actors or components. Never
-  hand-draw a flow with ASCII boxes/arrows.
-
-## Calling other skills
-
-`/clarify`, `/research`, and `/summarize` are forked helpers (`context: fork` in
-their frontmatter, per the constitution). Invoke one **directly** with
-`Skill(...)`: it runs in an isolated subagent and returns its result to you, then
-you continue this workflow. Do **not** wrap them in `Task` — a forked helper
-inside a `Task` subagent is a nested fork and fails. Each helper already returns
-only its YAML (its own body says so), so just pass the args.
-
-Emit the literal `Skill(...)` call (these are tool calls, not suggestions):
-
-- **Clarify** — analysis-only; returns a spec, then **you** present the
-  question:
-
-  ```
-  Skill(skill="clarify", args="user_input: <reply>; domain_context: <...>; prior_resolutions: <n>; written_sections: <n>")
-  ```
-
-- **Summarize**:
-
-  ```
-  Skill(skill="summarize", args="texts: <blocks>; focus: <...>; max_length: <...>; format: bullets")
-  ```
-
-- **Research** — one call per perspective; issue them in the same message when
-  you need several:
-
-  ```
-  Skill(skill="research", args="question: <...>; perspective: <...>")
-  ```
-
-After a helper returns, continue the workflow yourself: present the clarify
-question, write the summary into the notes file, etc. If you describe a call but
-do not emit the `Skill(...)`, you have failed the step.
+- The working file is the **notes file** under `.spec/grills/`; update it before
+  each new question (see _File structure invariants_).
+- "Read before asking" includes **exploring the codebase**: if a question is
+  answerable from the repo, explore and record from the evidence instead of asking.
 
 ## Profiles
 
@@ -140,17 +81,10 @@ sitting.
 
 ## Two-phase questioning
 
-| Phase                         | When           | Form                                                                                                                                                                                                                     |
-| ----------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **A — Free-text exploratory** | Q1 and Q2 only | Open question, no AskUserQuestion, no options. Read the user's prose, then run clarify via `Skill` (see `## Calling other skills`). If it returns a disambiguation spec, present that question yourself before recording. |
-| **B — Recommended options**   | Q3 onward      | 1-3 lines of framing + recommended answer with reasoning + `AskUserQuestion` with 2-4 options. Recommended option labeled `(Recommended)`, first in the list.                                                            |
-
-Hard limits: at most 2 free-text questions in a row. After Q2 the grill must
-switch to phase B regardless of context confidence.
-
-In phase B, run clarify via `Skill` only when a reply or counter-question
-introduces a load-bearing ambiguous term. Otherwise skip — phase B picks already
-disambiguate.
+Q1-Q2 free-text, Q3+ recommended options, at most 2 free-text in a row — see
+`../../references/interview-conduct.md` (_Two-phase questioning_). Grill specifics:
+phase A's clarify call is **mandatory** every turn; phase B runs clarify only on a
+load-bearing ambiguous term.
 
 ## File structure invariants
 
@@ -171,8 +105,7 @@ Guard these every write — structure rot is the most common failure:
 
 ## Constitution
 
-Operate under the constitution injected at session start — voice, localization,
-`AskUserQuestion`, and helper invocation via `Skill`. If it is not in context,
+Operate under the constitution injected at session start. If it is not in context,
 read `../../references/constitution.md` before proceeding.
 
 ## Pre-flights
@@ -246,9 +179,9 @@ continue.
    - User explicitly asked for "research" or "investigate" in the topic.
 4. **If research is needed** for 1-N perspectives, issue up to 3
    `Skill(skill="research", ...)` calls — one per perspective — in a single
-   message. Use the template from `## Calling other skills`.
-5. **Consolidate**. Run summarize via `Skill` (see `## Calling other skills`)
-   with `texts:` the research outputs,
+   message. Use the call shape in `interview-conduct.md` (_Calling forked helpers_).
+5. **Consolidate**. Run summarize via `Skill` (see `interview-conduct.md`,
+   _Calling forked helpers_) with `texts:` the research outputs,
    `focus: domain expertise relevant to <topic>, organized by lens`,
    `max_length: 10 bullets + 1 short paragraph per lens`, `format: bullets`.
    When it returns, hold its output.
@@ -358,8 +291,8 @@ Each iteration:
    - **`full`**: no guardrail — both layers are in scope.
 
 4. **Get the answer**.
-   - **Phase A**: read the user's prose, then run clarify via `Skill` (template
-     in `## Calling other skills`, passing `user_input`, `domain_context`,
+   - **Phase A**: read the user's prose, then run clarify via `Skill` (call shape
+     in `interview-conduct.md`, passing `user_input`, `domain_context`,
      `prior_resolutions`, `written_sections`). When it returns you are
      back here:
      - `status: NO_POLYSEMY` → proceed to record.
@@ -413,7 +346,7 @@ Only when `open_questions` is empty. Append to the **end of the file**, after
 
 1. `## Decisions made` with a `### Integrated verdict` subsection. **Group by
    area, not by Q-number.** Render any flow as a ` ```mermaid ` diagram (see
-   Formatting rules), never ASCII. For asides like deferrals or cross-cutting
+   `interview-conduct.md`, _Formatting the working file_), never ASCII. For asides like deferrals or cross-cutting
    tensions, use a `#### <label>` subsection — never a `>` blockquote. Shape the
    verdict by profile (see `## Profiles`):
    - `discovery`: flow definition (Mermaid `flowchart` or `sequenceDiagram`) +
@@ -446,15 +379,12 @@ decision Y, write a follow-up doc, close). Do not auto-execute the next step.
 
 ## Skill orchestration cheatsheet
 
-All three are forked helpers (`context: fork`) invoked directly with `Skill(...)`;
-each returns its YAML and you continue (see `## Calling other skills`). Never wrap
-them in `Task`.
+Forked helpers, invoked directly with `Skill(...)`, never wrapped in `Task` — call
+shapes in `../../references/interview-conduct.md` (_Calling forked helpers_). When
+each fires in this workflow:
 
-| Skill       | Invoked when                                                                 | Call                                                                            |
-| ----------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `research`  | Step 3, when a perspective needs external knowledge                          | `Skill(skill="research", ...)` — one per perspective, issued together           |
-| `summarize` | Step 3, to consolidate research (or intrinsic notes)                         | `Skill(skill="summarize", ...)`                                                  |
-| `clarify`   | Step 5: mandatory every phase-A turn; phase-B only on load-bearing ambiguity | `Skill(skill="clarify", ...)` → returns a spec; **you** present the `question`  |
-
-All three return structured outputs the grill writes into the notes file. None
-of them write to files directly.
+| Skill       | Invoked when                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| `research`  | Step 3, when a perspective needs external knowledge — one per perspective, issued together  |
+| `summarize` | Step 3, to consolidate research (or intrinsic notes)                                        |
+| `clarify`   | Step 5: mandatory every phase-A turn; phase-B only on load-bearing ambiguity                |

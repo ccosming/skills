@@ -42,9 +42,8 @@ one that covers two capabilities specifies neither.
 
 ## Constitution
 
-Operate under the constitution injected at session start — voice, localization,
-`AskUserQuestion`, and the door/delegation model. If it is not in context, read
-`../../references/constitution.md` before proceeding.
+Operate under the constitution injected at session start. If it is not in context,
+read `../../references/constitution.md` before proceeding.
 
 ## Plugin scripts
 

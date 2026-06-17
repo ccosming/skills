@@ -18,10 +18,8 @@ severity, generate the `REV-NNN` file, and conduct a remediation loop with
 
 ## Constitution
 
-Operate under the constitution injected at session start — voice, localization,
-`AskUserQuestion`, helper and `/audit` invocation, and the `.spec/` artifact
-model (SemVer, status flow, changelog, cross-references). If it is not in
-context, read `../../references/constitution.md` before proceeding.
+Operate under the constitution injected at session start. If it is not in context,
+read `../../references/constitution.md` before proceeding.
 
 Localization exception: severity labels (`blocker`/`major`/`minor`/`nit`) and
 verdict values stay English.

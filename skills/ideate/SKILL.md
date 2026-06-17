@@ -108,11 +108,9 @@ Section rules:
   what is still pending. When the list empties at close, neither lingers as noise.
 - Omit a section with no content (e.g. `## Realities` if nothing came up) — never
   write "none" lines.
-- **No blockquotes.** Use a bold lead-in label or a `####` subsection for asides.
-- **Flows are diagrams.** Render any flow inside a ` ```mermaid ` block, never
-  ASCII. No theme/init block — default Mermaid. Break long node labels with
-  `<br/>`, never `\n` (a literal `\n` renders as text). See
-  `../../references/diagrams.md`.
+- Asides use a bold lead-in label or a `####` subsection; flows are Mermaid
+  diagrams — see `../../references/interview-conduct.md` (_Formatting the working
+  file_) and `../../references/diagrams.md`.
 
 ## Where it lives (dual-mode)
 
@@ -133,29 +131,23 @@ can still choose the project, but the skill does not steer them there.
 
 Resolve `~` at runtime (`$HOME`); never hardcode an absolute home path.
 
-## Operational bias
+## Interview conduct
 
-Apply every turn — shapes voice and depth:
+Follow `../../references/interview-conduct.md` for the shared conduct: stance and
+operational bias, two-phase questioning, the loop rules (walk `open_questions`
+top-down, read before asking, write the whitepaper before the next question,
+counter-questions first, no side effects), forked-helper invocation, and
+working-file formatting. Cadence, language register, and the no-internal-scaffolding
+rule are the constitution's (_Cadence_, _Localization_, _Voice_).
 
-- **Narrow, don't diffuse.** Push the user to articulate the idea sharply, not to
-  expand into every branch. Free-text questions are open, not vague.
-- **Reuse what exists.** If a provided file or a prior whitepaper already answers
-  something, surface it instead of re-asking.
-- **Peer brevity.** Every removable sentence goes. End-of-turn summary: one line.
+Ideate deltas:
 
-## Rules
-
-- One question per turn. Update the whitepaper file **before** the next question;
-  never batch.
-- Walk `open_questions` top-down, lowest-numbered first; never skip a parent.
-- If a question is answerable from a provided file, read it instead of asking.
-- Zero filler. State the question (or framing + recommendation) directly.
-- Match the user's language; neutral register (see Constitution). When invoked by
-  `/spec`, write the whitepaper in `language.artifacts`; standalone, match the
-  user's language.
-- Never touch code, run destructive commands, or implement. Read, ask, write the
-  whitepaper.
-- If the user asks a counter-question, answer it first, then continue.
+- The working file is the **whitepaper**; update it before each new question.
+- Language: when invoked by `/spec`, write the whitepaper in `language.artifacts`;
+  standalone, match the user's language.
+- `/research` is **opt-in** — use it when the idea benefits from current world
+  facts (a fast-moving tool space, comparables, a niche standard, or the user asks
+  to "research"); skip it for purely personal ideas. Capture results as `sources`.
 
 ## Starting from provided files (ingestion)
 
@@ -164,47 +156,6 @@ brainstorms, PDFs), read **only** those named files — never scan the tree or
 sibling directories (Constitution, _Data boundary_). Distill them into the
 relevant whitepaper sections as starting material the user confirms or steers,
 and list them under `sources`. A file is raw material, not settled truth.
-
-## Calling other skills
-
-`/clarify`, `/research`, `/summarize` are forked helpers (`context: fork`).
-Invoke each **directly** with `Skill(...)` — it runs isolated and returns its
-result; never wrap one in `Task` (a nested fork fails). Each returns only its
-structured output; you continue the workflow.
-
-- **Clarify** — analysis-only; returns a spec, then **you** present the question:
-
-  ```
-  Skill(skill="clarify", args="user_input: <reply>; domain_context: <...>; prior_resolutions: <n>; written_sections: <n>")
-  ```
-
-- **Research** — to acquire current knowledge on the topic (comparables, current
-  tooling, norms) for the *how* and *options* sections. One call per perspective,
-  issued together; capture results as `sources`:
-
-  ```
-  Skill(skill="research", args="question: <...>; perspective: <...>")
-  ```
-
-- **Summarize** — consolidate research before writing it in:
-
-  ```
-  Skill(skill="summarize", args="texts: <blocks>; focus: <...>; max_length: <...>; format: bullets")
-  ```
-
-Research is **opt-in**: use it when the idea benefits from current world facts
-(a fast-moving tool space, comparables, a niche standard, or the user asks to
-"research"). Skip it for purely personal ideas grounded in the user's own life.
-
-## Two-phase questioning
-
-| Phase | When | Form |
-| --- | --- | --- |
-| **A — Free-text** | Q1 and Q2 only | Open question, no options. Read the prose, then run `/clarify`; if it returns a disambiguation, present that question yourself before recording. |
-| **B — Recommended options** | Q3 onward | 1-3 lines of framing + a recommended answer with reasoning + `AskUserQuestion` (2-4 options, Recommended first). |
-
-At most 2 free-text questions in a row. In phase B run `/clarify` only when a
-reply introduces a load-bearing ambiguous term.
 
 ## Workflow
 
@@ -240,8 +191,9 @@ reply introduces a load-bearing ambiguous term.
 
 1. Name the idea's domain(s) from the topic + motivation.
 2. Decide whether current external knowledge would sharpen the *how* / *options*
-   (per _Calling other skills_). If yes, pick 1-3 perspectives and issue
-   `Skill(skill="research", ...)` calls together, then `/summarize` to consolidate.
+   (per `interview-conduct.md`, _Calling forked helpers_; `/research` is opt-in).
+   If yes, pick 1-3 perspectives and issue `Skill(skill="research", ...)` calls
+   together, then `/summarize` to consolidate.
 3. Hold the consolidated knowledge and the source list for the file.
 
 If no research is needed, proceed on intrinsic knowledge.
@@ -268,7 +220,8 @@ placeholders. Put `sources` in the frontmatter if research ran.
 Loop until `open_questions` is empty. Each iteration:
 
 1. Pick the lowest-numbered open question.
-2. Phase A (Q1-Q2) or phase B (Q3+) per the table.
+2. Phase A (Q1-Q2) or phase B (Q3+) per the two-phase table in
+   `interview-conduct.md`.
 3. Pose it; if a provided file answers it, read instead of asking.
 4. Get the answer (phase A: run `/clarify` first, present its question yourself;
    phase B: `/clarify` only on load-bearing ambiguity).
@@ -319,6 +272,5 @@ Summarize the idea in 5-10 lines (not the whole document). Then:
 
 ## Constitution
 
-Operate under the constitution injected at session start — voice, localization,
-`AskUserQuestion`, the data boundary, and helper invocation via `Skill`. If it is
-not in context, read `../../references/constitution.md` before proceeding.
+Operate under the constitution injected at session start. If it is not in context,
+read `../../references/constitution.md` before proceeding.
